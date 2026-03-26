@@ -813,6 +813,149 @@ if FASTAPI_AVAILABLE:
             ),
         }
 
+    # ─── Fitness Test ──────────────────────────────────────────────────────────
+
+    class FitnessTestRequest(BaseModel):
+        athlete_id:        str
+        score:             int
+        level:             int
+        bmi:               Optional[float] = None
+        sit_reach_cm:      Optional[float] = None
+        run_600_seconds:   Optional[float] = None
+        age_group:         str = "Adult"
+
+    @app.post("/fitness-test", tags=["Fitness Test"])
+    async def save_fitness_test(req: FitnessTestRequest):
+        """Save a fitness test result for an athlete."""
+        athlete = ATHLETE_DB.get(req.athlete_id)
+        if not athlete:
+            # Auto-create athlete record if missing
+            athlete = {"id": req.athlete_id, "name": req.athlete_id, "fitness_tests": []}
+            ATHLETE_DB[req.athlete_id] = athlete
+        if "fitness_tests" not in athlete:
+            athlete["fitness_tests"] = []
+        record = {
+            "score": req.score, "level": req.level, "bmi": req.bmi,
+            "sit_reach_cm": req.sit_reach_cm, "run_600_seconds": req.run_600_seconds,
+            "age_group": req.age_group, "timestamp": datetime.utcnow().isoformat(),
+        }
+        athlete["fitness_tests"].insert(0, record)
+        athlete["fitness_tests"] = athlete["fitness_tests"][:10]  # keep last 10
+        return {"athlete_id": req.athlete_id, "score": req.score, "level": req.level, "timestamp": record["timestamp"]}
+
+    @app.get("/fitness-test/history/{athlete_id}", tags=["Fitness Test"])
+    async def get_fitness_test_history(athlete_id: str):
+        """Return last 5 fitness test results for an athlete."""
+        athlete = ATHLETE_DB.get(athlete_id)
+        if not athlete:
+            return {"athlete_id": athlete_id, "history": []}
+        return {"athlete_id": athlete_id, "history": athlete.get("fitness_tests", [])[:5]}
+
+    # ─── Daily Tracker ─────────────────────────────────────────────────────────
+
+    class DailyTrackerUpdate(BaseModel):
+        steps:           int   = 0
+        active_minutes:  int   = 0
+        distance_km:     float = 0.0
+        calories_burned: int   = 0
+        calorie_intake:  int   = 0
+        water_glasses:   int   = 0
+        sleep_hours:     float = 0.0
+        date:            str   = ""   # YYYY-MM-DD; defaults to today
+
+    @app.get("/athlete/{athlete_id}/daily-tracker", tags=["Daily Tracker"])
+    async def get_daily_tracker(athlete_id: str):
+        """Return today's tracker data for an athlete."""
+        athlete = ATHLETE_DB.get(athlete_id, {})
+        today   = datetime.utcnow().date().isoformat()
+        tracker = athlete.get("daily_tracker", {}).get(today, {})
+        return {"athlete_id": athlete_id, "date": today, "tracker": tracker}
+
+    @app.post("/athlete/{athlete_id}/daily-tracker", tags=["Daily Tracker"])
+    async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
+        """Upsert today's tracker data."""
+        if athlete_id not in ATHLETE_DB:
+            ATHLETE_DB[athlete_id] = {"id": athlete_id, "daily_tracker": {}}
+        athlete = ATHLETE_DB[athlete_id]
+        if "daily_tracker" not in athlete:
+            athlete["daily_tracker"] = {}
+        date_key = data.date or datetime.utcnow().date().isoformat()
+        athlete["daily_tracker"][date_key] = {
+            "steps": data.steps, "active_minutes": data.active_minutes,
+            "distance_km": data.distance_km, "calories_burned": data.calories_burned,
+            "calorie_intake": data.calorie_intake, "water_glasses": data.water_glasses,
+            "sleep_hours": data.sleep_hours, "updated_at": datetime.utcnow().isoformat(),
+        }
+        return {"athlete_id": athlete_id, "date": date_key, "ok": True}
+
+    # ─── Playfields ────────────────────────────────────────────────────────────
+
+    @app.get("/playfields", tags=["Playfields"])
+    async def get_playfields(lat: float = 0.0, lng: float = 0.0, radius: float = 10.0):
+        """Return nearby playfields (currently returns curated mock data)."""
+        return {"playfields": [
+            {"id": 1, "name": "Jawaharlal Nehru Stadium, Delhi", "distance_km": 3.0, "sports": ["Athletics"], "status": "Open",  "lat": 28.5831, "lng": 77.2364, "imageUrl": None},
+            {"id": 2, "name": "Arun Jaitley Stadium",           "distance_km": 5.5, "sports": ["Cricket"],   "status": "Open",  "lat": 28.6368, "lng": 77.2458, "imageUrl": None},
+            {"id": 3, "name": "Indira Gandhi Arena",             "distance_km": 7.5, "sports": ["Volleyball", "Basketball", "Badminton", "Gymnastics"], "status": "Open", "lat": 28.5828, "lng": 77.1882, "imageUrl": None},
+            {"id": 4, "name": "Siri Fort Sports Complex",        "distance_km": 4.2, "sports": ["Squash", "Tennis"],             "status": "Open",  "lat": 28.5484, "lng": 77.2206, "imageUrl": None},
+            {"id": 5, "name": "Community Ground Sector-4",       "distance_km": 0.8, "sports": ["Kabaddi"],  "status": "Open",  "lat": 28.6300, "lng": 77.2100, "imageUrl": None},
+        ]}
+
+    # ─── PE Classes ────────────────────────────────────────────────────────────
+
+    @app.get("/classes", tags=["Classes"])
+    async def get_classes(athlete_id: str = ""):
+        """Return PE class records (currently returns curated mock data)."""
+        return {"classes": [
+            {"id": "cl1", "title": "3 V 3 Bounce Ball", "sport": "Basketball", "date": "19 May 2024", "period": "3rd Period", "teacherName": "Mr. Raj Kumar", "teacherRating": 5, "teacherFeedback": "Puts forth personal best effort. Always positive.", "studentRating": 0, "thumbnail": "🏀", "color": "#f97316"},
+            {"id": "cl2", "title": "Kabaddi Fundamentals", "sport": "Kabaddi", "date": "15 May 2024", "period": "2nd Period", "teacherName": "Ms. Priya Singh", "teacherRating": 4, "teacherFeedback": "Shows excellent teamwork and game strategy.", "studentRating": 4, "thumbnail": "🤼", "color": "#ef4444"},
+            {"id": "cl3", "title": "100m Sprint Drills", "sport": "Athletics", "date": "12 May 2024", "period": "1st Period", "teacherName": "Mr. Arvind Mehta", "teacherRating": 5, "teacherFeedback": "Consistent improvement in stride length.", "studentRating": 5, "thumbnail": "🏃", "color": "#22c55e"},
+        ]}
+
+    # ─── Social Feed ───────────────────────────────────────────────────────────
+
+    # In-memory follow relationships (no persistence needed for MVP)
+    _FOLLOWS: Dict[str, set] = defaultdict(set)
+
+    @app.get("/feed", tags=["Social"])
+    async def get_feed(athlete_id: str = "", tab: str = "for_you", page: int = 1):
+        """Return paginated social feed posts."""
+        posts = [
+            {"id": "p1", "author": "Rishi Arora",       "handle": "@RishiArora",    "initials": "RA", "avatarColor": "#06b6d4", "sport": "Athletics",       "content": "Just hit a new PB in the 400m! Hard work finally paying off 💪 #FitIndia", "likes": 142, "comments": 18, "timeAgo": "2h", "isFollowing": False},
+            {"id": "p2", "author": "Aditi Dixit",        "handle": "@AditiDixit",    "initials": "AD", "avatarColor": "#ec4899", "sport": "Yoga",             "content": "Morning session complete ✅ Pranayama + 45 min flow. Your body is your greatest instrument 🧘‍♀️", "likes": 287, "comments": 34, "timeAgo": "4h", "isFollowing": True},
+            {"id": "p3", "author": "Moh. Usman",         "handle": "@MohUsman",      "initials": "MU", "avatarColor": "#f97316", "sport": "Kabaddi",          "content": "District championships next week! Training twice a day. Who else is competing? 🤼", "likes": 98, "comments": 22, "timeAgo": "6h", "isFollowing": False},
+            {"id": "p4", "author": "Fit India Icons",    "handle": "@FitIndiaIcons", "initials": "FI", "avatarColor": "#22c55e", "sport": "National Program", "content": "🏅 Congratulations to all athletes who completed the #FitIndiaSchoolWeek! 10,000+ schools participated.", "likes": 1450, "comments": 203, "timeAgo": "1d", "isFollowing": True},
+        ]
+        if tab == "following":
+            followed = _FOLLOWS.get(athlete_id, set())
+            posts    = [p for p in posts if p.get("isFollowing") or p["id"] in followed]
+        return {"posts": posts, "page": page, "total": len(posts)}
+
+    @app.get("/creators/trending", tags=["Social"])
+    async def get_trending_creators():
+        """Return trending creators for the social feed."""
+        return {"creators": [
+            {"id": "c1", "name": "Fit India Icons",       "handle": "@FitIndiaIcons",   "initials": "FI", "color": "#f97316"},
+            {"id": "c2", "name": "Fit India Champions",   "handle": "@FitChampions",    "initials": "FC", "color": "#22c55e"},
+            {"id": "c3", "name": "Fit India Ambassadors", "handle": "@FitAmbassadors",  "initials": "FA", "color": "#8b5cf6"},
+            {"id": "c4", "name": "Rishi Arora",           "handle": "@RishiArora",      "initials": "RA", "color": "#06b6d4"},
+            {"id": "c5", "name": "Aditi Dixit",           "handle": "@AditiDixit",      "initials": "AD", "color": "#ec4899"},
+        ]}
+
+    class FollowRequest(BaseModel):
+        follower:  str
+        following: str
+
+    @app.post("/follow", tags=["Social"])
+    async def follow_creator(req: FollowRequest):
+        """Toggle follow relationship between two athletes/creators."""
+        if req.following in _FOLLOWS[req.follower]:
+            _FOLLOWS[req.follower].discard(req.following)
+            return {"follower": req.follower, "following": req.following, "action": "unfollowed"}
+        else:
+            _FOLLOWS[req.follower].add(req.following)
+            return {"follower": req.follower, "following": req.following, "action": "followed"}
+
 
 # ─── Entry Point ──────────────────────────────────────────────────────────────
 
