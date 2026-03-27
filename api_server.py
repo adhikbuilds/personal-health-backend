@@ -1,17 +1,7 @@
 """
-=============================================================================
-ActiveBharat — FastAPI REST Server (Production-Fixed)
-=============================================================================
-Fixed in this version:
-  - Pydantic v2: frame.dict() → frame.model_dump()
-  - FastAPI lifespan pattern (replaces deprecated @on_event)
-  - CORS: removed allow_credentials=True when allow_origins=["*"]
-  - WebSocket: safe removal from connections list
-  - _compute_xp moved to module level
-  - Proper error handling throughout
-
-Base URL: http://localhost:8000
-Docs:     http://localhost:8000/docs
+Personal Health — FastAPI REST Server
+Base URL: http://localhost:8082
+Docs:     http://localhost:8082/docs
 
 Start:
   cd ml/
@@ -162,7 +152,7 @@ if FASTAPI_AVAILABLE:
         _load_db()
         ANALYSIS_QUEUE = asyncio.Queue(maxsize=50)   # drop frames if queue full
         task = asyncio.create_task(analysis_worker())
-        print("[API] ActiveBharat API running -> http://localhost:8082")
+        print("[API] Personal Health API running -> http://localhost:8082")
         print("[API] Swagger docs -> http://localhost:8082/docs")
         print("[API] Async analysis worker started")
         yield
@@ -261,7 +251,7 @@ if FASTAPI_AVAILABLE:
                 await asyncio.sleep(1)
 
     app = FastAPI(
-        title="ActiveBharat API",
+        title="Personal Health API",
         description="Sports Biomechanics REST API powering the Android app and dashboard",
         version="2.0.0",
         docs_url="/docs",
@@ -283,7 +273,7 @@ if FASTAPI_AVAILABLE:
     @app.get("/", tags=["Health"])
     async def root():
         return {
-            "service": "ActiveBharat Sports Analysis API",
+            "service": "Personal Health Sports Analysis API",
             "version": "2.0.0",
             "status": "operational",
             "timestamp": datetime.utcnow().isoformat() + "Z",
@@ -671,9 +661,26 @@ if FASTAPI_AVAILABLE:
                     })
                     continue
 
-                r = data.get("r", 0.0)
-                g = data.get("g", 0.0)
-                b = data.get("b", 0.0)
+                # Support both VisionCamera (r,g,b) and Expo Go (image_b64) formats
+                if data.get("image_b64"):
+                    try:
+                        import base64 as _b64
+                        from io import BytesIO as _BytesIO
+                        from PIL import Image as _Image
+                        import numpy as _np
+                        _img_bytes = _b64.b64decode(data["image_b64"])
+                        _img = _Image.open(_BytesIO(_img_bytes)).convert("RGB").resize((16, 16))
+                        _arr = _np.array(_img, dtype=_np.float32)
+                        r = float(_arr[:, :, 0].mean())
+                        g = float(_arr[:, :, 1].mean())
+                        b = float(_arr[:, :, 2].mean())
+                    except Exception as _e:
+                        print(f"[RPPG] image_b64 decode error: {_e}")
+                        continue
+                else:
+                    r = data.get("r", 0.0)
+                    g = data.get("g", 0.0)
+                    b = data.get("b", 0.0)
                 t = data.get("ts", time.time())
 
                 # Inject instantly into the CHROM engine
@@ -805,7 +812,7 @@ if FASTAPI_AVAILABLE:
         """Returns connection banner for Android app to verify connectivity."""
         return {
             "connected": True,
-            "server": "ActiveBharat API v2.0",
+            "server": "Personal Health API v2.0",
             "athletes": len(ATHLETE_DB),
             "sessions_today": sum(
                 1 for s in SESSION_DB.values()
@@ -963,11 +970,9 @@ if __name__ == "__main__":
     if not FASTAPI_AVAILABLE:
         print("Install: pip install fastapi uvicorn pydantic")
     else:
-        print("============================================================")
-        print("  ActiveBharat REST API")
+        print("\n  Personal Health REST API")
         print("  http://localhost:8082")
-        print("  http://localhost:8082/docs  <- Swagger UI")
-        print("============================================================")
+        print("  http://localhost:8082/docs\n")
         uvicorn.run(
             "api_server:app",
             host="0.0.0.0",

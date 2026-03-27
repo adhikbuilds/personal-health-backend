@@ -1,6 +1,6 @@
 """
 =============================================================================
-ActiveBharat — Labeled Training Dataset Generator
+Personal Health — Labeled Training Dataset Generator
 =============================================================================
 Generates a synthetic yet biomechanically realistic labeled dataset for
 training the pose quality classifier. Combines:
@@ -425,7 +425,7 @@ def generate_dataset():
 
 
 def write_schema_doc():
-    schema_md = """# ActiveBharat — Biomechanical Training Dataset Schema
+    schema_md = """# Personal Health — Biomechanical Training Dataset Schema
 
 ## Overview
 Labeled dataset for training a sport-specific pose quality classifier.

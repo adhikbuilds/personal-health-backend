@@ -1,6 +1,6 @@
 """
 =============================================================================
-ActiveBharat — Form Quality Classifier Trainer
+Personal Health — Form Quality Classifier Trainer
 =============================================================================
 Trains a lightweight neural network (MLP) to classify biomechanical form
 quality from pose feature vectors. Exports to TensorFlow Lite for Android
