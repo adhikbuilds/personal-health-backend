@@ -10,7 +10,7 @@ Start:
 =============================================================================
 """
 
-import json, csv, uuid, os, time, asyncio
+import json, csv, uuid, os, time, asyncio, math
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict
@@ -65,15 +65,31 @@ def _load_db():
                 ATHLETE_DB.update(json.load(f))
         except Exception as e:
             print(f"[DB WARN] Could not load athletes: {e}")
-    # Seed default athletes if empty
-    if not ATHLETE_DB:
-        ATHLETE_DB.update({
-            "athlete_01": {"id": "athlete_01", "name": "Viraj Sharma",  "sport": "vertical_jump", "tier": "District", "bpi": 12450, "sessions": 0, "avatar": "VS"},
-            "athlete_02": {"id": "athlete_02", "name": "Priya Desai",   "sport": "sprint",         "tier": "State",    "bpi": 11800, "sessions": 0, "avatar": "PD"},
-            "athlete_03": {"id": "athlete_03", "name": "Rajan Mehta",   "sport": "snatch",         "tier": "National", "bpi": 14200, "sessions": 0, "avatar": "RM"},
-            "athlete_04": {"id": "athlete_04", "name": "Amita Joshi",   "sport": "javelin",        "tier": "District", "bpi": 9300,  "sessions": 0, "avatar": "AJ"},
-            "athlete_05": {"id": "athlete_05", "name": "Karan Singh",   "sport": "cricket_bat",    "tier": "Block",    "bpi": 8600,  "sessions": 0, "avatar": "KS"},
-        })
+    # Seed athletes and sessions if DB is sparse
+    if len(ATHLETE_DB) < 10:
+        try:
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent))
+            from seed_athletes import generate_athletes
+            from seed_sessions import generate_session
+            athletes = generate_athletes()
+            ATHLETE_DB.update(athletes)
+            for athlete in athletes.values():
+                n = athlete.get("sessions", 5)
+                for i in range(n):
+                    s = generate_session(athlete, i, n)
+                    SESSION_DB[s["session_id"]] = s
+            _save_db()
+            print(f"[DB] Auto-seeded {len(athletes)} athletes, {len(SESSION_DB)} sessions")
+        except Exception as e:
+            print(f"[DB] Seed failed ({e}), using minimal defaults")
+            ATHLETE_DB.update({
+                "athlete_01": {"id": "athlete_01", "name": "Viraj Sharma", "sport": "vertical_jump", "tier": "District", "bpi": 12450, "sessions": 0, "avatar": "VS"},
+                "athlete_02": {"id": "athlete_02", "name": "Priya Desai",  "sport": "sprint",        "tier": "State",    "bpi": 11800, "sessions": 0, "avatar": "PD"},
+                "athlete_03": {"id": "athlete_03", "name": "Rajan Mehta",  "sport": "snatch",        "tier": "National", "bpi": 14200, "sessions": 0, "avatar": "RM"},
+                "athlete_04": {"id": "athlete_04", "name": "Amita Joshi",  "sport": "javelin",       "tier": "District", "bpi": 9300,  "sessions": 0, "avatar": "AJ"},
+                "athlete_05": {"id": "athlete_05", "name": "Karan Singh",  "sport": "cricket_bat",   "tier": "Block",    "bpi": 8600,  "sessions": 0, "avatar": "KS"},
+            })
     print(f"[DB] {len(SESSION_DB)} sessions, {len(ATHLETE_DB)} athletes loaded")
 
 
@@ -152,14 +168,50 @@ if FASTAPI_AVAILABLE:
         _load_db()
         ANALYSIS_QUEUE = asyncio.Queue(maxsize=50)   # drop frames if queue full
         task = asyncio.create_task(analysis_worker())
+        cleanup_task = asyncio.create_task(session_cleanup_worker())
         print("[API] Personal Health API running -> http://localhost:8082")
         print("[API] Swagger docs -> http://localhost:8082/docs")
         print("[API] Async analysis worker started")
         yield
         # Shutdown
         task.cancel()
+        cleanup_task.cancel()
         _save_db()
         print("[API] DB saved. Shutting down.")
+
+    async def session_cleanup_worker():
+        """Auto-end sessions inactive for more than 2 hours."""
+        while True:
+            try:
+                await asyncio.sleep(1800)  # every 30 min
+                now = time.time()
+                for sid, session in list(SESSION_DB.items()):
+                    if session.get("status") != "active":
+                        continue
+                    frames = session.get("frames", [])
+                    if frames:
+                        ts_str = frames[-1].get("timestamp")
+                        try:
+                            last_ts = datetime.fromisoformat(str(ts_str)).timestamp() if ts_str else now
+                        except Exception:
+                            last_ts = now
+                    else:
+                        started = session.get("started_at", "")
+                        try:
+                            last_ts = datetime.fromisoformat(str(started)).timestamp()
+                        except Exception:
+                            last_ts = now
+                    if now - last_ts > 7200:
+                        session["status"] = "completed"
+                        session["ended_at"] = datetime.utcnow().isoformat()
+                        session["auto_ended"] = True
+                        print(f"[CLEANUP] Auto-ended stale session {sid[:8]}")
+                _save_db()
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                print(f"[CLEANUP ERROR] {e}")
+                await asyncio.sleep(60)
 
     async def _broadcast(session_id: str, payload: dict):
         """Send JSON payload to all WebSocket clients watching session_id."""
@@ -897,16 +949,106 @@ if FASTAPI_AVAILABLE:
 
     # ─── Playfields ────────────────────────────────────────────────────────────
 
+    def _haversine(lat1, lng1, lat2, lng2):
+        R = 6371.0
+        dlat = math.radians(lat2 - lat1)
+        dlng = math.radians(lng2 - lng1)
+        a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng/2)**2
+        return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+    _ALL_FIELDS = [
+        {"id": 1,  "name": "Jawaharlal Nehru Stadium",      "city": "Delhi",     "sports": ["Athletics"],                              "status": "Open", "lat": 28.5831, "lng": 77.2364},
+        {"id": 2,  "name": "Arun Jaitley Stadium",           "city": "Delhi",     "sports": ["Cricket"],                               "status": "Open", "lat": 28.6368, "lng": 77.2458},
+        {"id": 3,  "name": "Indira Gandhi Arena",             "city": "Delhi",     "sports": ["Volleyball", "Basketball", "Gymnastics"], "status": "Open", "lat": 28.5828, "lng": 77.1882},
+        {"id": 4,  "name": "Siri Fort Sports Complex",       "city": "Delhi",     "sports": ["Squash", "Tennis"],                      "status": "Open", "lat": 28.5484, "lng": 77.2206},
+        {"id": 5,  "name": "Dhyan Chand National Stadium",   "city": "Delhi",     "sports": ["Hockey"],                                "status": "Open", "lat": 28.6106, "lng": 77.2303},
+        {"id": 6,  "name": "Balewadi Sports Complex",        "city": "Pune",      "sports": ["Athletics", "Cycling"],                  "status": "Open", "lat": 18.5640, "lng": 73.7769},
+        {"id": 7,  "name": "Shree Shiv Chhatrapati Complex", "city": "Pune",      "sports": ["Wrestling", "Volleyball"],               "status": "Open", "lat": 18.5310, "lng": 73.8446},
+        {"id": 8,  "name": "Salt Lake Stadium",               "city": "Kolkata",   "sports": ["Football", "Athletics"],                 "status": "Open", "lat": 22.5726, "lng": 88.4054},
+        {"id": 9,  "name": "Netaji Indoor Stadium",           "city": "Kolkata",   "sports": ["Basketball", "Badminton"],               "status": "Open", "lat": 22.5726, "lng": 88.3639},
+        {"id": 10, "name": "Sree Kanteerava Stadium",         "city": "Bangalore", "sports": ["Athletics", "Football"],                 "status": "Open", "lat": 12.9784, "lng": 77.5952},
+        {"id": 11, "name": "NSCI Dome",                       "city": "Mumbai",    "sports": ["Athletics", "Gymnastics"],               "status": "Open", "lat": 19.0613, "lng": 72.8330},
+        {"id": 12, "name": "Wankhede Stadium",                "city": "Mumbai",    "sports": ["Cricket"],                               "status": "Open", "lat": 18.9388, "lng": 72.8250},
+        {"id": 13, "name": "G.M.C. Balayogi Indoor Stadium",  "city": "Hyderabad", "sports": ["Badminton", "Boxing", "Wrestling"],      "status": "Open", "lat": 17.4065, "lng": 78.4772},
+        {"id": 14, "name": "Jawaharlal Nehru Stadium",        "city": "Chennai",   "sports": ["Football", "Athletics"],                 "status": "Open", "lat": 13.0691, "lng": 80.2706},
+        {"id": 15, "name": "Sardar Patel Stadium",            "city": "Ahmedabad", "sports": ["Cricket", "Football"],                  "status": "Open", "lat": 23.0922, "lng": 72.5989},
+    ]
+
     @app.get("/playfields", tags=["Playfields"])
-    async def get_playfields(lat: float = 0.0, lng: float = 0.0, radius: float = 10.0):
-        """Return nearby playfields (currently returns curated mock data)."""
-        return {"playfields": [
-            {"id": 1, "name": "Jawaharlal Nehru Stadium, Delhi", "distance_km": 3.0, "sports": ["Athletics"], "status": "Open",  "lat": 28.5831, "lng": 77.2364, "imageUrl": None},
-            {"id": 2, "name": "Arun Jaitley Stadium",           "distance_km": 5.5, "sports": ["Cricket"],   "status": "Open",  "lat": 28.6368, "lng": 77.2458, "imageUrl": None},
-            {"id": 3, "name": "Indira Gandhi Arena",             "distance_km": 7.5, "sports": ["Volleyball", "Basketball", "Badminton", "Gymnastics"], "status": "Open", "lat": 28.5828, "lng": 77.1882, "imageUrl": None},
-            {"id": 4, "name": "Siri Fort Sports Complex",        "distance_km": 4.2, "sports": ["Squash", "Tennis"],             "status": "Open",  "lat": 28.5484, "lng": 77.2206, "imageUrl": None},
-            {"id": 5, "name": "Community Ground Sector-4",       "distance_km": 0.8, "sports": ["Kabaddi"],  "status": "Open",  "lat": 28.6300, "lng": 77.2100, "imageUrl": None},
-        ]}
+    async def get_playfields(lat: float = 0.0, lng: float = 0.0, radius: float = 50.0):
+        """Return nearby playfields filtered by haversine distance (radius km)."""
+        results = []
+        for f in _ALL_FIELDS:
+            dist = round(_haversine(lat, lng, f["lat"], f["lng"]), 2) if (lat != 0.0 or lng != 0.0) else 0.0
+            if (lat != 0.0 or lng != 0.0) and dist > radius:
+                continue
+            results.append({**f, "distance_km": dist, "imageUrl": None})
+        results.sort(key=lambda x: x["distance_km"])
+        return {"playfields": results}
+
+    # ─── Athlete Progress ──────────────────────────────────────────────────────
+
+    @app.get("/athlete/{athlete_id}/progress", tags=["Athletes"])
+    async def get_athlete_progress(athlete_id: str):
+        """Return form trend, weak joints, and improvement % for an athlete."""
+        if athlete_id not in ATHLETE_DB:
+            raise HTTPException(status_code=404, detail="Athlete not found")
+
+        athlete_sessions = sorted(
+            [s for s in SESSION_DB.values()
+             if s.get("athlete_id") == athlete_id and s.get("status") == "completed" and s.get("summary")],
+            key=lambda s: s.get("started_at", "")
+        )
+
+        form_trend = []
+        for s in athlete_sessions:
+            avg = s.get("summary", {}).get("avg_form_score")
+            if avg is not None:
+                form_trend.append({"date": str(s.get("started_at", ""))[:10], "avg_form_score": round(avg, 1)})
+
+        improvement_pct = 0.0
+        if len(form_trend) >= 4:
+            half = len(form_trend) // 2
+            first = sum(t["avg_form_score"] for t in form_trend[:half]) / half
+            second = sum(t["avg_form_score"] for t in form_trend[half:]) / (len(form_trend) - half)
+            if first > 0:
+                improvement_pct = round((second - first) / first * 100, 1)
+
+        now = datetime.utcnow()
+        sessions_this_week = sessions_last_week = 0
+        for s in athlete_sessions:
+            started_str = s.get("started_at", "")
+            if not started_str:
+                continue
+            try:
+                started = datetime.fromisoformat(str(started_str).replace("Z", "+00:00")).replace(tzinfo=None)
+                days_ago = (now - started).days
+                if days_ago < 7:
+                    sessions_this_week += 1
+                elif days_ago < 14:
+                    sessions_last_week += 1
+            except Exception:
+                pass
+
+        all_frames = []
+        for s in athlete_sessions[-5:]:
+            all_frames.extend(s.get("frames", []))
+        joint_keys = ["knee_angle_l", "knee_angle_r", "hip_angle_l", "hip_angle_r", "trunk_lean", "limb_symmetry_idx"]
+        joint_avgs = {}
+        for key in joint_keys:
+            vals = [f.get(key, 0) for f in all_frames if f.get(key, 0) > 0]
+            if vals:
+                joint_avgs[key] = round(sum(vals) / len(vals), 1)
+
+        return {
+            "athlete_id": athlete_id,
+            "form_trend": form_trend,
+            "improvement_pct": improvement_pct,
+            "sessions_this_week": sessions_this_week,
+            "sessions_last_week": sessions_last_week,
+            "joint_averages": joint_avgs,
+            "total_sessions": len(athlete_sessions),
+        }
 
     # ─── PE Classes ────────────────────────────────────────────────────────────
 

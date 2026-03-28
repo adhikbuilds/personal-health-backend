@@ -167,7 +167,26 @@ SPORT_IDEAL_ANGLES = {
         "shoulder_angle": (60, 120),
         "trunk_lean": (10, 30),
         "symmetry": 0.80,
-    }
+    },
+    "squat": {
+        "knee_angle": (75, 110),
+        "hip_angle": (75, 105),
+        "trunk_lean": (0, 25),
+        "ankle_dorsiflexion": (65, 105),
+        "symmetry": 0.92,
+    },
+    "push_up": {
+        "elbow_angle": (85, 100),
+        "shoulder_angle": (30, 60),
+        "trunk_lean": (0, 8),
+        "symmetry": 0.92,
+    },
+    "pull_up": {
+        "elbow_angle": (30, 60),
+        "shoulder_angle": (150, 180),
+        "trunk_lean": (0, 15),
+        "symmetry": 0.90,
+    },
 }
 
 
