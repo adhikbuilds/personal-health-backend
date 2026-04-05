@@ -64,7 +64,7 @@ FEATURE_COLS = [
     "shoulder_angle_l", "shoulder_angle_r", "elbow_angle_l", "elbow_angle_r",
     "ankle_dorsiflexion_l", "ankle_dorsiflexion_r",
     "trunk_lean", "spine_deviation", "shoulder_hip_sep", "head_forward_pos",
-    "com_height_norm", "estimated_jump_height", "limb_symmetry_idx"
+    "com_height_norm", "estimated_jump_height", "limb_symmetry_idx", "form_score"
 ]
 
 TARGET_COL = "quality_label"
@@ -142,9 +142,9 @@ def train_model(X, y):
     random.shuffle(indices)
 
     X_train = [X_norm[i] for i in indices[:train_size]]
-    X_test = [X_norm[i] for i in indices[test_size:]]
+    X_test = [X_norm[i] for i in indices[train_size:]]
     y_train = [y_arr[i] for i in indices[:train_size]]
-    y_test = [y_arr[i] for i in indices[test_size:]]
+    y_test = [y_arr[i] for i in indices[train_size:]]
 
     print(f"[SPLIT] Train: {len(X_train)}, Test: {len(X_test)}")
 

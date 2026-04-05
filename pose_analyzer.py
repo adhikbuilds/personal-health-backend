@@ -94,8 +94,8 @@ def _angle_3pts(a: Landmark, b: Landmark, c: Landmark) -> float:
     Returns angle in degrees [0, 180].
     Math: θ = arccos( (BA · BC) / (|BA| |BC|) )
     """
-    ba = np.array([a.x - b.x, a.y - b.y])
-    bc = np.array([c.x - b.x, c.y - b.y])
+    ba = np.array([a.x - b.x, a.y - b.y, a.z - b.z])
+    bc = np.array([c.x - b.x, c.y - b.y, c.z - b.z])
     norm_ba = np.linalg.norm(ba)
     norm_bc = np.linalg.norm(bc)
     if norm_ba < 1e-6 or norm_bc < 1e-6:
@@ -320,18 +320,29 @@ def _compute_dimensionless_jerk(com_trajectory: list) -> float:
     dj = (duration**5 / path_length**2) * integral_j2
     return abs(float(dj))
 
-def _compute_mahalanobis_phase_space(current_angle: float, past_angle: float, dt: float) -> float:
+_SPORT_PHASE_IDEALS = {
+    "vertical_jump": (90.0, 0.0),
+    "squat":         (85.0, 0.0),
+    "snatch":        (100.0, 0.0),
+    "sprint":        (90.0, 50.0),
+    "push_up":       (90.0, 0.0),
+    "pull_up":       (45.0, 0.0),
+    "javelin":       (150.0, 0.0),
+    "cricket_bat":   (135.0, 0.0),
+}
+
+def _compute_mahalanobis_phase_space(current_angle: float, past_angle: float, dt: float, sport: str = "vertical_jump") -> float:
     """Calculates 1D Phase-Space Manifold Mahalanobis Distance."""
     if not mahalanobis: return 0.0
-    
+
     velocity = (current_angle - past_angle) / dt
     state = np.array([current_angle, velocity])
-    
-    # Olympic Ideal (μ_pro) and Inverse Covariance Matrix (Σ^-1) for vertical jump knee
-    mu_pro = np.array([90.0, 0.0])  # Ideal bottom of squat
-    cov_inv = np.array([[0.1, 0.0], 
+
+    ideal_angle, ideal_velocity = _SPORT_PHASE_IDEALS.get(sport, (90.0, 0.0))
+    mu_pro = np.array([ideal_angle, ideal_velocity])
+    cov_inv = np.array([[0.1, 0.0],
                         [0.0, 0.5]])
-                        
+
     dist = mahalanobis(state, mu_pro, cov_inv)
     return float(dist)
 
@@ -383,6 +394,7 @@ class PoseAnalyzer:
         self._baseline_body_height: Optional[float] = None
         self._baseline_com_y: Optional[float] = None
         self._com_history: deque = deque(maxlen=60)
+        self._mp_pose = None  # Reusable MediaPipe Pose instance
 
     def set_sport(self, sport: str):
         self.sport = sport
@@ -479,11 +491,19 @@ class PoseAnalyzer:
         mid_hip = _midpoint(l_hip, r_hip)
         frame.trunk_lean = _angle_vertical(mid_hip, mid_sh)
 
-        # Spine lateral deviation (mid_shoulder to mid_hip lateral offset)
-        frame.spine_deviation = abs(mid_sh.x - mid_hip.x) * 100  # approx degrees
+        # Spine lateral deviation (angle of lateral offset from vertical)
+        lateral_offset = abs(mid_sh.x - mid_hip.x)
+        vertical_dist = abs(mid_sh.y - mid_hip.y) + 1e-6
+        frame.spine_deviation = math.degrees(math.atan2(lateral_offset, vertical_dist))
 
-        # Hip-shoulder rotation separation (shoulder midpoint vs hip midpoint X)
-        frame.shoulder_hip_sep = abs(l_sh.x - r_sh.x) / max(abs(l_hip.x - r_hip.x), 1e-6) * 30
+        # Hip-shoulder rotation separation (angle between shoulder line and hip line)
+        sh_dx = l_sh.x - r_sh.x
+        sh_dy = l_sh.z - r_sh.z
+        hip_dx = l_hip.x - r_hip.x
+        hip_dy = l_hip.z - r_hip.z
+        sh_angle = math.atan2(sh_dy, sh_dx + 1e-9)
+        hip_angle = math.atan2(hip_dy, hip_dx + 1e-9)
+        frame.shoulder_hip_sep = abs(math.degrees(sh_angle - hip_angle))
 
         # Head forward position
         if self._is_visible(nose, mid_sh):
@@ -519,7 +539,10 @@ class PoseAnalyzer:
             frame.limb_symmetry_idx = round(max(0.0, 1.0 - avg_asymmetry), 3)
 
         # ── Phase Classification ──────────────────────
-        frame.phase = classify_jump_phase(self.frame_history)
+        if self.sport in ("vertical_jump", "squat", "snatch"):
+            frame.phase = classify_jump_phase(self.frame_history)
+        else:
+            frame.phase = "setup"
 
         # ── Phase 2: Advanced Kinematics (math2.pdf) ──
         # 1. 3D Torsion (Quaternions)
@@ -530,7 +553,7 @@ class PoseAnalyzer:
         if len(self.frame_history) >= 2:
             past_frame = self.frame_history[-2]
             dt = 1.0 / 30.0 # assuming ~30fps
-            frame.phase_space_dm = _compute_mahalanobis_phase_space(frame.knee_angle_l, past_frame.knee_angle_l, dt)
+            frame.phase_space_dm = _compute_mahalanobis_phase_space(frame.knee_angle_l, past_frame.knee_angle_l, dt, self.sport)
             
         # 3. Dimensionless Jerk (EEI)
         if len(self._com_history) > 10:
@@ -568,11 +591,12 @@ class PoseAnalyzer:
             if frame_bgr is None:
                 return {'pose_detected': False, 'error': 'image decode failed'}
 
-            mp_pose = mp.solutions.pose
-            with mp_pose.Pose(static_image_mode=True, model_complexity=1,
-                              min_detection_confidence=0.5) as pose_model:
-                rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
-                results = pose_model.process(rgb)
+            if self._mp_pose is None:
+                mp_pose = mp.solutions.pose
+                self._mp_pose = mp_pose.Pose(static_image_mode=True, model_complexity=1,
+                                             min_detection_confidence=0.5)
+            rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
+            results = self._mp_pose.process(rgb)
 
             if not results.pose_landmarks:
                 return {'pose_detected': False}

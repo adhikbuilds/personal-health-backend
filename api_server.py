@@ -11,11 +11,17 @@ Start:
 """
 
 import json, csv, uuid, os, time, asyncio, math
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, List, Dict
 from collections import defaultdict
 from contextlib import asynccontextmanager
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 try:
     from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Query
@@ -44,10 +50,11 @@ WS_CONNECTIONS: Dict[str, List[WebSocket]] = defaultdict(list)
 # ─── Async Analysis Queue (decouples frame upload from MediaPipe processing) ───
 # Phone posts a frame → stored instantly, returns 202 → worker processes async.
 # Results stored in RESULT_STORE; phone polls /latest-result; dashboard gets WS push.
-ANALYSIS_QUEUE: asyncio.Queue = None          # initialised in lifespan
+ANALYSIS_QUEUE: Optional[asyncio.Queue] = None  # initialised in lifespan
 RESULT_STORE: Dict[str, dict] = {}            # session_id → latest analysis result
 _POSE_ANALYZERS: Dict[str, object] = {}       # session_id → PoseAnalyzer instance
 RPPG_STORE: Dict[str, object] = {}            # session_id → RPPGProcessor instance
+_FOLLOWS: Dict[str, set] = defaultdict(set)   # follower_id → set of followed creator_ids
 
 
 def _load_db():
@@ -84,12 +91,22 @@ def _load_db():
         except Exception as e:
             print(f"[DB] Seed failed ({e}), using minimal defaults")
             ATHLETE_DB.update({
-                "athlete_01": {"id": "athlete_01", "name": "Viraj Sharma", "sport": "vertical_jump", "tier": "District", "bpi": 12450, "sessions": 0, "avatar": "VS"},
-                "athlete_02": {"id": "athlete_02", "name": "Priya Desai",  "sport": "sprint",        "tier": "State",    "bpi": 11800, "sessions": 0, "avatar": "PD"},
-                "athlete_03": {"id": "athlete_03", "name": "Rajan Mehta",  "sport": "snatch",        "tier": "National", "bpi": 14200, "sessions": 0, "avatar": "RM"},
-                "athlete_04": {"id": "athlete_04", "name": "Amita Joshi",  "sport": "javelin",       "tier": "District", "bpi": 9300,  "sessions": 0, "avatar": "AJ"},
-                "athlete_05": {"id": "athlete_05", "name": "Karan Singh",  "sport": "cricket_bat",   "tier": "Block",    "bpi": 8600,  "sessions": 0, "avatar": "KS"},
+                "athlete_01": {"id": "athlete_01", "name": "Viraj Sharma", "sport": "vertical_jump", "tier": "District", "bpi": 12450, "sessions": 0, "avatar": "VS", "rank": 1},
+                "athlete_02": {"id": "athlete_02", "name": "Priya Desai",  "sport": "sprint",        "tier": "State",    "bpi": 11800, "sessions": 0, "avatar": "PD", "rank": 2},
+                "athlete_03": {"id": "athlete_03", "name": "Rajan Mehta",  "sport": "snatch",        "tier": "National", "bpi": 14200, "sessions": 0, "avatar": "RM", "rank": 3},
+                "athlete_04": {"id": "athlete_04", "name": "Amita Joshi",  "sport": "javelin",       "tier": "District", "bpi": 9300,  "sessions": 0, "avatar": "AJ", "rank": 4},
+                "athlete_05": {"id": "athlete_05", "name": "Karan Singh",  "sport": "cricket_bat",   "tier": "Block",    "bpi": 8600,  "sessions": 0, "avatar": "KS", "rank": 5},
             })
+    # Load follow relationships
+    follows_file = DB_PATH / "follows.json"
+    if follows_file.exists():
+        try:
+            with open(follows_file, encoding="utf-8") as f:
+                raw_follows = json.load(f)
+            for k, v in raw_follows.items():
+                _FOLLOWS[k] = set(v)
+        except Exception as e:
+            print(f"[DB WARN] Could not load follows: {e}")
     print(f"[DB] {len(SESSION_DB)} sessions, {len(ATHLETE_DB)} athletes loaded")
 
 
@@ -98,7 +115,11 @@ def _save_db():
         with open(DB_PATH / "sessions.json", "w", encoding="utf-8") as f:
             json.dump(SESSION_DB, f, indent=2, default=str)
         with open(DB_PATH / "athletes.json", "w", encoding="utf-8") as f:
-            json.dump(ATHLETE_DB, f, indent=2)
+            json.dump(ATHLETE_DB, f, indent=2, default=str)
+        # Persist follow relationships (convert sets to lists for JSON)
+        follows_data = {k: list(v) for k, v in _FOLLOWS.items()}
+        with open(DB_PATH / "follows.json", "w", encoding="utf-8") as f:
+            json.dump(follows_data, f, indent=2)
     except Exception as e:
         print(f"[DB WARN] Could not save db: {e}")
 
@@ -311,11 +332,12 @@ if FASTAPI_AVAILABLE:
         lifespan=lifespan,
     )
 
-    # CORS: allow_credentials cannot be True with wildcard origin
+    # CORS: configurable via CORS_ORIGINS env var (comma-separated), defaults to wildcard
+    _cors_origins = os.environ.get("CORS_ORIGINS", "*").split(",")
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=False,  # FIX: must be False when allow_origins=["*"]
+        allow_origins=_cors_origins,
+        allow_credentials=False if "*" in _cors_origins else True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -336,7 +358,7 @@ if FASTAPI_AVAILABLE:
                 "end_session": "POST /session/{id}/end",
                 "athletes": "/athletes",
                 "leaderboard": "/leaderboard",
-                "live_stream": "ws://HOST:8000/metrics/live/{session_id}",
+                "live_stream": "ws://HOST:8082/metrics/live/{session_id}",
                 "dataset": "/dataset/export",
                 "docs": "/docs"
             }
@@ -433,7 +455,7 @@ if FASTAPI_AVAILABLE:
         return {"session_id": session_id, **result}
 
     @app.post("/session/calibrate", tags=["Sessions"])
-    async def calibrate_pose(frame: FrameData):
+    async def calibrate_pose(frame: FrameData, sport: str = Query(default="vertical_jump")):
         """
         Lightweight calibration endpoint for Ghost Skeleton screen.
         Does NOT create a session or write to DB — just runs MediaPipe and
@@ -441,8 +463,6 @@ if FASTAPI_AVAILABLE:
         """
         if not frame.image_b64:
             raise HTTPException(400, "image_b64 required for calibration")
-
-        sport = "vertical_jump"   # default; caller can override via query param
         try:
             from pose_analyzer import PoseAnalyzer
             analyzer = PoseAnalyzer(sport=sport)
@@ -537,8 +557,10 @@ if FASTAPI_AVAILABLE:
             }
 
         SESSION_DB[session_id]["status"] = "completed"
-        SESSION_DB[session_id]["ended_at"] = datetime.utcnow().isoformat() + "Z"
+        SESSION_DB[session_id]["ended_at"] = datetime.now(timezone.utc).isoformat()
         SESSION_DB[session_id]["summary"] = summary
+        # Persist frames into session for later progress/analytics queries
+        SESSION_DB[session_id]["frames"] = frames
 
         # Update athlete BPI
         athlete_id = SESSION_DB[session_id]["athlete_id"]
@@ -583,7 +605,7 @@ if FASTAPI_AVAILABLE:
 
     @app.post("/athlete", tags=["Athletes"])
     async def create_athlete(req: NewAthleteRequest):
-        athlete_id = f"athlete_{len(ATHLETE_DB) + 1:03d}"
+        athlete_id = f"athlete_{uuid.uuid4().hex[:8]}"
         initials = "".join(w[0].upper() for w in req.name.strip().split()[:2])
         athlete = {
             "id": athlete_id, "name": req.name, "sport": req.sport,
@@ -659,7 +681,7 @@ if FASTAPI_AVAILABLE:
         if sport:
             athletes = [a for a in athletes if a.get("sport") == sport]
         athletes.sort(key=lambda x: x.get("bpi", 0), reverse=True)
-        ranked = [{"rank": i + 1, **a} for i, a in enumerate(athletes[:limit])]
+        ranked = [{"rank": i + 1, **{k: v for k, v in a.items() if k != "rank"}} for i, a in enumerate(athletes[:limit])]
         return {"leaderboard": ranked, "sport": sport or "all", "total": len(athletes)}
 
     # ── Active Sessions (for dashboard auto-connect) ──────────────────────────
@@ -900,6 +922,7 @@ if FASTAPI_AVAILABLE:
         }
         athlete["fitness_tests"].insert(0, record)
         athlete["fitness_tests"] = athlete["fitness_tests"][:10]  # keep last 10
+        _save_db()
         return {"athlete_id": req.athlete_id, "score": req.score, "level": req.level, "timestamp": record["timestamp"]}
 
     @app.get("/fitness-test/history/{athlete_id}", tags=["Fitness Test"])
@@ -945,6 +968,7 @@ if FASTAPI_AVAILABLE:
             "calorie_intake": data.calorie_intake, "water_glasses": data.water_glasses,
             "sleep_hours": data.sleep_hours, "updated_at": datetime.utcnow().isoformat(),
         }
+        _save_db()
         return {"athlete_id": athlete_id, "date": date_key, "ok": True}
 
     # ─── Playfields ────────────────────────────────────────────────────────────
@@ -1054,17 +1078,16 @@ if FASTAPI_AVAILABLE:
 
     @app.get("/classes", tags=["Classes"])
     async def get_classes(athlete_id: str = ""):
-        """Return PE class records (currently returns curated mock data)."""
-        return {"classes": [
-            {"id": "cl1", "title": "3 V 3 Bounce Ball", "sport": "Basketball", "date": "19 May 2024", "period": "3rd Period", "teacherName": "Mr. Raj Kumar", "teacherRating": 5, "teacherFeedback": "Puts forth personal best effort. Always positive.", "studentRating": 0, "thumbnail": "🏀", "color": "#f97316"},
-            {"id": "cl2", "title": "Kabaddi Fundamentals", "sport": "Kabaddi", "date": "15 May 2024", "period": "2nd Period", "teacherName": "Ms. Priya Singh", "teacherRating": 4, "teacherFeedback": "Shows excellent teamwork and game strategy.", "studentRating": 4, "thumbnail": "🤼", "color": "#ef4444"},
-            {"id": "cl3", "title": "100m Sprint Drills", "sport": "Athletics", "date": "12 May 2024", "period": "1st Period", "teacherName": "Mr. Arvind Mehta", "teacherRating": 5, "teacherFeedback": "Consistent improvement in stride length.", "studentRating": 5, "thumbnail": "🏃", "color": "#22c55e"},
-        ]}
+        """Return PE class records for an athlete (curated mock data, filtered by athlete_id if stored)."""
+        all_classes = [
+            {"id": "cl1", "title": "3 V 3 Bounce Ball", "sport": "Basketball", "date": "19 May 2024", "period": "3rd Period", "teacherName": "Mr. Raj Kumar", "teacherRating": 5, "teacherFeedback": "Puts forth personal best effort. Always positive.", "studentRating": 0, "thumbnail": "🏀", "color": "#f97316", "athlete_ids": []},
+            {"id": "cl2", "title": "Kabaddi Fundamentals", "sport": "Kabaddi", "date": "15 May 2024", "period": "2nd Period", "teacherName": "Ms. Priya Singh", "teacherRating": 4, "teacherFeedback": "Shows excellent teamwork and game strategy.", "studentRating": 4, "thumbnail": "🤼", "color": "#ef4444", "athlete_ids": []},
+            {"id": "cl3", "title": "100m Sprint Drills", "sport": "Athletics", "date": "12 May 2024", "period": "1st Period", "teacherName": "Mr. Arvind Mehta", "teacherRating": 5, "teacherFeedback": "Consistent improvement in stride length.", "studentRating": 5, "thumbnail": "🏃", "color": "#22c55e", "athlete_ids": []},
+        ]
+        # Return all classes for now (empty athlete_ids means available to all)
+        return {"classes": all_classes, "athlete_id": athlete_id}
 
     # ─── Social Feed ───────────────────────────────────────────────────────────
-
-    # In-memory follow relationships (no persistence needed for MVP)
-    _FOLLOWS: Dict[str, set] = defaultdict(set)
 
     @app.get("/feed", tags=["Social"])
     async def get_feed(athlete_id: str = "", tab: str = "for_you", page: int = 1):
@@ -1076,8 +1099,15 @@ if FASTAPI_AVAILABLE:
             {"id": "p4", "author": "Fit India Icons",    "handle": "@FitIndiaIcons", "initials": "FI", "avatarColor": "#22c55e", "sport": "National Program", "content": "🏅 Congratulations to all athletes who completed the #FitIndiaSchoolWeek! 10,000+ schools participated.", "likes": 1450, "comments": 203, "timeAgo": "1d", "isFollowing": True},
         ]
         if tab == "following":
-            followed = _FOLLOWS.get(athlete_id, set())
-            posts    = [p for p in posts if p.get("isFollowing") or p["id"] in followed]
+            followed_ids = _FOLLOWS.get(athlete_id, set())
+            # Build set of followed handles from creator registry for matching
+            _creator_handles = {c["id"]: c["handle"] for c in [
+                {"id": "c1", "handle": "@FitIndiaIcons"}, {"id": "c2", "handle": "@FitChampions"},
+                {"id": "c3", "handle": "@FitAmbassadors"}, {"id": "c4", "handle": "@RishiArora"},
+                {"id": "c5", "handle": "@AditiDixit"},
+            ]}
+            followed_handles = {_creator_handles[cid] for cid in followed_ids if cid in _creator_handles}
+            posts = [p for p in posts if p.get("isFollowing") or p.get("handle") in followed_handles]
         return {"posts": posts, "page": page, "total": len(posts)}
 
     @app.get("/creators/trending", tags=["Social"])
@@ -1100,10 +1130,34 @@ if FASTAPI_AVAILABLE:
         """Toggle follow relationship between two athletes/creators."""
         if req.following in _FOLLOWS[req.follower]:
             _FOLLOWS[req.follower].discard(req.following)
-            return {"follower": req.follower, "following": req.following, "action": "unfollowed"}
+            action = "unfollowed"
         else:
             _FOLLOWS[req.follower].add(req.following)
-            return {"follower": req.follower, "following": req.following, "action": "followed"}
+            action = "followed"
+        _save_db()
+        return {"follower": req.follower, "following": req.following, "action": action}
+
+    # ─── Map (stub for Android MapScreen WebView) ─────────────────────────────
+
+    @app.get("/map", tags=["Map"])
+    async def get_map():
+        """Stub map endpoint — returns basic HTML map for WebView."""
+        html = """<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eklavya Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>body{margin:0}#map{width:100vw;height:100vh}</style></head>
+<body><div id="map"></div><script>
+var map=L.map('map').setView([20.5937,78.9629],5);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+window.addEventListener('message',function(e){try{var d=JSON.parse(e.data);
+if(d.type==='gps')map.setView([d.lat,d.lng],14);
+if(d.type==='initPins')d.fields.forEach(function(f){L.marker([f.lat,f.lng]).addTo(map).bindPopup(f.name);});
+}catch(x){}});
+</script></body></html>"""
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=html)
 
 
 # ─── Entry Point ──────────────────────────────────────────────────────────────
@@ -1112,13 +1166,15 @@ if __name__ == "__main__":
     if not FASTAPI_AVAILABLE:
         print("Install: pip install fastapi uvicorn pydantic")
     else:
-        print("\n  Personal Health REST API")
-        print("  http://localhost:8082")
-        print("  http://localhost:8082/docs\n")
+        _host = os.environ.get("HOST", "0.0.0.0")
+        _port = int(os.environ.get("PORT", "8082"))
+        print(f"\n  Personal Health REST API")
+        print(f"  http://localhost:{_port}")
+        print(f"  http://localhost:{_port}/docs\n")
         uvicorn.run(
             "api_server:app",
-            host="0.0.0.0",
-            port=8082,
-            reload=True,
+            host=_host,
+            port=_port,
+            reload=False,
             log_level="info",
         )
