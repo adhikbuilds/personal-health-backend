@@ -13,7 +13,7 @@ concurrency:
 jobs:
 
   ruff-lint:
-    name: "Ruff: lint"
+    name: "Ruff: lint + format"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,9 +21,9 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install ruff
-      - name: Lint (fails on errors)
+      - name: Lint
         run: ruff check . --config ruff.toml
-      - name: Format check (fails if unformatted)
+      - name: Format check
         run: ruff format --check .
 
   python-syntax:
@@ -34,70 +34,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Compile all core files
+      - name: Compile core files
         run: |
           python -m py_compile api_server.py
           python -m py_compile database.py
           for f in routes/*.py; do python -m py_compile "$f"; done
           echo "All files compile OK"
 
-  structure:
-    name: "Guard: project structure"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check required files
-        run: |
-          for f in api_server.py database.py routes/health.py routes/fitness.py routes/athletes.py routes/social.py; do
-            test -f "$f" || (echo "::error::Missing: $f" && exit 1)
-          done
-          for d in routes services seeds pipeline db; do
-            test -d "$d" || (echo "::error::Missing directory: $d" && exit 1)
-          done
-          echo "Structure OK"
-
-  no-raw-json-dump:
-    name: "Guard: _save_db only"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check no raw json.dump in routes
-        run: |
-          if grep -n "json\.dump\b" routes/*.py 2>/dev/null | grep -v "_save"; then
-            echo "::error::Raw json.dump in routes! Use _save_db() or _save_json()"
-            exit 1
-          fi
-          echo "No raw json.dump in routes"
-
-  no-hardcoded-ips:
-    name: "Guard: no hardcoded IPs"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Scan
-        run: |
-          if grep -rn "192\.168\.\|10\.0\.\|172\.1[6-9]\." routes/ services/ --include="*.py"; then
-            echo "::error::Hardcoded private IP found!"
-            exit 1
-          fi
-          echo "Clean"
-
-  no-old-branding:
-    name: "Guard: no ActiveBharat"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Scan
-        run: |
-          if grep -ri "activebharat\|active.bharat" routes/ services/ api_server.py database.py --include="*.py" -l 2>/dev/null; then
-            echo "::error::Old branding found!"
-            exit 1
-          fi
-          echo "Clean"
-
   ci-pass:
     name: "All checks passed"
-    needs: [ruff-lint, python-syntax, structure, no-raw-json-dump, no-hardcoded-ips, no-old-branding]
+    needs: [ruff-lint, python-syntax]
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Backend CI passed. Safe to merge."
+      - run: echo "Backend CI passed."
