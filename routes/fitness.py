@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Fitness domain — Sessions, Pose Analysis, rPPG, Dataset, Fitness Test
 All biomechanics-related endpoints live here.

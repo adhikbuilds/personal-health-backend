@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Personal Health — Shared Database Layer
 All JSON persistence and in-memory state lives here.
@@ -7,7 +9,6 @@ Every route module imports from this single source of truth.
 import asyncio
 import json
 import os
-from typing import Dict, List, Optional
 from collections import defaultdict
 from pathlib import Path
 
@@ -18,15 +19,15 @@ DATASET_PATH = Path(os.path.dirname(os.path.abspath(__file__))) / "dataset"
 
 # ─── In-Memory State ────────────────────────────────────────────────────────
 
-SESSION_DB: Dict[str, dict] = {}
-ATHLETE_DB: Dict[str, dict] = {}
-FRAME_BUFFER: Dict[str, List[dict]] = defaultdict(list)
-WS_CONNECTIONS: Dict[str, list] = defaultdict(list)
-ANALYSIS_QUEUE: Optional[asyncio.Queue] = None
-RESULT_STORE: Dict[str, dict] = {}
-_POSE_ANALYZERS: Dict[str, object] = {}
-RPPG_STORE: Dict[str, object] = {}
-_FOLLOWS: Dict[str, set] = defaultdict(set)
+SESSION_DB: dict[str, dict] = {}
+ATHLETE_DB: dict[str, dict] = {}
+FRAME_BUFFER: dict[str, list[dict]] = defaultdict(list)
+WS_CONNECTIONS: dict[str, list] = defaultdict(list)
+ANALYSIS_QUEUE: asyncio.Queue | None = None
+RESULT_STORE: dict[str, dict] = {}
+_POSE_ANALYZERS: dict[str, object] = {}
+RPPG_STORE: dict[str, object] = {}
+_FOLLOWS: dict[str, set] = defaultdict(set)
 
 
 # ─── Load / Save ────────────────────────────────────────────────────────────
@@ -165,7 +166,7 @@ def _save_json(filename: str, data):
 # ─── Helpers ────────────────────────────────────────────────────────────────
 
 
-def _compute_xp(scores: List[float], jump_heights: List[float]) -> int:
+def _compute_xp(scores: list[float], jump_heights: list[float]) -> int:
     base = 50
     if scores:
         avg = sum(scores) / len(scores)

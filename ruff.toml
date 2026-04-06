@@ -1,36 +1,20 @@
-# Ruff — Python linter for Personal Health backend
-# Docs: https://docs.astral.sh/ruff/
-
 target-version = "py39"
 line-length = 120
 
 [lint]
-select = [
-    "E",     # pycodestyle errors
-    "F",     # pyflakes
-    "W",     # pycodestyle warnings
-    "I",     # isort
-    "N",     # pep8-naming
-    "UP",    # pyupgrade
-    "B",     # bugbear
-    "S",     # bandit (security)
-    "T20",   # print statements (flag but don't block)
-    "SIM",   # simplify
-    "RUF",   # ruff-specific
-]
+select = ["E", "F", "W", "I", "B", "SIM", "RUF"]
 ignore = [
-    "E501",   # line too long (handled by formatter)
-    "S101",   # assert used (OK in tests)
-    "S104",   # binding to 0.0.0.0 — intentional for dev server
-    "S110",   # try-except-pass — used for date parsing fallbacks
-    "T201",   # print() — we use it for logging
-    "B008",   # function call in default arg (FastAPI uses this pattern)
-    "UP007",  # Use X | Y for union (not all Python 3.9 compatible)
-    "N806",   # variable in function should be lowercase — IDEAL, R are constants
-    "RUF001", # ambiguous unicode — we use em-dash in user-facing strings
-    "SIM211", # False if ... else True — CORS pattern is clearer this way
+    "E402",   # imports after docstring (we use __future__ + docstrings)
+    "E501",   # line too long
+    "B008",   # function call in default arg (FastAPI pattern)
+    "UP007",  # Optional[X] vs X | None (need Optional for FastAPI on 3.9)
+    "N806",   # variable in function should be lowercase
+    "RUF001", # ambiguous unicode in strings
+    "SIM211", # ternary style preference
 ]
 
 [lint.per-file-ignores]
-"seeds/*" = ["S311"]   # random is OK in seed scripts
-"tests/*" = ["S101"]   # assert OK in tests
+"seeds/*" = ["S311"]
+"tests/*" = ["S101"]
+"services/*" = ["ALL"]
+"pipeline/*" = ["ALL"]

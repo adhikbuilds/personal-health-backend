@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Personal Health — FastAPI REST Server
 Base URL: http://localhost:8082

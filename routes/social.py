@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Social domain — Feed, Creators, Follow, Leaderboard, Classes, Playfields, Map
 """
