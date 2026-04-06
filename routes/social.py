@@ -3,6 +3,7 @@ Social domain — Feed, Creators, Follow, Leaderboard, Classes, Playfields, Map
 """
 
 import math
+from typing import Optional
 
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
@@ -17,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("/leaderboard", tags=["Leaderboard"])
-async def get_leaderboard(sport: str | None = None, limit: int = Query(default=20, le=50)):
+async def get_leaderboard(sport: Optional[str] = None, limit: int = Query(default=20, le=50)):
     athletes = list(ATHLETE_DB.values())
     if sport:
         athletes = [a for a in athletes if a.get("sport") == sport]

@@ -8,7 +8,8 @@ import csv
 import json
 import time
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
@@ -62,16 +63,16 @@ class FrameData(BaseModel):
     form_quality: str = "unknown"
     primary_feedback: str = ""
     phase: str = "setup"
-    image_b64: str | None = None
+    image_b64: Optional[str] = None
 
 
 class FitnessTestRequest(BaseModel):
     athlete_id: str
     score: int
     level: int
-    bmi: float | None = None
-    sit_reach_cm: float | None = None
-    run_600_seconds: float | None = None
+    bmi: Optional[float] = None
+    sit_reach_cm: Optional[float] = None
+    run_600_seconds: Optional[float] = None
     age_group: str = "Adult"
 
 
@@ -355,7 +356,7 @@ async def end_session(session_id: str):
             "xp_earned": _compute_xp(scores, jump_heights),
         }
     SESSION_DB[session_id]["status"] = "completed"
-    SESSION_DB[session_id]["ended_at"] = datetime.now(UTC).isoformat()
+    SESSION_DB[session_id]["ended_at"] = datetime.now(timezone.utc).isoformat()
     SESSION_DB[session_id]["summary"] = summary
     SESSION_DB[session_id]["frames"] = frames
     athlete_id = SESSION_DB[session_id]["athlete_id"]
@@ -375,9 +376,9 @@ async def get_session(session_id: str):
 
 @router.get("/sessions", tags=["Sessions"])
 async def list_sessions(
-    athlete_id: str | None = None,
-    sport: str | None = None,
-    status: str | None = None,
+    athlete_id: Optional[str] = None,
+    sport: Optional[str] = None,
+    status: Optional[str] = None,
     limit: int = Query(default=20, le=100),
     offset: int = 0,
 ):

@@ -1,7 +1,7 @@
 # Ruff — Python linter for Personal Health backend
 # Docs: https://docs.astral.sh/ruff/
 
-target-version = "py311"
+target-version = "py39"
 line-length = 120
 
 [lint]
