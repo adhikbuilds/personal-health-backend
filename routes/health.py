@@ -5,9 +5,10 @@ Health & Meta endpoints — /, /health, /banner
 import os
 from datetime import datetime
 from pathlib import Path
+
 from fastapi import APIRouter
 
-from database import SESSION_DB, ATHLETE_DB, DATASET_PATH
+from database import ATHLETE_DB, DATASET_PATH, SESSION_DB
 
 router = APIRouter(tags=["Health"])
 
@@ -28,8 +29,8 @@ async def root():
             "leaderboard": "/leaderboard",
             "live_stream": "ws://HOST:8082/metrics/live/{session_id}",
             "dataset": "/dataset/export",
-            "docs": "/docs"
-        }
+            "docs": "/docs",
+        },
     }
 
 
@@ -40,7 +41,9 @@ async def health():
         "sessions_count": len(SESSION_DB),
         "athletes_count": len(ATHLETE_DB),
         "dataset_ready": (DATASET_PATH / "training_data.csv").exists(),
-        "model_ready": (Path(os.path.dirname(os.path.abspath(__file__))).parent / "models" / "pose_classifier.tflite").exists(),
+        "model_ready": (
+            Path(os.path.dirname(os.path.abspath(__file__))).parent / "models" / "pose_classifier.tflite"
+        ).exists(),
         "timestamp": datetime.utcnow().isoformat() + "Z",
     }
 
@@ -52,7 +55,6 @@ async def banner():
         "server": "Personal Health API v2.0",
         "athletes": len(ATHLETE_DB),
         "sessions_today": sum(
-            1 for s in SESSION_DB.values()
-            if s.get("started_at", "")[:10] == datetime.utcnow().date().isoformat()
+            1 for s in SESSION_DB.values() if s.get("started_at", "")[:10] == datetime.utcnow().date().isoformat()
         ),
     }

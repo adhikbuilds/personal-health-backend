@@ -31,22 +31,22 @@ DB_PATH.mkdir(parents=True, exist_ok=True)
 
 # Form score starting ranges by tier (athletes improve each session by small delta)
 TIER_BASE_SCORE = {
-    "Block":    (38, 55),
+    "Block": (38, 55),
     "District": (52, 68),
-    "State":    (65, 78),
+    "State": (65, 78),
     "National": (74, 88),
-    "Elite":    (85, 96),
+    "Elite": (85, 96),
 }
 
 SPORT_JUMP_HEIGHTS = {
     "vertical_jump": (18, 62),
-    "sprint":        (0, 0),
-    "squat":         (0, 0),
-    "push_up":       (0, 0),
-    "pull_up":       (0, 0),
-    "snatch":        (0, 0),
-    "javelin":       (0, 0),
-    "cricket_bat":   (0, 0),
+    "sprint": (0, 0),
+    "squat": (0, 0),
+    "push_up": (0, 0),
+    "pull_up": (0, 0),
+    "snatch": (0, 0),
+    "javelin": (0, 0),
+    "cricket_bat": (0, 0),
 }
 
 NOW = datetime.utcnow()
@@ -58,7 +58,7 @@ def _gauss_clamped(mean, std, lo, hi):
 
 def generate_session(athlete: dict, session_index: int, total_sessions: int) -> dict:
     sport = athlete["sport"]
-    tier  = athlete["tier"]
+    tier = athlete["tier"]
 
     # Progress factor: 0.0 (first session) → 1.0 (last session)
     progress = session_index / max(total_sessions - 1, 1)
@@ -73,10 +73,7 @@ def generate_session(athlete: dict, session_index: int, total_sessions: int) -> 
     # Jump height only relevant for vertical jump
     jh_lo, jh_hi = SPORT_JUMP_HEIGHTS.get(sport, (0, 0))
     if jh_lo > 0:
-        peak_jump = round(_gauss_clamped(
-            jh_lo + (jh_hi - jh_lo) * progress * 0.6,
-            4, jh_lo, jh_hi
-        ), 1)
+        peak_jump = round(_gauss_clamped(jh_lo + (jh_hi - jh_lo) * progress * 0.6, 4, jh_lo, jh_hi), 1)
     else:
         peak_jump = 0.0
 
@@ -92,20 +89,20 @@ def generate_session(athlete: dict, session_index: int, total_sessions: int) -> 
     session_id = str(uuid.uuid4())
 
     return {
-        "session_id":  session_id,
-        "athlete_id":  athlete["id"],
-        "sport":       sport,
-        "status":      "completed",
-        "started_at":  started_at,
+        "session_id": session_id,
+        "athlete_id": athlete["id"],
+        "sport": sport,
+        "status": "completed",
+        "started_at": started_at,
         "frame_count": frame_count,
-        "xp_earned":   xp,
+        "xp_earned": xp,
         "summary": {
-            "avg_form_score":      form_score,
-            "peak_form_score":     peak_score,
+            "avg_form_score": form_score,
+            "peak_form_score": peak_score,
             "peak_jump_height_cm": peak_jump,
-            "symmetry_index":      symmetry,
-            "total_frames":        frame_count,
-            "feedback_summary":    _feedback(form_score, sport),
+            "symmetry_index": symmetry,
+            "total_frames": frame_count,
+            "feedback_summary": _feedback(form_score, sport),
         },
     }
 

@@ -9,19 +9,22 @@ Start:
 =============================================================================
 """
 
-import os, asyncio
+import asyncio
+import os
 from contextlib import asynccontextmanager
 
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass
 
 try:
+    import uvicorn
     from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
-    import uvicorn
+
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
@@ -29,12 +32,12 @@ except ImportError:
 
 
 if FASTAPI_AVAILABLE:
-
-    from database import _load_db, _save_db, ANALYSIS_QUEUE
     import database
-    from routes.health import router as health_router
-    from routes.fitness import router as fitness_router, analysis_worker, session_cleanup_worker
+    from database import _load_db, _save_db
     from routes.athletes import router as athletes_router
+    from routes.fitness import analysis_worker, session_cleanup_worker
+    from routes.fitness import router as fitness_router
+    from routes.health import router as health_router
     from routes.social import router as social_router
 
     @asynccontextmanager
@@ -90,7 +93,7 @@ if __name__ == "__main__":
     else:
         _host = os.environ.get("HOST", "0.0.0.0")
         _port = int(os.environ.get("PORT", "8082"))
-        print(f"\n  Personal Health REST API")
+        print("\n  Personal Health REST API")
         print(f"  http://localhost:{_port}")
         print(f"  http://localhost:{_port}/docs\n")
         uvicorn.run("api_server:app", host=_host, port=_port, reload=False, log_level="info")

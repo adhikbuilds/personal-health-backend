@@ -2,13 +2,13 @@
 Athletes domain — CRUD, Progress, Insights, Daily Tracker
 """
 
-import uuid, math
+import uuid
 from datetime import datetime
-from typing import Optional
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from database import SESSION_DB, ATHLETE_DB, FRAME_BUFFER, _save_db
+from database import ATHLETE_DB, FRAME_BUFFER, SESSION_DB, _save_db
 
 router = APIRouter()
 
@@ -32,6 +32,7 @@ class DailyTrackerUpdate(BaseModel):
 
 # ─── CRUD ───────────────────────────────────────────────────────────────────
 
+
 @router.get("/athletes", tags=["Athletes"])
 async def list_athletes():
     athletes = list(ATHLETE_DB.values())
@@ -44,9 +45,14 @@ async def create_athlete(req: NewAthleteRequest):
     athlete_id = f"athlete_{uuid.uuid4().hex[:8]}"
     initials = "".join(w[0].upper() for w in req.name.strip().split()[:2])
     athlete = {
-        "id": athlete_id, "name": req.name, "sport": req.sport,
-        "tier": req.tier, "bpi": 1000, "sessions": 0,
-        "avatar": initials, "created_at": datetime.utcnow().isoformat() + "Z",
+        "id": athlete_id,
+        "name": req.name,
+        "sport": req.sport,
+        "tier": req.tier,
+        "bpi": 1000,
+        "sessions": 0,
+        "avatar": initials,
+        "created_at": datetime.utcnow().isoformat() + "Z",
     }
     ATHLETE_DB[athlete_id] = athlete
     _save_db()
@@ -59,14 +65,15 @@ async def get_athlete(athlete_id: str):
         raise HTTPException(404, "Athlete not found")
     athlete = dict(ATHLETE_DB[athlete_id])
     athlete["recent_sessions"] = sorted(
-        [s for s in SESSION_DB.values()
-         if s.get("athlete_id") == athlete_id and s.get("status") == "completed"],
-        key=lambda x: x.get("started_at", ""), reverse=True
+        [s for s in SESSION_DB.values() if s.get("athlete_id") == athlete_id and s.get("status") == "completed"],
+        key=lambda x: x.get("started_at", ""),
+        reverse=True,
     )[:10]
     return athlete
 
 
 # ─── Intelligence ───────────────────────────────────────────────────────────
+
 
 @router.get("/athlete/{athlete_id}/insights", tags=["Intelligence"])
 async def athlete_insights(athlete_id: str):
@@ -78,9 +85,8 @@ async def athlete_insights(athlete_id: str):
         return {"error": "intelligence.py not found", "athlete_id": athlete_id}
     athlete = ATHLETE_DB[athlete_id]
     sessions = sorted(
-        [s for s in SESSION_DB.values()
-         if s.get("athlete_id") == athlete_id and s.get("status") == "completed"],
-        key=lambda x: x.get("started_at", "")
+        [s for s in SESSION_DB.values() if s.get("athlete_id") == athlete_id and s.get("status") == "completed"],
+        key=lambda x: x.get("started_at", ""),
     )
     return generate_insights(athlete, sessions)
 
@@ -112,14 +118,18 @@ async def session_coaching(session_id: str):
 
 # ─── Progress ───────────────────────────────────────────────────────────────
 
+
 @router.get("/athlete/{athlete_id}/progress", tags=["Athletes"])
 async def get_athlete_progress(athlete_id: str):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")
     athlete_sessions = sorted(
-        [s for s in SESSION_DB.values()
-         if s.get("athlete_id") == athlete_id and s.get("status") == "completed" and s.get("summary")],
-        key=lambda s: s.get("started_at", "")
+        [
+            s
+            for s in SESSION_DB.values()
+            if s.get("athlete_id") == athlete_id and s.get("status") == "completed" and s.get("summary")
+        ],
+        key=lambda s: s.get("started_at", ""),
     )
     form_trend = []
     for s in athlete_sessions:
@@ -158,13 +168,18 @@ async def get_athlete_progress(athlete_id: str):
         if vals:
             joint_avgs[key] = round(sum(vals) / len(vals), 1)
     return {
-        "athlete_id": athlete_id, "form_trend": form_trend, "improvement_pct": improvement_pct,
-        "sessions_this_week": sessions_this_week, "sessions_last_week": sessions_last_week,
-        "joint_averages": joint_avgs, "total_sessions": len(athlete_sessions),
+        "athlete_id": athlete_id,
+        "form_trend": form_trend,
+        "improvement_pct": improvement_pct,
+        "sessions_this_week": sessions_this_week,
+        "sessions_last_week": sessions_last_week,
+        "joint_averages": joint_avgs,
+        "total_sessions": len(athlete_sessions),
     }
 
 
 # ─── Daily Tracker ──────────────────────────────────────────────────────────
+
 
 @router.get("/athlete/{athlete_id}/daily-tracker", tags=["Daily Tracker"])
 async def get_daily_tracker(athlete_id: str):
@@ -183,10 +198,14 @@ async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
         athlete["daily_tracker"] = {}
     date_key = data.date or datetime.utcnow().date().isoformat()
     athlete["daily_tracker"][date_key] = {
-        "steps": data.steps, "active_minutes": data.active_minutes,
-        "distance_km": data.distance_km, "calories_burned": data.calories_burned,
-        "calorie_intake": data.calorie_intake, "water_glasses": data.water_glasses,
-        "sleep_hours": data.sleep_hours, "updated_at": datetime.utcnow().isoformat(),
+        "steps": data.steps,
+        "active_minutes": data.active_minutes,
+        "distance_km": data.distance_km,
+        "calories_burned": data.calories_burned,
+        "calorie_intake": data.calorie_intake,
+        "water_glasses": data.water_glasses,
+        "sleep_hours": data.sleep_hours,
+        "updated_at": datetime.utcnow().isoformat(),
     }
     _save_db()
     return {"athlete_id": athlete_id, "date": date_key, "ok": True}

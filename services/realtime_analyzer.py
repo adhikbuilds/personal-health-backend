@@ -20,32 +20,39 @@ Keyboard Controls:
 =============================================================================
 """
 
+import os
+import sys
+
 import cv2
-import sys, os
+
 sys.path.insert(0, os.path.dirname(__file__))
 
-import json, csv, time, uuid, argparse
+import argparse
+import csv
+import json
+import uuid
 from datetime import datetime
 from pathlib import Path
 
 try:
     import mediapipe as mp
+
     MP_AVAILABLE = True
 except ImportError:
     MP_AVAILABLE = False
     print("[WARNING] MediaPipe not installed. Run: pip install mediapipe")
 
-from pose_analyzer import PoseAnalyzer, BiomechanicalFrame
 from feature_extractor import FeatureExtractor
+from pose_analyzer import BiomechanicalFrame, PoseAnalyzer
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 
 SPORT_KEYS = {
-    ord('1'): "vertical_jump",
-    ord('2'): "snatch",
-    ord('3'): "sprint",
-    ord('4'): "javelin",
-    ord('5'): "cricket_bat"
+    ord("1"): "vertical_jump",
+    ord("2"): "snatch",
+    ord("3"): "sprint",
+    ord("4"): "javelin",
+    ord("5"): "cricket_bat",
 }
 
 SPORT_DISPLAY = {
@@ -53,35 +60,45 @@ SPORT_DISPLAY = {
     "snatch": "OLYMPIC SNATCH",
     "sprint": "20m SPRINT",
     "javelin": "JAVELIN THROW",
-    "cricket_bat": "CRICKET BAT"
+    "cricket_bat": "CRICKET BAT",
 }
 
 QUALITY_COLORS = {
-    "elite": (0, 255, 127),      # green
-    "good": (0, 200, 255),       # cyan
-    "average": (0, 165, 255),    # orange
-    "poor": (0, 0, 255),         # red
-    "unknown": (128, 128, 128)   # gray
+    "elite": (0, 255, 127),  # green
+    "good": (0, 200, 255),  # cyan
+    "average": (0, 165, 255),  # orange
+    "poor": (0, 0, 255),  # red
+    "unknown": (128, 128, 128),  # gray
 }
 
 # MediaPipe connector pairs for drawing skeleton
 POSE_CONNECTIONS = [
-    (11, 12), (11, 13), (13, 15),   # Left arm
-    (12, 14), (14, 16),              # Right arm
-    (11, 23), (12, 24),              # Torso sides
-    (23, 24),                        # Hips
-    (23, 25), (25, 27), (27, 29),   # Left leg
-    (24, 26), (26, 28), (28, 30),   # Right leg
-    (0, 11), (0, 12),                # Head-shoulders
+    (11, 12),
+    (11, 13),
+    (13, 15),  # Left arm
+    (12, 14),
+    (14, 16),  # Right arm
+    (11, 23),
+    (12, 24),  # Torso sides
+    (23, 24),  # Hips
+    (23, 25),
+    (25, 27),
+    (27, 29),  # Left leg
+    (24, 26),
+    (26, 28),
+    (28, 30),  # Right leg
+    (0, 11),
+    (0, 12),  # Head-shoulders
 ]
 
 # ─── Overlay Drawing Helpers ─────────────────────────────────────────────────
+
 
 def draw_skeleton(frame: cv2.Mat, lms, h: int, w: int, quality: str):
     color = QUALITY_COLORS.get(quality, (100, 100, 100))
 
     # Draw connections
-    for (a, b) in POSE_CONNECTIONS:
+    for a, b in POSE_CONNECTIONS:
         if lms[a].visibility > 0.5 and lms[b].visibility > 0.5:
             x1, y1 = int(lms[a].x * w), int(lms[a].y * h)
             x2, y2 = int(lms[b].x * w), int(lms[b].y * h)
@@ -115,7 +132,9 @@ def draw_hud(frame: cv2.Mat, bio: BiomechanicalFrame, sport: str, session_frames
     cv2.addWeighted(overlay, 0.8, frame, 0.2, 0, frame)
 
     # Sport label
-    cv2.putText(frame, SPORT_DISPLAY.get(sport, sport), (10, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (6, 182, 212), 1, cv2.LINE_AA)
+    cv2.putText(
+        frame, SPORT_DISPLAY.get(sport, sport), (10, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (6, 182, 212), 1, cv2.LINE_AA
+    )
 
     # Form score
     score_text = f"FORM: {bio.form_score:.0f}%"
@@ -125,15 +144,35 @@ def draw_hud(frame: cv2.Mat, bio: BiomechanicalFrame, sport: str, session_frames
     cv2.putText(frame, quality.upper(), (w - 100, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, q_color, 2, cv2.LINE_AA)
 
     # Phase indicator
-    cv2.putText(frame, f"PHASE: {bio.phase.upper()}", (10, 62), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (200, 200, 200), 1, cv2.LINE_AA)
+    cv2.putText(
+        frame, f"PHASE: {bio.phase.upper()}", (10, 62), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (200, 200, 200), 1, cv2.LINE_AA
+    )
 
     # Symmetry
     sym_color = (0, 255, 127) if bio.limb_symmetry_idx > 0.9 else (0, 165, 255)
-    cv2.putText(frame, f"SYM: {bio.limb_symmetry_idx:.2f}", (w - 120, 55), cv2.FONT_HERSHEY_SIMPLEX, 0.35, sym_color, 1, cv2.LINE_AA)
+    cv2.putText(
+        frame,
+        f"SYM: {bio.limb_symmetry_idx:.2f}",
+        (w - 120, 55),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.35,
+        sym_color,
+        1,
+        cv2.LINE_AA,
+    )
 
     # Jump height
     if bio.estimated_jump_height > 5:
-        cv2.putText(frame, f"EST VJ: {bio.estimated_jump_height:.1f}cm", (w - 150, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 200, 0), 1, cv2.LINE_AA)
+        cv2.putText(
+            frame,
+            f"EST VJ: {bio.estimated_jump_height:.1f}cm",
+            (w - 150, 80),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.4,
+            (255, 200, 0),
+            1,
+            cv2.LINE_AA,
+        )
 
     # Bottom coaching bar
     overlay2 = frame.copy()
@@ -143,17 +182,38 @@ def draw_hud(frame: cv2.Mat, bio: BiomechanicalFrame, sport: str, session_frames
     feedback = bio.primary_feedback or "Analyzing..."
     fb_color = (0, 100, 255) if bio.form_score < 75 else (0, 200, 100)
     cv2.putText(frame, feedback, (12, h - 35), cv2.FONT_HERSHEY_SIMPLEX, 0.5, fb_color, 1, cv2.LINE_AA)
-    cv2.putText(frame, f"FRAMES: {session_frames} | AVG: {avg_score:.1f}%", (12, h - 12), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (150, 150, 150), 1, cv2.LINE_AA)
+    cv2.putText(
+        frame,
+        f"FRAMES: {session_frames} | AVG: {avg_score:.1f}%",
+        (12, h - 12),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.32,
+        (150, 150, 150),
+        1,
+        cv2.LINE_AA,
+    )
 
     # Visibility warning
     if not bio.visibility_ok:
-        cv2.putText(frame, "⚠ SUBJECT OUT OF FRAME", (10, h // 2), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA)
+        cv2.putText(
+            frame, "⚠ SUBJECT OUT OF FRAME", (10, h // 2), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2, cv2.LINE_AA
+        )
 
     # Controls hint
-    cv2.putText(frame, "[q]Quit [r]Reset [s]Save [1-5]Sport", (10, h - 3), cv2.FONT_HERSHEY_SIMPLEX, 0.28, (80, 80, 80), 1, cv2.LINE_AA)
+    cv2.putText(
+        frame,
+        "[q]Quit [r]Reset [s]Save [1-5]Sport",
+        (10, h - 3),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.28,
+        (80, 80, 80),
+        1,
+        cv2.LINE_AA,
+    )
 
 
 # ─── Session Manager ─────────────────────────────────────────────────────────
+
 
 class SessionManager:
     def __init__(self, output_dir: str = "sessions"):
@@ -195,6 +255,7 @@ class SessionManager:
 
 # ─── Main Entry Point ─────────────────────────────────────────────────────────
 
+
 def run_analyzer(sport: str = "vertical_jump", camera_id: int = 0, athlete_id: str = "athlete_01"):
     if not MP_AVAILABLE:
         print("[ERROR] Please install MediaPipe: pip install mediapipe opencv-python")
@@ -203,11 +264,11 @@ def run_analyzer(sport: str = "vertical_jump", camera_id: int = 0, athlete_id: s
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(
         static_image_mode=False,
-        model_complexity=1,        # 0=lite, 1=full, 2=heavy
+        model_complexity=1,  # 0=lite, 1=full, 2=heavy
         smooth_landmarks=True,
         enable_segmentation=False,
         min_detection_confidence=0.6,
-        min_tracking_confidence=0.5
+        min_tracking_confidence=0.5,
     )
 
     cap = cv2.VideoCapture(camera_id)
@@ -226,7 +287,7 @@ def run_analyzer(sport: str = "vertical_jump", camera_id: int = 0, athlete_id: s
     scores = []
 
     print(f"[START] Session: {session_id[:8]} | Sport: {sport}")
-    print(f"[CONTROLS] [q]=Quit [r]=Reset [s]=Save [1-5]=Switch Sport")
+    print("[CONTROLS] [q]=Quit [r]=Reset [s]=Save [1-5]=Switch Sport")
 
     while True:
         ret, frame_img = cap.read()
@@ -270,15 +331,15 @@ def run_analyzer(sport: str = "vertical_jump", camera_id: int = 0, athlete_id: s
         cv2.imshow("ActiveBharat — Vision Engine", frame_img)
 
         key = cv2.waitKey(1) & 0xFF
-        if key == ord('q'):
+        if key == ord("q"):
             break
-        elif key == ord('r'):
+        elif key == ord("r"):
             print("[RESET] New session started")
             analyzer = PoseAnalyzer(sport=analyzer.sport)
             session_id = str(uuid.uuid4())
             frame_num = 0
             scores.clear()
-        elif key == ord('s'):
+        elif key == ord("s"):
             session_manager.save(analyzer, session_id, athlete_id)
         elif key in SPORT_KEYS:
             new_sport = SPORT_KEYS[key]
@@ -297,8 +358,9 @@ def run_analyzer(sport: str = "vertical_jump", camera_id: int = 0, athlete_id: s
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ActiveBharat Real-Time Pose Analyzer")
-    parser.add_argument("--sport", default="vertical_jump",
-                        choices=["vertical_jump", "snatch", "sprint", "javelin", "cricket_bat"])
+    parser.add_argument(
+        "--sport", default="vertical_jump", choices=["vertical_jump", "snatch", "sprint", "javelin", "cricket_bat"]
+    )
     parser.add_argument("--camera", type=int, default=0)
     parser.add_argument("--athlete", default="athlete_01")
     args = parser.parse_args()

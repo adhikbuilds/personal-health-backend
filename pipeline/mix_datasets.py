@@ -21,11 +21,10 @@ If you have multiple real batches:
     --output dataset/mixed_training.csv
 """
 
-import csv
 import argparse
+import csv
 import random
 from pathlib import Path
-
 
 SEED = 42
 random.seed(SEED)
@@ -36,8 +35,7 @@ def load_csv(path: str) -> list:
         return list(csv.DictReader(f))
 
 
-def mix(real_paths: list, synthetic_path: str, output_path: str,
-        real_weight: int = 4, max_synthetic: int = 2000):
+def mix(real_paths: list, synthetic_path: str, output_path: str, real_weight: int = 4, max_synthetic: int = 2000):
 
     # Load real data
     real_rows = []
@@ -91,10 +89,10 @@ if __name__ == "__main__":
     parser.add_argument("--real", nargs="+", required=True, help="Real data CSV file(s)")
     parser.add_argument("--synthetic", required=True, help="Synthetic data CSV")
     parser.add_argument("--output", required=True, help="Output mixed CSV")
-    parser.add_argument("--real-weight", type=int, default=4,
-                        help="How many times to duplicate real rows (default 4)")
-    parser.add_argument("--max-synthetic", type=int, default=2000,
-                        help="Cap on synthetic rows to include (default 2000)")
+    parser.add_argument("--real-weight", type=int, default=4, help="How many times to duplicate real rows (default 4)")
+    parser.add_argument(
+        "--max-synthetic", type=int, default=2000, help="Cap on synthetic rows to include (default 2000)"
+    )
     args = parser.parse_args()
 
     mix(args.real, args.synthetic, args.output, args.real_weight, args.max_synthetic)

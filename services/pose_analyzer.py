@@ -6,7 +6,7 @@ Uses MediaPipe BlazePose (33 keypoints) to extract real-time biomechanical
 metrics from camera feed. Computes joint angles, CoM position, symmetry
 index, trunk lean, and an overall form score for 5 sports:
   - vertical_jump (vj)
-  - snatch (weightlifting)  
+  - snatch (weightlifting)
   - sprint (20m)
   - javelin
   - cricket_bat
@@ -19,19 +19,20 @@ Key landmark indices (MediaPipe standard):
 """
 
 import math
-import numpy as np
-from dataclasses import dataclass, field, asdict
-from typing import Optional, Tuple, List
 from collections import deque
+from dataclasses import dataclass
+
+import numpy as np
 
 try:
-    from scipy.spatial.transform import Rotation as R
     from scipy.spatial.distance import mahalanobis
+    from scipy.spatial.transform import Rotation as R
 except ImportError:
     R = None
     mahalanobis = None
 
 # ─── Data Types ─────────────────────────────────────────────────────────────
+
 
 @dataclass
 class Landmark:
@@ -44,6 +45,7 @@ class Landmark:
 @dataclass
 class BiomechanicalFrame:
     """All computed metrics for a single video frame."""
+
     # Joint angles (degrees)
     hip_angle_l: float = 0.0
     hip_angle_r: float = 0.0
@@ -57,36 +59,37 @@ class BiomechanicalFrame:
     ankle_dorsiflexion_r: float = 0.0
 
     # Trunk & posture
-    trunk_lean: float = 0.0          # forward lean from vertical (deg)
-    spine_deviation: float = 0.0    # lateral deviation (deg)
-    shoulder_hip_sep: float = 0.0   # rotation separation angle (deg)
-    head_forward_pos: float = 0.0   # head anterior offset normalized
+    trunk_lean: float = 0.0  # forward lean from vertical (deg)
+    spine_deviation: float = 0.0  # lateral deviation (deg)
+    shoulder_hip_sep: float = 0.0  # rotation separation angle (deg)
+    head_forward_pos: float = 0.0  # head anterior offset normalized
 
     # CoM & dynamics
-    com_height_norm: float = 0.0    # normalized to body height [0,1]
+    com_height_norm: float = 0.0  # normalized to body height [0,1]
     estimated_jump_height: float = 0.0  # cm
 
     # Symmetry
     limb_symmetry_idx: float = 1.0  # 1.0 = perfect symmetry
 
     # Composite scores
-    form_score: float = 0.0         # 0-100
-    form_quality: str = "unknown"   # elite/good/average/poor
-    primary_feedback: str = ""      # top coaching cue
+    form_score: float = 0.0  # 0-100
+    form_quality: str = "unknown"  # elite/good/average/poor
+    primary_feedback: str = ""  # top coaching cue
 
     # Phase 2 Kinematics
-    phase_space_dm: float = 0.0     # Mahalanobis Distance for full trajectory
-    torsion_error: float = 0.0      # Quaternion absolute rotational error (deg)
-    dimensionless_jerk: float = 0.0 # Energy Efficiency Index (EEI)
-    
+    phase_space_dm: float = 0.0  # Mahalanobis Distance for full trajectory
+    torsion_error: float = 0.0  # Quaternion absolute rotational error (deg)
+    dimensionless_jerk: float = 0.0  # Energy Efficiency Index (EEI)
+
     # Phase classification
-    phase: str = "setup"            # setup/descent/takeoff/flight/landing
+    phase: str = "setup"  # setup/descent/takeoff/flight/landing
 
     # Metadata
     visibility_ok: bool = True
 
 
 # ─── Geometry Helpers ────────────────────────────────────────────────────────
+
 
 def _angle_3pts(a: Landmark, b: Landmark, c: Landmark) -> float:
     """
@@ -118,15 +121,12 @@ def _angle_vertical(p1: Landmark, p2: Landmark) -> float:
 
 def _midpoint(p1: Landmark, p2: Landmark) -> Landmark:
     return Landmark(
-        x=(p1.x + p2.x) / 2,
-        y=(p1.y + p2.y) / 2,
-        z=(p1.z + p2.z) / 2,
-        visibility=min(p1.visibility, p2.visibility)
+        x=(p1.x + p2.x) / 2, y=(p1.y + p2.y) / 2, z=(p1.z + p2.z) / 2, visibility=min(p1.visibility, p2.visibility)
     )
 
 
 def _distance(p1: Landmark, p2: Landmark) -> float:
-    return math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
+    return math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2)
 
 
 # ─── Form Scoring Rules ──────────────────────────────────────────────────────
@@ -134,7 +134,7 @@ def _distance(p1: Landmark, p2: Landmark) -> float:
 SPORT_IDEAL_ANGLES = {
     "vertical_jump": {
         # Countermovement Jump — descent phase ideal
-        "knee_angle": (80, 110),     # deep squat at bottom
+        "knee_angle": (80, 110),  # deep squat at bottom
         "hip_angle": (80, 100),
         "trunk_lean": (0, 20),
         "ankle_dorsiflexion": (70, 110),
@@ -149,15 +149,15 @@ SPORT_IDEAL_ANGLES = {
     },
     "sprint": {
         "knee_angle": (80, 130),
-        "hip_angle": (35, 70),       # hip drive
+        "hip_angle": (35, 70),  # hip drive
         "trunk_lean": (5, 20),
         "ankle_dorsiflexion": (60, 90),
         "symmetry": 0.85,
     },
     "javelin": {
-        "shoulder_angle": (150, 180), # throwing arm
+        "shoulder_angle": (150, 180),  # throwing arm
         "elbow_angle": (100, 150),
-        "trunk_lean": (20, 45),       # upper body rotation
+        "trunk_lean": (20, 45),  # upper body rotation
         "shoulder_hip_sep": (30, 60),
         "symmetry": 0.75,
     },
@@ -190,11 +190,11 @@ SPORT_IDEAL_ANGLES = {
 }
 
 
-def compute_form_score(frame: BiomechanicalFrame, sport: str) -> Tuple[float, str, str]:
+def compute_form_score(frame: BiomechanicalFrame, sport: str) -> tuple[float, str, str]:
     """
     Compute a 0-100 form score based on how close key metrics are to
     the sport-specific ideal ranges.
-    
+
     Returns: (score, quality_label, primary_feedback)
     """
     if sport not in SPORT_IDEAL_ANGLES:
@@ -241,7 +241,9 @@ def compute_form_score(frame: BiomechanicalFrame, sport: str) -> Tuple[float, st
         check_range(avg_ankle, rules["ankle_dorsiflexion"], weight=1.0, label="Control Ankle Flex")
 
     if "shoulder_hip_sep" in rules:
-        check_range(frame.shoulder_hip_sep, rules["shoulder_hip_sep"], weight=1.0, label="Improve Hip-Shoulder Separation")
+        check_range(
+            frame.shoulder_hip_sep, rules["shoulder_hip_sep"], weight=1.0, label="Improve Hip-Shoulder Separation"
+        )
 
     # Symmetry penalty
     sym_min = rules.get("symmetry", 0.85)
@@ -265,94 +267,109 @@ def compute_form_score(frame: BiomechanicalFrame, sport: str) -> Tuple[float, st
     else:
         quality = "poor"
 
-    feedback = violations[0] if violations else ("Great form! Maintain position." if score >= 80 else "Keep practicing!")
+    feedback = (
+        violations[0] if violations else ("Great form! Maintain position." if score >= 80 else "Keep practicing!")
+    )
     return score, quality, feedback
 
 
 # ─── Phase-Space Kinematics ────────────────────────────────────────────────
 
+
 def _compute_quaternion_torsion(a: Landmark, b: Landmark, c: Landmark) -> float:
     """Returns absolute 3D rotational torsion error using Quaternions."""
-    if not R: return 0.0
-    
+    if not R:
+        return 0.0
+
     v1 = np.array([a.x - b.x, a.y - b.y, a.z - b.z])
     v2 = np.array([c.x - b.x, c.y - b.y, c.z - b.z])
-    
+
     n1 = np.linalg.norm(v1)
     n2 = np.linalg.norm(v2)
-    if n1 < 1e-6 or n2 < 1e-6: return 0.0
-    
+    if n1 < 1e-6 or n2 < 1e-6:
+        return 0.0
+
     v1 = v1 / n1
     v2 = v2 / n2
-    
+
     cross = np.cross(v1, v2)
     norm_cross = np.linalg.norm(cross)
-    if norm_cross < 1e-6: return 0.0
-    
+    if norm_cross < 1e-6:
+        return 0.0
+
     # Create the rotation quaternion for the joint
     dot = np.dot(v1, v2)
     q_user = R.from_quat([cross[0], cross[1], cross[2], 1 + dot])
-    
+
     # In a real environment, we compare q_user to q_pro from a DB
     # For now, we measure the raw magnitude of twist vs planar stability
     theta = 2 * math.acos(min(1.0, abs(q_user.as_quat()[3])))
     return math.degrees(theta)
 
+
 def _compute_dimensionless_jerk(com_trajectory: list) -> float:
     """Calculates Energy Efficiency Index (EEI) over a trajectory window."""
-    if len(com_trajectory) < 5: return 0.0
-    
+    if len(com_trajectory) < 5:
+        return 0.0
+
     y = np.array(com_trajectory)
     dt = 1.0 / 30.0  # assuming 30 fps
-    
+
     # 1st deriv: velocity, 2nd: accel, 3rd: jerk
     v = np.gradient(y, dt)
     a = np.gradient(v, dt)
     j = np.gradient(a, dt)
-    
+
     integral_j2 = np.trapz(j**2, dx=dt)
-    
+
     duration = len(com_trajectory) * dt
     path_length = np.sum(np.abs(np.diff(y)))
-    if path_length < 1e-6: return 0.0
-    
+    if path_length < 1e-6:
+        return 0.0
+
     # DJ = (T^5 / L^2) * integral(J^2)
     dj = (duration**5 / path_length**2) * integral_j2
     return abs(float(dj))
 
+
 _SPORT_PHASE_IDEALS = {
     "vertical_jump": (90.0, 0.0),
-    "squat":         (85.0, 0.0),
-    "snatch":        (100.0, 0.0),
-    "sprint":        (90.0, 50.0),
-    "push_up":       (90.0, 0.0),
-    "pull_up":       (45.0, 0.0),
-    "javelin":       (150.0, 0.0),
-    "cricket_bat":   (135.0, 0.0),
+    "squat": (85.0, 0.0),
+    "snatch": (100.0, 0.0),
+    "sprint": (90.0, 50.0),
+    "push_up": (90.0, 0.0),
+    "pull_up": (45.0, 0.0),
+    "javelin": (150.0, 0.0),
+    "cricket_bat": (135.0, 0.0),
 }
 
-def _compute_mahalanobis_phase_space(current_angle: float, past_angle: float, dt: float, sport: str = "vertical_jump") -> float:
+
+def _compute_mahalanobis_phase_space(
+    current_angle: float, past_angle: float, dt: float, sport: str = "vertical_jump"
+) -> float:
     """Calculates 1D Phase-Space Manifold Mahalanobis Distance."""
-    if not mahalanobis: return 0.0
+    if not mahalanobis:
+        return 0.0
 
     velocity = (current_angle - past_angle) / dt
     state = np.array([current_angle, velocity])
 
     ideal_angle, ideal_velocity = _SPORT_PHASE_IDEALS.get(sport, (90.0, 0.0))
     mu_pro = np.array([ideal_angle, ideal_velocity])
-    cov_inv = np.array([[0.1, 0.0],
-                        [0.0, 0.5]])
+    cov_inv = np.array([[0.1, 0.0], [0.0, 0.5]])
 
     dist = mahalanobis(state, mu_pro, cov_inv)
     return float(dist)
 
+
 # ─── Phase Classification ────────────────────────────────────────────────────────
+
 
 def classify_jump_phase(frames_history) -> str:
     """Simple heuristic to classify the athletic phase (e.g. vertical jump)."""
     if len(frames_history) < 5:
         return "setup"
-    
+
     # frames_history is an iterable (deque or list)
     recent = list(frames_history)[-5:]
     recent_com = [f.com_height_norm for f in recent]
@@ -367,9 +384,9 @@ def classify_jump_phase(frames_history) -> str:
             return "landing"
         else:
             return "flight"
-    elif delta < -0.02:   # CoM dropping
+    elif delta < -0.02:  # CoM dropping
         return "descent"
-    elif delta > 0.05:    # CoM rising fast
+    elif delta > 0.05:  # CoM rising fast
         return "takeoff"
     else:
         return "setup"
@@ -377,22 +394,23 @@ def classify_jump_phase(frames_history) -> str:
 
 # ─── Main Analyzer ──────────────────────────────────────────────────────────
 
+
 class PoseAnalyzer:
     """
     Main orchestrator: converts raw MediaPipe landmarks into a
     BiomechanicalFrame with all derived metrics.
     """
-    
-    MIN_VISIBILITY = 0.5   # ignore keypoints below this confidence
-    
+
+    MIN_VISIBILITY = 0.5  # ignore keypoints below this confidence
+
     # Smoothing buffer for temporal consistency
     SMOOTH_WINDOW = 5
 
     def __init__(self, sport: str = "vertical_jump"):
         self.sport = sport
         self.frame_history: deque = deque(maxlen=60)  # Sliding Window for derivatives
-        self._baseline_body_height: Optional[float] = None
-        self._baseline_com_y: Optional[float] = None
+        self._baseline_body_height: float | None = None
+        self._baseline_com_y: float | None = None
         self._com_history: deque = deque(maxlen=60)
         self._mp_pose = None  # Reusable MediaPipe Pose instance
 
@@ -405,14 +423,12 @@ class PoseAnalyzer:
 
     def _to_landmark(self, lm) -> Landmark:
         """Convert MediaPipe NormalizedLandmark to our Landmark type."""
-        return Landmark(
-            x=lm.x, y=lm.y, z=lm.z, visibility=lm.visibility
-        )
+        return Landmark(x=lm.x, y=lm.y, z=lm.z, visibility=lm.visibility)
 
     def _is_visible(self, *landmarks: Landmark) -> bool:
         return all(l.visibility >= self.MIN_VISIBILITY for l in landmarks)
-    
-    def _calibrate(self, lms: List[Landmark]):
+
+    def _calibrate(self, lms: list[Landmark]):
         """Set body-height baseline from first good frame."""
         nose, l_ankle = lms[0], lms[27]
         if self._is_visible(nose, l_ankle):
@@ -442,7 +458,7 @@ class PoseAnalyzer:
             self._calibrate(lms)
 
         # Extract named landmarks
-        nose     = lms[0]
+        nose = lms[0]
         l_sh, r_sh = lms[11], lms[12]
         l_el, r_el = lms[13], lms[14]
         l_wr, r_wr = lms[15], lms[16]
@@ -516,8 +532,7 @@ class PoseAnalyzer:
 
         if self._baseline_body_height and self._baseline_com_y:
             com_displacement = self._baseline_com_y - com_y  # positive = rising
-            frame.com_height_norm = min(1.0, max(0.0,
-                0.5 + com_displacement / self._baseline_body_height))
+            frame.com_height_norm = min(1.0, max(0.0, 0.5 + com_displacement / self._baseline_body_height))
             # Estimate jump height: h = com_displacement * body_height_in_cm / body_height_norm
             # Average body height ~170cm for Indian male athletes
             if com_displacement > 0:
@@ -548,13 +563,15 @@ class PoseAnalyzer:
         # 1. 3D Torsion (Quaternions)
         if self._is_visible(l_hip, l_kn, l_an):
             frame.torsion_error = _compute_quaternion_torsion(l_hip, l_kn, l_an)
-            
+
         # 2. Phase-Space Manifold (Mahalanobis)
         if len(self.frame_history) >= 2:
             past_frame = self.frame_history[-2]
-            dt = 1.0 / 30.0 # assuming ~30fps
-            frame.phase_space_dm = _compute_mahalanobis_phase_space(frame.knee_angle_l, past_frame.knee_angle_l, dt, self.sport)
-            
+            dt = 1.0 / 30.0  # assuming ~30fps
+            frame.phase_space_dm = _compute_mahalanobis_phase_space(
+                frame.knee_angle_l, past_frame.knee_angle_l, dt, self.sport
+            )
+
         # 3. Dimensionless Jerk (EEI)
         if len(self._com_history) > 10:
             frame.dimensionless_jerk = _compute_dimensionless_jerk(list(self._com_history))
@@ -574,12 +591,14 @@ class PoseAnalyzer:
         Called by: POST /session/{id}/frame when image_b64 field is present.
         """
         import base64
+
         import numpy as np
+
         try:
             import cv2
             import mediapipe as mp
         except ImportError:
-            return {'pose_detected': False, 'error': 'cv2/mediapipe not installed on server'}
+            return {"pose_detected": False, "error": "cv2/mediapipe not installed on server"}
 
         prev_sport = self.sport
         if sport:
@@ -589,39 +608,38 @@ class PoseAnalyzer:
             arr = np.frombuffer(raw, np.uint8)
             frame_bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
             if frame_bgr is None:
-                return {'pose_detected': False, 'error': 'image decode failed'}
+                return {"pose_detected": False, "error": "image decode failed"}
 
             if self._mp_pose is None:
                 mp_pose = mp.solutions.pose
-                self._mp_pose = mp_pose.Pose(static_image_mode=True, model_complexity=1,
-                                             min_detection_confidence=0.5)
+                self._mp_pose = mp_pose.Pose(static_image_mode=True, model_complexity=1, min_detection_confidence=0.5)
             rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
             results = self._mp_pose.process(rgb)
 
             if not results.pose_landmarks:
-                return {'pose_detected': False}
+                return {"pose_detected": False}
 
             bio = self.analyze(results)
             return {
-                'pose_detected': True,
-                'visibility_ok': bio.visibility_ok,
-                'form_score': bio.form_score,
-                'form_quality': bio.form_quality,
-                'primary_feedback': bio.primary_feedback,
-                'phase': bio.phase,
-                'joint_angles': {
-                    'KNEE_L': round(bio.knee_angle_l, 1),
-                    'KNEE_R': round(bio.knee_angle_r, 1),
-                    'HIP_L':  round(bio.hip_angle_l, 1),
-                    'HIP_R':  round(bio.hip_angle_r, 1),
-                    'TRUNK':  round(bio.trunk_lean, 1),
-                    'ELBOW_L': round(bio.elbow_angle_l, 1),
-                    'ELBOW_R': round(bio.elbow_angle_r, 1),
+                "pose_detected": True,
+                "visibility_ok": bio.visibility_ok,
+                "form_score": bio.form_score,
+                "form_quality": bio.form_quality,
+                "primary_feedback": bio.primary_feedback,
+                "phase": bio.phase,
+                "joint_angles": {
+                    "KNEE_L": round(bio.knee_angle_l, 1),
+                    "KNEE_R": round(bio.knee_angle_r, 1),
+                    "HIP_L": round(bio.hip_angle_l, 1),
+                    "HIP_R": round(bio.hip_angle_r, 1),
+                    "TRUNK": round(bio.trunk_lean, 1),
+                    "ELBOW_L": round(bio.elbow_angle_l, 1),
+                    "ELBOW_R": round(bio.elbow_angle_r, 1),
                 },
-                'symmetry_score': round(bio.limb_symmetry_idx, 3),
-                'trunk_lean': round(bio.trunk_lean, 1),
-                'estimated_jump_height': round(bio.estimated_jump_height, 1),
-                'com_height_norm': round(bio.com_height_norm, 3),
+                "symmetry_score": round(bio.limb_symmetry_idx, 3),
+                "trunk_lean": round(bio.trunk_lean, 1),
+                "estimated_jump_height": round(bio.estimated_jump_height, 1),
+                "com_height_norm": round(bio.com_height_norm, 3),
             }
         finally:
             self.sport = prev_sport
@@ -653,8 +671,18 @@ class PoseAnalyzer:
                 "poor": sum(1 for f in self.frame_history if f.form_quality == "poor"),
             },
             "key_metrics": {
-                "avg_knee_angle": round(sum((f.knee_angle_l + f.knee_angle_r) / 2 for f in self.frame_history if f.visibility_ok) / max(len(scores), 1), 1),
-                "avg_hip_angle": round(sum((f.hip_angle_l + f.hip_angle_r) / 2 for f in self.frame_history if f.visibility_ok) / max(len(scores), 1), 1),
-                "avg_trunk_lean": round(sum(f.trunk_lean for f in self.frame_history if f.visibility_ok) / max(len(scores), 1), 1),
-            }
+                "avg_knee_angle": round(
+                    sum((f.knee_angle_l + f.knee_angle_r) / 2 for f in self.frame_history if f.visibility_ok)
+                    / max(len(scores), 1),
+                    1,
+                ),
+                "avg_hip_angle": round(
+                    sum((f.hip_angle_l + f.hip_angle_r) / 2 for f in self.frame_history if f.visibility_ok)
+                    / max(len(scores), 1),
+                    1,
+                ),
+                "avg_trunk_lean": round(
+                    sum(f.trunk_lean for f in self.frame_history if f.visibility_ok) / max(len(scores), 1), 1
+                ),
+            },
         }

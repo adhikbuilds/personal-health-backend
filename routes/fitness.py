@@ -3,24 +3,36 @@ Fitness domain — Sessions, Pose Analysis, rPPG, Dataset, Fitness Test
 All biomechanics-related endpoints live here.
 """
 
-import json, csv, uuid, time, asyncio, os
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Optional, List
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Query
+import asyncio
+import csv
+import json
+import time
+import uuid
+from datetime import UTC, datetime
+
+from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from database import (
-    SESSION_DB, ATHLETE_DB, FRAME_BUFFER, WS_CONNECTIONS,
-    ANALYSIS_QUEUE, RESULT_STORE, _POSE_ANALYZERS, RPPG_STORE,
-    DATASET_PATH, _save_db, _compute_xp,
+    _POSE_ANALYZERS,
+    ANALYSIS_QUEUE,
+    ATHLETE_DB,
+    DATASET_PATH,
+    FRAME_BUFFER,
+    RESULT_STORE,
+    RPPG_STORE,
+    SESSION_DB,
+    WS_CONNECTIONS,
+    _compute_xp,
+    _save_db,
 )
 
 router = APIRouter()
 
 
 # ─── Pydantic Models ────────────────────────────────────────────────────────
+
 
 class StartSessionRequest(BaseModel):
     athlete_id: str = "athlete_01"
@@ -50,20 +62,21 @@ class FrameData(BaseModel):
     form_quality: str = "unknown"
     primary_feedback: str = ""
     phase: str = "setup"
-    image_b64: Optional[str] = None
+    image_b64: str | None = None
 
 
 class FitnessTestRequest(BaseModel):
     athlete_id: str
     score: int
     level: int
-    bmi: Optional[float] = None
-    sit_reach_cm: Optional[float] = None
-    run_600_seconds: Optional[float] = None
+    bmi: float | None = None
+    sit_reach_cm: float | None = None
+    run_600_seconds: float | None = None
     age_group: str = "Adult"
 
 
 # ─── Helpers ────────────────────────────────────────────────────────────────
+
 
 async def _broadcast(session_id: str, payload: dict):
     dead = []
@@ -86,6 +99,7 @@ async def analysis_worker():
             session_id, image_b64, sport, frame_dict = item
             try:
                 from services.pose_analyzer import PoseAnalyzer
+
                 if session_id not in _POSE_ANALYZERS:
                     _POSE_ANALYZERS[session_id] = PoseAnalyzer(sport=sport)
                 analyzer = _POSE_ANALYZERS[session_id]
@@ -121,15 +135,22 @@ async def analysis_worker():
                     RESULT_STORE[session_id] = result_entry
                     if FRAME_BUFFER.get(session_id):
                         FRAME_BUFFER[session_id][-1].update(update)
-                    print(f"[AI] session={session_id[:8]} score={result['form_score']:.0f} "
-                          f"quality={result['form_quality']} phase={result['phase']}")
+                    print(
+                        f"[AI] session={session_id[:8]} score={result['form_score']:.0f} "
+                        f"quality={result['form_quality']} phase={result['phase']}"
+                    )
                     await _broadcast(session_id, {"type": "frame", **result_entry})
                 else:
                     print(f"[AI] No pose in frame (session {session_id[:8]})")
-                    await _broadcast(session_id, {
-                        "type": "frame", "frame_num": frame_dict["frame_num"],
-                        "pose_detected": False, "analyzed_at": time.time(),
-                    })
+                    await _broadcast(
+                        session_id,
+                        {
+                            "type": "frame",
+                            "frame_num": frame_dict["frame_num"],
+                            "pose_detected": False,
+                            "analyzed_at": time.time(),
+                        },
+                    )
             except Exception as e:
                 print(f"[WORKER ERROR] {e}")
             finally:
@@ -177,13 +198,19 @@ async def session_cleanup_worker():
 
 # ─── Session Endpoints ──────────────────────────────────────────────────────
 
+
 @router.post("/session/start", tags=["Sessions"])
 async def start_session(req: StartSessionRequest):
     session_id = str(uuid.uuid4())
     session = {
-        "session_id": session_id, "athlete_id": req.athlete_id, "sport": req.sport,
-        "status": "active", "started_at": datetime.utcnow().isoformat() + "Z",
-        "ended_at": None, "frame_count": 0, "summary": None,
+        "session_id": session_id,
+        "athlete_id": req.athlete_id,
+        "sport": req.sport,
+        "status": "active",
+        "started_at": datetime.utcnow().isoformat() + "Z",
+        "ended_at": None,
+        "frame_count": 0,
+        "summary": None,
     }
     SESSION_DB[session_id] = session
     FRAME_BUFFER[session_id] = []
@@ -211,7 +238,8 @@ async def add_frame(session_id: str, frame: FrameData):
             print(f"[WARN] Analysis queue full, dropping frame for {session_id[:8]}")
     latest = RESULT_STORE.get(session_id, {})
     return {
-        "frame_num": frame_dict["frame_num"], "status": "queued" if image_b64 else "stored",
+        "frame_num": frame_dict["frame_num"],
+        "status": "queued" if image_b64 else "stored",
         "queued_for_analysis": bool(image_b64),
         "last_form_score": latest.get("form_score"),
         "last_feedback": latest.get("primary_feedback"),
@@ -225,7 +253,11 @@ async def latest_result(session_id: str):
         raise HTTPException(404, "Session not found")
     result = RESULT_STORE.get(session_id)
     if not result:
-        return {"session_id": session_id, "data_source": "none", "message": "No analysis yet — send frames with image_b64"}
+        return {
+            "session_id": session_id,
+            "data_source": "none",
+            "message": "No analysis yet — send frames with image_b64",
+        }
     return {"session_id": session_id, **result}
 
 
@@ -235,11 +267,17 @@ async def calibrate_pose(frame: FrameData, sport: str = Query(default="vertical_
         raise HTTPException(400, "image_b64 required for calibration")
     try:
         from services.pose_analyzer import PoseAnalyzer
+
         analyzer = PoseAnalyzer(sport=sport)
         result = analyzer.analyze_base64_image(frame.image_b64, sport)
         if not result.get("pose_detected"):
-            return {"pose_detected": False, "form_score": 0, "keypoints": [], "deviations": {},
-                    "primary_feedback": "Move into frame — stand 1.5–2m from camera"}
+            return {
+                "pose_detected": False,
+                "form_score": 0,
+                "keypoints": [],
+                "deviations": {},
+                "primary_feedback": "Move into frame — stand 1.5–2m from camera",
+            }
         angles = result.get("joint_angles", {})
         IDEAL = {"KNEE_L": 170, "KNEE_R": 170, "HIP_L": 170, "HIP_R": 170, "ELBOW_L": 160, "ELBOW_R": 160}
         deviations = {}
@@ -248,15 +286,24 @@ async def calibrate_pose(frame: FrameData, sport: str = Query(default="vertical_
             diff = abs(actual - ideal_angle)
             deviations[joint] = "good" if diff < 15 else "warning" if diff < 35 else "critical"
         return {
-            "pose_detected": True, "form_score": result["form_score"],
-            "form_quality": result["form_quality"], "primary_feedback": result["primary_feedback"],
-            "keypoints": result.get("keypoints", []), "joint_angles": angles,
-            "deviations": deviations, "symmetry_score": result["symmetry_score"],
+            "pose_detected": True,
+            "form_score": result["form_score"],
+            "form_quality": result["form_quality"],
+            "primary_feedback": result["primary_feedback"],
+            "keypoints": result.get("keypoints", []),
+            "joint_angles": angles,
+            "deviations": deviations,
+            "symmetry_score": result["symmetry_score"],
         }
     except Exception as e:
         print(f"[CALIBRATE ERROR] {e}")
-        return {"pose_detected": False, "form_score": 0, "keypoints": [], "deviations": {},
-                "primary_feedback": "Calibration unavailable — check server logs"}
+        return {
+            "pose_detected": False,
+            "form_score": 0,
+            "keypoints": [],
+            "deviations": {},
+            "primary_feedback": "Calibration unavailable — check server logs",
+        }
 
 
 @router.post("/session/{session_id}/end", tags=["Sessions"])
@@ -267,11 +314,20 @@ async def end_session(session_id: str):
         raise HTTPException(400, "Session already ended")
     frames = FRAME_BUFFER.get(session_id, [])
     if not frames:
-        summary = {"session_id": session_id, "athlete_id": SESSION_DB[session_id]["athlete_id"],
-                   "sport": SESSION_DB[session_id]["sport"], "total_frames": 0, "valid_frames": 0,
-                   "avg_form_score": 0, "peak_form_score": 0, "peak_jump_height_cm": 0,
-                   "avg_jump_height_cm": 0, "avg_symmetry": 0, "xp_earned": 50,
-                   "quality_distribution": {"elite": 0, "good": 0, "average": 0, "poor": 0}}
+        summary = {
+            "session_id": session_id,
+            "athlete_id": SESSION_DB[session_id]["athlete_id"],
+            "sport": SESSION_DB[session_id]["sport"],
+            "total_frames": 0,
+            "valid_frames": 0,
+            "avg_form_score": 0,
+            "peak_form_score": 0,
+            "peak_jump_height_cm": 0,
+            "avg_jump_height_cm": 0,
+            "avg_symmetry": 0,
+            "xp_earned": 50,
+            "quality_distribution": {"elite": 0, "good": 0, "average": 0, "poor": 0},
+        }
     else:
         valid = [f for f in frames if f.get("form_score", 0) > 0]
         scores = [f["form_score"] for f in valid]
@@ -284,9 +340,12 @@ async def end_session(session_id: str):
                 quality_counts[q] += 1
         duration = frames[-1]["timestamp"] - frames[0]["timestamp"] if len(frames) > 1 else 0
         summary = {
-            "session_id": session_id, "athlete_id": SESSION_DB[session_id]["athlete_id"],
-            "sport": SESSION_DB[session_id]["sport"], "total_frames": len(frames),
-            "valid_frames": len(valid), "duration_seconds": round(duration, 1),
+            "session_id": session_id,
+            "athlete_id": SESSION_DB[session_id]["athlete_id"],
+            "sport": SESSION_DB[session_id]["sport"],
+            "total_frames": len(frames),
+            "valid_frames": len(valid),
+            "duration_seconds": round(duration, 1),
             "avg_form_score": round(sum(scores) / max(len(scores), 1), 1),
             "peak_form_score": round(max(scores, default=0), 1),
             "peak_jump_height_cm": round(max(jump_heights, default=0), 1),
@@ -296,7 +355,7 @@ async def end_session(session_id: str):
             "xp_earned": _compute_xp(scores, jump_heights),
         }
     SESSION_DB[session_id]["status"] = "completed"
-    SESSION_DB[session_id]["ended_at"] = datetime.now(timezone.utc).isoformat()
+    SESSION_DB[session_id]["ended_at"] = datetime.now(UTC).isoformat()
     SESSION_DB[session_id]["summary"] = summary
     SESSION_DB[session_id]["frames"] = frames
     athlete_id = SESSION_DB[session_id]["athlete_id"]
@@ -316,8 +375,11 @@ async def get_session(session_id: str):
 
 @router.get("/sessions", tags=["Sessions"])
 async def list_sessions(
-    athlete_id: Optional[str] = None, sport: Optional[str] = None,
-    status: Optional[str] = None, limit: int = Query(default=20, le=100), offset: int = 0,
+    athlete_id: str | None = None,
+    sport: str | None = None,
+    status: str | None = None,
+    limit: int = Query(default=20, le=100),
+    offset: int = 0,
 ):
     sessions = list(SESSION_DB.values())
     if athlete_id:
@@ -327,21 +389,28 @@ async def list_sessions(
     if status:
         sessions = [s for s in sessions if s.get("status") == status]
     sessions.sort(key=lambda x: x.get("started_at", ""), reverse=True)
-    return {"total": len(sessions), "offset": offset, "limit": limit, "sessions": sessions[offset:offset + limit]}
+    return {"total": len(sessions), "offset": offset, "limit": limit, "sessions": sessions[offset : offset + limit]}
 
 
 @router.get("/sessions/active", tags=["Sessions"])
 async def get_active_sessions():
     active = [
-        {"session_id": sid, "athlete_id": s.get("athlete_id"), "sport": s.get("sport"),
-         "started_at": s.get("started_at"), "frame_count": len(FRAME_BUFFER.get(sid, [])),
-         "latest_score": RESULT_STORE.get(sid, {}).get("form_score")}
-        for sid, s in SESSION_DB.items() if s.get("status") == "active"
+        {
+            "session_id": sid,
+            "athlete_id": s.get("athlete_id"),
+            "sport": s.get("sport"),
+            "started_at": s.get("started_at"),
+            "frame_count": len(FRAME_BUFFER.get(sid, [])),
+            "latest_score": RESULT_STORE.get(sid, {}).get("form_score"),
+        }
+        for sid, s in SESSION_DB.items()
+        if s.get("status") == "active"
     ]
     return {"active_sessions": active, "count": len(active)}
 
 
 # ─── rPPG WebSocket ─────────────────────────────────────────────────────────
+
 
 @router.websocket("/rppg/live-stream/{session_id}")
 async def rppg_live_stream(websocket: WebSocket, session_id: str):
@@ -349,25 +418,36 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
     print(f"[WS-RPPG] Client connected: {session_id[:8]}")
     try:
         from services.rppg_processor import RPPGProcessor
+
         if session_id not in RPPG_STORE:
             RPPG_STORE[session_id] = RPPGProcessor()
         proc = RPPG_STORE[session_id]
         while True:
             data = await websocket.receive_json()
             if data.get("face_found") is False:
-                await websocket.send_json({"status": "warmup", "signal_quality": "no_face",
-                                           "message": "Center your face", "bpm": 0, "hrv_ms": 0, "waveform": []})
+                await websocket.send_json(
+                    {
+                        "status": "warmup",
+                        "signal_quality": "no_face",
+                        "message": "Center your face",
+                        "bpm": 0,
+                        "hrv_ms": 0,
+                        "waveform": [],
+                    }
+                )
                 continue
             if data.get("image_b64"):
                 try:
                     import base64 as _b64
                     from io import BytesIO as _BytesIO
-                    from PIL import Image as _Image
+
                     import numpy as _np
+                    from PIL import Image as _Image
+
                     _img_bytes = _b64.b64decode(data["image_b64"])
                     _img = _Image.open(_BytesIO(_img_bytes)).convert("RGB").resize((16, 16))
                     _arr = _np.array(_img, dtype=_np.float32)
-                    r, g, b = float(_arr[:,:,0].mean()), float(_arr[:,:,1].mean()), float(_arr[:,:,2].mean())
+                    r, g, b = float(_arr[:, :, 0].mean()), float(_arr[:, :, 1].mean()), float(_arr[:, :, 2].mean())
                 except Exception as _e:
                     print(f"[RPPG] image_b64 decode error: {_e}")
                     continue
@@ -393,6 +473,7 @@ async def rppg_get_result(session_id: str):
 
 # ─── Biomechanics WebSockets ────────────────────────────────────────────────
 
+
 @router.websocket("/metrics/live/{session_id}")
 async def websocket_live(websocket: WebSocket, session_id: str):
     await websocket.accept()
@@ -402,7 +483,7 @@ async def websocket_live(websocket: WebSocket, session_id: str):
         while True:
             try:
                 await asyncio.wait_for(websocket.receive_text(), timeout=30)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 await websocket.send_text(json.dumps({"type": "ping", "ts": time.time()}))
     except WebSocketDisconnect:
         print(f"[WS] Client disconnected from session {session_id[:8]}")
@@ -422,8 +503,10 @@ async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
         SESSION_DB[session_id] = {"athlete_id": "test", "sport": "vertical_jump", "status": "active"}
         FRAME_BUFFER[session_id] = []
     try:
-        from services.pose_analyzer import PoseAnalyzer
         import types
+
+        from services.pose_analyzer import PoseAnalyzer
+
         if session_id not in _POSE_ANALYZERS:
             _POSE_ANALYZERS[session_id] = PoseAnalyzer(sport=SESSION_DB[session_id].get("sport", "vertical_jump"))
         analyzer = _POSE_ANALYZERS[session_id]
@@ -432,15 +515,22 @@ async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
             points = data.get("points", [])
             if not points or len(points) < 33:
                 continue
-            lms = [types.SimpleNamespace(x=p.get('x',0), y=p.get('y',0), z=p.get('z',0), visibility=p.get('v',1.0)) for p in points]
+            lms = [
+                types.SimpleNamespace(x=p.get("x", 0), y=p.get("y", 0), z=p.get("z", 0), visibility=p.get("v", 1.0))
+                for p in points
+            ]
             res = types.SimpleNamespace(pose_landmarks=types.SimpleNamespace(landmark=lms))
             bio = analyzer.analyze(res)
-            await websocket.send_json({
-                "form_score": bio.form_score, "phase_space_dm": getattr(bio, 'phase_space_dm', 0),
-                "torsion_error": getattr(bio, 'torsion_error', 0),
-                "dimensionless_jerk": getattr(bio, 'dimensionless_jerk', 0),
-                "phase": getattr(bio, 'phase', 'setup'), "primary_feedback": bio.primary_feedback,
-            })
+            await websocket.send_json(
+                {
+                    "form_score": bio.form_score,
+                    "phase_space_dm": getattr(bio, "phase_space_dm", 0),
+                    "torsion_error": getattr(bio, "torsion_error", 0),
+                    "dimensionless_jerk": getattr(bio, "dimensionless_jerk", 0),
+                    "phase": getattr(bio, "phase", "setup"),
+                    "primary_feedback": bio.primary_feedback,
+                }
+            )
     except WebSocketDisconnect:
         print(f"[WS-STREAM] Native device disconnected {session_id[:8]}")
     except Exception as e:
@@ -448,6 +538,7 @@ async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
 
 
 # ─── Dataset ────────────────────────────────────────────────────────────────
+
 
 @router.get("/dataset/export", tags=["Dataset"])
 async def export_dataset(format: str = Query(default="csv")):
@@ -475,6 +566,7 @@ async def dataset_stats():
 
 # ─── Fitness Test ───────────────────────────────────────────────────────────
 
+
 @router.post("/fitness-test", tags=["Fitness Test"])
 async def save_fitness_test(req: FitnessTestRequest):
     athlete = ATHLETE_DB.get(req.athlete_id)
@@ -484,9 +576,13 @@ async def save_fitness_test(req: FitnessTestRequest):
     if "fitness_tests" not in athlete:
         athlete["fitness_tests"] = []
     record = {
-        "score": req.score, "level": req.level, "bmi": req.bmi,
-        "sit_reach_cm": req.sit_reach_cm, "run_600_seconds": req.run_600_seconds,
-        "age_group": req.age_group, "timestamp": datetime.utcnow().isoformat(),
+        "score": req.score,
+        "level": req.level,
+        "bmi": req.bmi,
+        "sit_reach_cm": req.sit_reach_cm,
+        "run_600_seconds": req.run_600_seconds,
+        "age_group": req.age_group,
+        "timestamp": datetime.utcnow().isoformat(),
     }
     athlete["fitness_tests"].insert(0, record)
     athlete["fitness_tests"] = athlete["fitness_tests"][:10]

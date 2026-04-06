@@ -24,44 +24,66 @@ DB_PATH.mkdir(parents=True, exist_ok=True)
 # ── Athlete profiles ──────────────────────────────────────────────────────────
 # Tier → BPI range mapping (BPI = Biomechanics Performance Index)
 TIER_BPI = {
-    "Block":    (3000, 6000),
+    "Block": (3000, 6000),
     "District": (6001, 9500),
-    "State":    (9501, 13000),
+    "State": (9501, 13000),
     "National": (13001, 17000),
-    "Elite":    (17001, 22000),
+    "Elite": (17001, 22000),
 }
 
 SPORTS = [
-    "vertical_jump", "vertical_jump", "vertical_jump",  # weight toward jump (demo sport)
-    "sprint", "sprint",
-    "squat", "squat",
+    "vertical_jump",
+    "vertical_jump",
+    "vertical_jump",  # weight toward jump (demo sport)
+    "sprint",
+    "sprint",
+    "squat",
+    "squat",
     "push_up",
     "pull_up",
     "snatch",
 ]
 
 NAMES = [
-    ("Aryan Kapoor",   "AK"), ("Priya Nair",     "PN"), ("Rahul Verma",    "RV"),
-    ("Sneha Joshi",    "SJ"), ("Karan Mehta",    "KM"), ("Divya Sharma",   "DS"),
-    ("Rohan Patel",    "RP"), ("Anjali Gupta",   "AG"), ("Vikas Singh",    "VS"),
-    ("Meera Iyer",     "MI"), ("Arjun Reddy",    "AR"), ("Pooja Desai",    "PD"),
-    ("Siddharth Das",  "SD"), ("Kavya Pillai",   "KP"), ("Amit Tiwari",    "AT"),
-    ("Nisha Rao",      "NR"), ("Deepak Kumar",   "DK"), ("Riya Malhotra",  "RM"),
-    ("Suresh Nambiar", "SN"), ("Tanya Bose",     "TB"), ("Ishaan Shah",    "IS"),
-    ("Lakshmi Menon",  "LM"), ("Varun Chandra",  "VC"), ("Shruti Ghosh",   "SG"),
-    ("Nikhil Pandey",  "NP"), ("Aisha Khan",     "AK"), ("Manish Dubey",   "MD"),
-    ("Rekha Yadav",    "RY"), ("Sachin Jain",    "SJ"), ("Urvi Trivedi",   "UT"),
+    ("Aryan Kapoor", "AK"),
+    ("Priya Nair", "PN"),
+    ("Rahul Verma", "RV"),
+    ("Sneha Joshi", "SJ"),
+    ("Karan Mehta", "KM"),
+    ("Divya Sharma", "DS"),
+    ("Rohan Patel", "RP"),
+    ("Anjali Gupta", "AG"),
+    ("Vikas Singh", "VS"),
+    ("Meera Iyer", "MI"),
+    ("Arjun Reddy", "AR"),
+    ("Pooja Desai", "PD"),
+    ("Siddharth Das", "SD"),
+    ("Kavya Pillai", "KP"),
+    ("Amit Tiwari", "AT"),
+    ("Nisha Rao", "NR"),
+    ("Deepak Kumar", "DK"),
+    ("Riya Malhotra", "RM"),
+    ("Suresh Nambiar", "SN"),
+    ("Tanya Bose", "TB"),
+    ("Ishaan Shah", "IS"),
+    ("Lakshmi Menon", "LM"),
+    ("Varun Chandra", "VC"),
+    ("Shruti Ghosh", "SG"),
+    ("Nikhil Pandey", "NP"),
+    ("Aisha Khan", "AK"),
+    ("Manish Dubey", "MD"),
+    ("Rekha Yadav", "RY"),
+    ("Sachin Jain", "SJ"),
+    ("Urvi Trivedi", "UT"),
 ]
 
-TIERS_WEIGHTED = (
-    ["Block"] * 8 + ["District"] * 10 + ["State"] * 7 + ["National"] * 4 + ["Elite"] * 1
-)
+TIERS_WEIGHTED = ["Block"] * 8 + ["District"] * 10 + ["State"] * 7 + ["National"] * 4 + ["Elite"] * 1
 
 
 def generate_athletes():
     athletes = {}
     for i, (name, avatar) in enumerate(NAMES):
-        athlete_id = f"athlete_{i+1:02d}"
+        athlete_id = f"athlete_{i + 1:02d}"
         tier = TIERS_WEIGHTED[i]
         sport = random.choice(SPORTS)
         bpi_lo, bpi_hi = TIER_BPI[tier]
@@ -69,14 +91,14 @@ def generate_athletes():
         sessions = random.randint(3 if tier == "Block" else 8, 60 if tier == "Elite" else 30)
 
         athletes[athlete_id] = {
-            "id":       athlete_id,
-            "name":     name,
-            "avatar":   avatar,
-            "sport":    sport,
-            "tier":     tier,
-            "bpi":      bpi,
+            "id": athlete_id,
+            "name": name,
+            "avatar": avatar,
+            "sport": sport,
+            "tier": tier,
+            "bpi": bpi,
             "sessions": sessions,
-            "rank":     0,  # set below after sort
+            "rank": 0,  # set below after sort
         }
 
     # Assign global ranks by BPI descending

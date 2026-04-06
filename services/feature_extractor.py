@@ -33,7 +33,6 @@ Feature Vector (23 dimensions):
 """
 
 import numpy as np
-from typing import List, Dict, Tuple, Optional
 from pose_analyzer import BiomechanicalFrame
 
 # Quality label encoding
@@ -41,13 +40,7 @@ QUALITY_LABELS = {"elite": 3, "good": 2, "average": 1, "poor": 0}
 PHASE_LABELS = {"setup": 0, "descent": 1, "takeoff": 2, "flight": 3, "landing": 4}
 
 # Sport encoding
-SPORT_LABELS = {
-    "vertical_jump": 0,
-    "snatch": 1,
-    "sprint": 2,
-    "javelin": 3,
-    "cricket_bat": 4
-}
+SPORT_LABELS = {"vertical_jump": 0, "snatch": 1, "sprint": 2, "javelin": 3, "cricket_bat": 4}
 
 
 class FeatureExtractor:
@@ -57,32 +50,57 @@ class FeatureExtractor:
     """
 
     FEATURE_NAMES = [
-        "hip_angle_l", "hip_angle_r", "hip_angle_avg",
-        "knee_angle_l", "knee_angle_r", "knee_angle_avg",
-        "shoulder_angle_l", "shoulder_angle_r",
-        "elbow_angle_l", "elbow_angle_r",
-        "ankle_dorsiflexion_l", "ankle_dorsiflexion_r",
-        "trunk_lean", "spine_deviation", "shoulder_hip_sep",
-        "head_forward_pos", "com_height_norm", "limb_symmetry_idx",
+        "hip_angle_l",
+        "hip_angle_r",
+        "hip_angle_avg",
+        "knee_angle_l",
+        "knee_angle_r",
+        "knee_angle_avg",
+        "shoulder_angle_l",
+        "shoulder_angle_r",
+        "elbow_angle_l",
+        "elbow_angle_r",
+        "ankle_dorsiflexion_l",
+        "ankle_dorsiflexion_r",
+        "trunk_lean",
+        "spine_deviation",
+        "shoulder_hip_sep",
+        "head_forward_pos",
+        "com_height_norm",
+        "limb_symmetry_idx",
         "estimated_jump_height",
         # Derived
-        "hip_knee_ratio", "upper_lower_ratio",
-        "bilateral_deviation", "extension_index"
+        "hip_knee_ratio",
+        "upper_lower_ratio",
+        "bilateral_deviation",
+        "extension_index",
     ]
 
     # Normalization ranges (min, max) for each feature
     NORM_RANGES = {
-        "hip_angle_l": (0, 180), "hip_angle_r": (0, 180), "hip_angle_avg": (0, 180),
-        "knee_angle_l": (0, 180), "knee_angle_r": (0, 180), "knee_angle_avg": (0, 180),
-        "shoulder_angle_l": (0, 180), "shoulder_angle_r": (0, 180),
-        "elbow_angle_l": (0, 180), "elbow_angle_r": (0, 180),
-        "ankle_dorsiflexion_l": (0, 180), "ankle_dorsiflexion_r": (0, 180),
-        "trunk_lean": (0, 90), "spine_deviation": (0, 50),
-        "shoulder_hip_sep": (0, 90), "head_forward_pos": (-30, 30),
-        "com_height_norm": (0, 1), "limb_symmetry_idx": (0, 1),
+        "hip_angle_l": (0, 180),
+        "hip_angle_r": (0, 180),
+        "hip_angle_avg": (0, 180),
+        "knee_angle_l": (0, 180),
+        "knee_angle_r": (0, 180),
+        "knee_angle_avg": (0, 180),
+        "shoulder_angle_l": (0, 180),
+        "shoulder_angle_r": (0, 180),
+        "elbow_angle_l": (0, 180),
+        "elbow_angle_r": (0, 180),
+        "ankle_dorsiflexion_l": (0, 180),
+        "ankle_dorsiflexion_r": (0, 180),
+        "trunk_lean": (0, 90),
+        "spine_deviation": (0, 50),
+        "shoulder_hip_sep": (0, 90),
+        "head_forward_pos": (-30, 30),
+        "com_height_norm": (0, 1),
+        "limb_symmetry_idx": (0, 1),
         "estimated_jump_height": (0, 100),
-        "hip_knee_ratio": (0, 5), "upper_lower_ratio": (0, 5),
-        "bilateral_deviation": (0, 90), "extension_index": (0, 180),
+        "hip_knee_ratio": (0, 5),
+        "upper_lower_ratio": (0, 5),
+        "bilateral_deviation": (0, 90),
+        "extension_index": (0, 180),
     }
 
     def __init__(self, normalize: bool = True):
@@ -102,13 +120,16 @@ class FeatureExtractor:
         bilateral_deviation = max(
             abs(frame.hip_angle_l - frame.hip_angle_r),
             abs(frame.knee_angle_l - frame.knee_angle_r),
-            abs(frame.ankle_dorsiflexion_l - frame.ankle_dorsiflexion_r)
+            abs(frame.ankle_dorsiflexion_l - frame.ankle_dorsiflexion_r),
         )
 
         all_joints = [
-            frame.hip_angle_l, frame.hip_angle_r,
-            frame.knee_angle_l, frame.knee_angle_r,
-            frame.elbow_angle_l, frame.elbow_angle_r,
+            frame.hip_angle_l,
+            frame.hip_angle_r,
+            frame.knee_angle_l,
+            frame.knee_angle_r,
+            frame.elbow_angle_l,
+            frame.elbow_angle_r,
         ]
         extension_index = sum(all_joints) / len(all_joints)
 
@@ -154,8 +175,7 @@ class FeatureExtractor:
         return normalized
 
     def extract_sequence(
-        self, frames: List[BiomechanicalFrame], sport: str = "vertical_jump",
-        window_size: int = 30
+        self, frames: list[BiomechanicalFrame], sport: str = "vertical_jump", window_size: int = 30
     ) -> np.ndarray:
         """
         Extract a temporal sequence feature matrix (window_size × 23).
@@ -174,9 +194,8 @@ class FeatureExtractor:
         return matrix  # shape: (window_size, 23)
 
     def frame_to_record(
-        self, frame: BiomechanicalFrame, sport: str,
-        session_id: str, frame_num: int, athlete_id: str = "unknown"
-    ) -> Dict:
+        self, frame: BiomechanicalFrame, sport: str, session_id: str, frame_num: int, athlete_id: str = "unknown"
+    ) -> dict:
         """Convert frame to a flat dictionary for CSV export / API response."""
         return {
             "session_id": session_id,
@@ -211,15 +230,32 @@ class FeatureExtractor:
             "feedback_tag": frame.primary_feedback,
         }
 
-    def get_csv_headers(self) -> List[str]:
+    def get_csv_headers(self) -> list[str]:
         """Return CSV column headers in order."""
         return [
-            "session_id", "athlete_id", "frame_num", "sport",
-            "hip_angle_l", "hip_angle_r", "knee_angle_l", "knee_angle_r",
-            "shoulder_angle_l", "shoulder_angle_r", "elbow_angle_l", "elbow_angle_r",
-            "ankle_dorsiflexion_l", "ankle_dorsiflexion_r",
-            "trunk_lean", "spine_deviation", "shoulder_hip_sep", "head_forward_pos",
-            "com_height_norm", "estimated_jump_height",
-            "limb_symmetry_idx", "form_score",
-            "phase_label", "quality_label", "feedback_tag"
+            "session_id",
+            "athlete_id",
+            "frame_num",
+            "sport",
+            "hip_angle_l",
+            "hip_angle_r",
+            "knee_angle_l",
+            "knee_angle_r",
+            "shoulder_angle_l",
+            "shoulder_angle_r",
+            "elbow_angle_l",
+            "elbow_angle_r",
+            "ankle_dorsiflexion_l",
+            "ankle_dorsiflexion_r",
+            "trunk_lean",
+            "spine_deviation",
+            "shoulder_hip_sep",
+            "head_forward_pos",
+            "com_height_norm",
+            "estimated_jump_height",
+            "limb_symmetry_idx",
+            "form_score",
+            "phase_label",
+            "quality_label",
+            "feedback_tag",
         ]
