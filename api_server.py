@@ -46,7 +46,7 @@ if FASTAPI_AVAILABLE:
     async def lifespan(app: FastAPI):
         # Startup
         _load_db()
-        database.ANALYSIS_QUEUE = asyncio.Queue(maxsize=50)
+        database.ANALYSIS_QUEUE = asyncio.Queue(maxsize=200)  # PF-04: increased from 50
         task = asyncio.create_task(analysis_worker())
         cleanup_task = asyncio.create_task(session_cleanup_worker())
         print("[API] Personal Health API running -> http://localhost:8082")

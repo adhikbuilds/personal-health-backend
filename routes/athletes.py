@@ -6,6 +6,7 @@ Athletes domain — CRUD, Progress, Insights, Daily Tracker
 
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -19,6 +20,7 @@ class NewAthleteRequest(BaseModel):
     name: str
     sport: str = "vertical_jump"
     tier: str = "Block"
+    height_cm: Optional[float] = None  # PF-03: athlete body height for jump estimation
 
 
 class DailyTrackerUpdate(BaseModel):
@@ -54,6 +56,7 @@ async def create_athlete(req: NewAthleteRequest):
         "bpi": 1000,
         "sessions": 0,
         "avatar": initials,
+        "height_cm": req.height_cm or 170,
         "created_at": datetime.utcnow().isoformat() + "Z",
     }
     ATHLETE_DB[athlete_id] = athlete

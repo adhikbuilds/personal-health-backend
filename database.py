@@ -28,6 +28,7 @@ RESULT_STORE: dict[str, dict] = {}
 _POSE_ANALYZERS: dict[str, object] = {}
 RPPG_STORE: dict[str, object] = {}
 _FOLLOWS: dict[str, set] = defaultdict(set)
+_RATE_LIMITS: dict[str, float] = {}  # PF-04: session_id → last frame timestamp
 
 
 # ─── Load / Save ────────────────────────────────────────────────────────────

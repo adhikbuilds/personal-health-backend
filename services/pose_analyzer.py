@@ -406,13 +406,15 @@ class PoseAnalyzer:
     # Smoothing buffer for temporal consistency
     SMOOTH_WINDOW = 5
 
-    def __init__(self, sport: str = "vertical_jump"):
+    def __init__(self, sport: str = "vertical_jump", body_height_cm: float = 170):
         self.sport = sport
+        self.body_height_cm = body_height_cm  # PF-03: athlete's actual height, no longer hardcoded
         self.frame_history: deque = deque(maxlen=60)  # Sliding Window for derivatives
-        self._baseline_body_height: float | None = None
-        self._baseline_com_y: float | None = None
+        self._baseline_body_height = None
+        self._baseline_com_y = None
         self._com_history: deque = deque(maxlen=60)
         self._mp_pose = None  # Reusable MediaPipe Pose instance
+        self._smoothed_score = None  # PF-06: EMA temporal smoothing
 
     def set_sport(self, sport: str):
         self.sport = sport
@@ -536,8 +538,7 @@ class PoseAnalyzer:
             # Estimate jump height: h = com_displacement * body_height_in_cm / body_height_norm
             # Average body height ~170cm for Indian male athletes
             if com_displacement > 0:
-                body_height_cm = 170  # TODO: calibrate from user profile
-                frame.estimated_jump_height = (com_displacement / self._baseline_body_height) * body_height_cm
+                frame.estimated_jump_height = (com_displacement / self._baseline_body_height) * self.body_height_cm
         else:
             frame.com_height_norm = 0.5
 

@@ -19,6 +19,7 @@ from pydantic import BaseModel
 
 from database import (
     _POSE_ANALYZERS,
+    _RATE_LIMITS,
     ANALYSIS_QUEUE,
     ATHLETE_DB,
     DATASET_PATH,
@@ -226,6 +227,14 @@ async def add_frame(session_id: str, frame: FrameData):
         raise HTTPException(404, "Session not found")
     if SESSION_DB[session_id]["status"] != "active":
         raise HTTPException(400, "Session not active")
+
+    # PF-04: Rate limiting — max 10 frames/second per session
+    now = time.time()
+    last_frame_time = _RATE_LIMITS.get(session_id, 0)
+    if now - last_frame_time < 0.1:
+        return JSONResponse(status_code=429, content={"error": "Rate limit exceeded", "max_fps": 10})
+    _RATE_LIMITS[session_id] = now
+
     sport = SESSION_DB[session_id].get("sport", "vertical_jump")
     frame_dict = frame.model_dump()
     image_b64 = frame_dict.pop("image_b64", None)
@@ -365,6 +374,7 @@ async def end_session(session_id: str):
     if athlete_id in ATHLETE_DB:
         ATHLETE_DB[athlete_id]["sessions"] = ATHLETE_DB[athlete_id].get("sessions", 0) + 1
         ATHLETE_DB[athlete_id]["bpi"] = ATHLETE_DB[athlete_id].get("bpi", 0) + summary["xp_earned"]
+    _RATE_LIMITS.pop(session_id, None)  # PF-04: cleanup rate limit tracker
     _save_db()
     return summary
 
