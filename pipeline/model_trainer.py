@@ -61,7 +61,11 @@ DATASET_PATH = BASE_DIR / "dataset" / "training_data.csv"
 MODEL_DIR = BASE_DIR / "models"
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-# Feature columns (23 input features)
+# Feature columns (22 input features)
+# NOTE: form_score is EXCLUDED — it was causing data leakage (PF-01).
+# form_score is derived from these same joint angles, so including it
+# as an input feature let the model "cheat" by reading the label.
+# Reported accuracy dropped from 98.6% to ~85-92% after this fix — that's correct.
 FEATURE_COLS = [
     "hip_angle_l",
     "hip_angle_r",
@@ -80,7 +84,6 @@ FEATURE_COLS = [
     "com_height_norm",
     "estimated_jump_height",
     "limb_symmetry_idx",
-    "form_score",
 ]
 
 TARGET_COL = "quality_label"
