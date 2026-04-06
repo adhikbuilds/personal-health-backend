@@ -1,0 +1,31 @@
+# Ruff — Python linter for Personal Health backend
+# Docs: https://docs.astral.sh/ruff/
+
+target-version = "py311"
+line-length = 120
+
+[lint]
+select = [
+    "E",     # pycodestyle errors
+    "F",     # pyflakes
+    "W",     # pycodestyle warnings
+    "I",     # isort
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "B",     # bugbear
+    "S",     # bandit (security)
+    "T20",   # print statements (flag but don't block)
+    "SIM",   # simplify
+    "RUF",   # ruff-specific
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "S101",   # assert used (OK in tests)
+    "T201",   # print() — we use it for logging
+    "B008",   # function call in default arg (FastAPI uses this pattern)
+    "UP007",  # Use X | Y for union (not all Python 3.9 compatible)
+]
+
+[lint.per-file-ignores]
+"seeds/*" = ["S311"]   # random is OK in seed scripts
+"tests/*" = ["S101"]   # assert OK in tests
