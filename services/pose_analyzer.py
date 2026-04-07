@@ -392,6 +392,91 @@ def classify_jump_phase(frames_history) -> str:
         return "setup"
 
 
+# PF-05: Phase detection for push_up, pull_up
+def _classify_rep_phase(frames_history, sport: str) -> str:
+    if len(frames_history) < 5:
+        return "ready"
+    recent = list(frames_history)[-5:]
+    avg_elbow = sum((f.elbow_angle_l + f.elbow_angle_r) / 2 for f in recent) / len(recent)
+    delta_elbow = recent[-1].elbow_angle_l - recent[0].elbow_angle_l
+    if sport == "push_up":
+        if avg_elbow > 150:
+            return "up"
+        elif delta_elbow < -3:
+            return "descent"
+        elif avg_elbow < 100:
+            return "bottom"
+        else:
+            return "ascent"
+    else:  # pull_up
+        if avg_elbow > 150:
+            return "hang"
+        elif delta_elbow < -3:
+            return "pull"
+        elif avg_elbow < 90:
+            return "top"
+        else:
+            return "descent"
+
+
+# PF-05: Phase detection for sprint
+def _classify_sprint_phase(frames_history) -> str:
+    if len(frames_history) < 5:
+        return "start"
+    recent = list(frames_history)[-5:]
+    avg_trunk = sum(f.trunk_lean for f in recent) / len(recent)
+    delta_com = recent[-1].com_height_norm - recent[0].com_height_norm
+    if avg_trunk > 30:
+        return "start"
+    elif delta_com > 0.02:
+        return "acceleration"
+    elif avg_trunk < 10:
+        return "max_velocity"
+    else:
+        return "deceleration"
+
+
+# PF-05: Phase detection for javelin, cricket_bat
+def _classify_throw_phase(frames_history, sport: str) -> str:
+    if len(frames_history) < 5:
+        return "stance"
+    recent = list(frames_history)[-5:]
+    avg_shoulder = sum((f.shoulder_angle_l + f.shoulder_angle_r) / 2 for f in recent) / len(recent)
+    delta_shoulder = recent[-1].shoulder_angle_l - recent[0].shoulder_angle_l
+    if sport == "javelin":
+        if delta_shoulder > 5:
+            return "approach"
+        elif avg_shoulder > 140:
+            return "crossover"
+        elif delta_shoulder < -10:
+            return "delivery"
+        else:
+            return "follow_through"
+    else:  # cricket_bat
+        if avg_shoulder < 60:
+            return "stance"
+        elif delta_shoulder > 5:
+            return "backswing"
+        elif delta_shoulder < -5:
+            return "downswing"
+        else:
+            return "follow_through"
+
+
+# PF-05: Generic fallback for unknown sports
+def _classify_generic_phase(frames_history) -> str:
+    if len(frames_history) < 5:
+        return "ready"
+    recent = list(frames_history)[-5:]
+    delta_com = recent[-1].com_height_norm - recent[0].com_height_norm
+    if abs(delta_com) < 0.01:
+        return "ready"
+    elif delta_com > 0:
+        return "active"
+    else:
+        return "recovery"
+
+
 # ─── Main Analyzer ──────────────────────────────────────────────────────────
 
 
@@ -554,11 +639,17 @@ class PoseAnalyzer:
             avg_asymmetry = sum(abs(a - b) / max(a, b, 1) for a, b in valid_pairs) / len(valid_pairs)
             frame.limb_symmetry_idx = round(max(0.0, 1.0 - avg_asymmetry), 3)
 
-        # ── Phase Classification ──────────────────────
+        # ── Phase Classification (PF-05: all 8 sports) ──
         if self.sport in ("vertical_jump", "squat", "snatch"):
             frame.phase = classify_jump_phase(self.frame_history)
+        elif self.sport in ("push_up", "pull_up"):
+            frame.phase = _classify_rep_phase(self.frame_history, self.sport)
+        elif self.sport == "sprint":
+            frame.phase = _classify_sprint_phase(self.frame_history)
+        elif self.sport in ("javelin", "cricket_bat"):
+            frame.phase = _classify_throw_phase(self.frame_history, self.sport)
         else:
-            frame.phase = "setup"
+            frame.phase = _classify_generic_phase(self.frame_history)
 
         # ── Phase 2: Advanced Kinematics (math2.pdf) ──
         # 1. 3D Torsion (Quaternions)
