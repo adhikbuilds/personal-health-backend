@@ -72,7 +72,8 @@ class BiomechanicalFrame:
     limb_symmetry_idx: float = 1.0  # 1.0 = perfect symmetry
 
     # Composite scores
-    form_score: float = 0.0  # 0-100
+    form_score: float = 0.0  # 0-100 (smoothed via EMA, PF-06)
+    raw_form_score: float = 0.0  # 0-100 unsmoothed (PF-06)
     form_quality: str = "unknown"  # elite/good/average/poor
     primary_feedback: str = ""  # top coaching cue
 
@@ -510,6 +511,7 @@ class PoseAnalyzer:
         self._baseline_body_height = None
         self._baseline_com_y = None
         self._com_history.clear()
+        self._smoothed_score = None  # PF-06: reset EMA on sport change
 
     def _to_landmark(self, lm) -> Landmark:
         """Convert MediaPipe NormalizedLandmark to our Landmark type."""
@@ -681,7 +683,14 @@ class PoseAnalyzer:
             frame.dimensionless_jerk = _compute_dimensionless_jerk(list(self._com_history))
 
         # ── Form Score ────────────────────────────────
-        frame.form_score, frame.form_quality, frame.primary_feedback = compute_form_score(frame, self.sport)
+        raw_score, frame.form_quality, frame.primary_feedback = compute_form_score(frame, self.sport)
+        frame.raw_form_score = raw_score
+        # PF-06: EMA temporal smoothing (alpha=0.3) — single bad frame can't tank the score
+        if self._smoothed_score is None:
+            self._smoothed_score = raw_score
+        else:
+            self._smoothed_score = 0.3 * raw_score + 0.7 * self._smoothed_score
+        frame.form_score = round(self._smoothed_score, 1)
 
         # Store to history (deque auto-truncates)
         self.frame_history.append(frame)

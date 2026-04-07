@@ -257,6 +257,18 @@ async def add_frame(session_id: str, frame: FrameData):
 
     sport = SESSION_DB[session_id].get("sport", "vertical_jump")
     frame_dict = frame.model_dump()
+
+    # PF-12: Persist frame to disk so server restarts don't lose session data
+    try:
+        from database import DB_PATH
+
+        frames_dir = DB_PATH / "frames"
+        frames_dir.mkdir(parents=True, exist_ok=True)
+        frame_log = {k: v for k, v in frame_dict.items() if k != "image_b64"}
+        with open(frames_dir / f"{session_id}.jsonl", "a") as fp:
+            fp.write(json.dumps(frame_log, default=str) + "\n")
+    except Exception as fperr:
+        print(f"[FRAME PERSIST] {fperr}")
     image_b64 = frame_dict.pop("image_b64", None)
     frame_dict["frame_num"] = len(FRAME_BUFFER[session_id])
     frame_dict["timestamp"] = time.time()

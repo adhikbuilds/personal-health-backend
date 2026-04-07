@@ -194,6 +194,28 @@ class RPPGProcessor:
             peak_idx = np.argmax(power[mask])
             bpm_raw = float(freqs[mask][peak_idx] * 60.0)
 
+        # PF-09: Variance check on last 20 RGB samples — flat signal = no skin/no pulse
+        if n >= 20:
+            r_var = float(np.var(np.array(self._r)[-20:]))
+            g_var = float(np.var(np.array(self._g)[-20:]))
+            b_var = float(np.var(np.array(self._b)[-20:]))
+            if r_var < 0.5 and g_var < 0.5 and b_var < 0.5:
+                return {
+                    "bpm": self.last_bpm,
+                    "hrv_ms": self.last_hrv,
+                    "signal_quality": "no_pulse",
+                    "message": "Ensure face is visible — no signal variance detected",
+                    "waveform": self.last_waveform,
+                    "frames_in_window": n,
+                    "status": "invalid",
+                }
+
+        # PF-09: Artifact detection — hold previous BPM if change > 40 BPM between readings
+        artifact_flag = False
+        if self.last_bpm > 0 and abs(bpm_raw - self.last_bpm) > 40:
+            bpm_raw = self.last_bpm  # Hold previous reading
+            artifact_flag = True
+
         # 3. Temporal Smoothing (Exponential Moving Average)
         if self.last_bpm > 0:
             # Reject massive artifact spikes (>20 bpm change in a fraction of a sec)
@@ -242,12 +264,13 @@ class RPPGProcessor:
         return {
             "bpm": self.last_bpm,
             "hrv_ms": hrv_ms,
-            "signal_quality": quality_str,
+            "signal_quality": "artifact" if artifact_flag else quality_str,
             "waveform": wf_norm,
             "fps": round(fs, 1),
             "frames_in_window": n,
             "snr": round(snr, 4),
             "status": "ok",
+            "artifact_detected": artifact_flag,
         }
 
     # ── Private helpers ────────────────────────────────────────────────────
