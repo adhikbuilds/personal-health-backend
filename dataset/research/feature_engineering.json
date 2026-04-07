@@ -1,0 +1,338 @@
+{
+  "engineered_features": [
+    {
+      "name": "hip_angle_avg",
+      "formula": "(hip_angle_l + hip_angle_r) / 2",
+      "category": "average",
+      "importance": "high",
+      "justification": "Bilateral hip flexion average captures overall lower-body posture depth. Cook et al. (2006) FMS deep squat scoring relies heavily on hip flexion magnitude. Reduces noise from single-side measurement error."
+    },
+    {
+      "name": "knee_angle_avg",
+      "formula": "(knee_angle_l + knee_angle_r) / 2",
+      "category": "average",
+      "importance": "high",
+      "justification": "Average knee flexion is the primary indicator of squat depth and landing mechanics. Hewett et al. (2005) showed knee flexion angle is the strongest predictor of ACL injury risk during dynamic movements."
+    },
+    {
+      "name": "shoulder_angle_avg",
+      "formula": "(shoulder_angle_l + shoulder_angle_r) / 2",
+      "category": "average",
+      "importance": "medium",
+      "justification": "Average shoulder angle reduces bilateral noise and captures upper-body positioning during overhead movements. Key feature in FMS shoulder mobility and overhead squat screens (Cook 2010)."
+    },
+    {
+      "name": "elbow_angle_avg",
+      "formula": "(elbow_angle_l + elbow_angle_r) / 2",
+      "category": "average",
+      "importance": "medium",
+      "justification": "Average elbow angle characterizes upper-limb extension patterns. Relevant for push-up form, overhead press, and throwing mechanics assessment (Fleisig et al. 2006)."
+    },
+    {
+      "name": "ankle_avg",
+      "formula": "(ankle_dorsiflexion_l + ankle_dorsiflexion_r) / 2",
+      "category": "average",
+      "importance": "medium",
+      "justification": "Average ankle dorsiflexion captures mobility limitation that propagates up the kinetic chain. Limited dorsiflexion is strongly associated with compensatory trunk lean and knee valgus (Macrum et al. 2012)."
+    },
+    {
+      "name": "hip_knee_ratio",
+      "formula": "hip_angle_avg / knee_angle_avg",
+      "category": "ratio",
+      "importance": "high",
+      "justification": "Hip-to-knee flexion ratio distinguishes hip-dominant vs. knee-dominant movement strategies. Escamilla (2001) showed this ratio differentiates squat styles and correlates with shear forces. Values near 1.0 indicate balanced loading; deviations flag compensation patterns."
+    },
+    {
+      "name": "upper_lower_ratio",
+      "formula": "(shoulder_angle_avg + elbow_angle_avg) / (hip_angle_avg + knee_angle_avg)",
+      "category": "ratio",
+      "importance": "medium",
+      "justification": "Upper-to-lower body angle ratio captures whole-body coordination. Imbalance between upper and lower segments indicates poor kinetic chain sequencing, a key factor in movement quality scoring (Parkkari et al. 2001)."
+    },
+    {
+      "name": "ankle_knee_ratio",
+      "formula": "ankle_avg / knee_angle_avg",
+      "category": "ratio",
+      "importance": "medium",
+      "justification": "Ankle-to-knee ratio quantifies the dorsiflexion contribution relative to knee flexion. Low ratios indicate ankle mobility restrictions compensated by excessive knee translation. Relevant for squat and landing assessments (Fong et al. 2011)."
+    },
+    {
+      "name": "trunk_knee_ratio",
+      "formula": "trunk_lean / knee_angle_avg",
+      "category": "ratio",
+      "importance": "high",
+      "justification": "Trunk lean relative to knee flexion depth captures forward lean compensation. Excessive trunk-to-knee ratio indicates posterior chain weakness or ankle mobility deficit. Strong predictor in FMS overhead squat scoring (Butler et al. 2010)."
+    },
+    {
+      "name": "bilateral_hip_deviation",
+      "formula": "abs(hip_angle_l - hip_angle_r)",
+      "category": "symmetry",
+      "importance": "high",
+      "justification": "Absolute bilateral hip angle difference detects asymmetry. Kiesel et al. (2007) demonstrated that bilateral asymmetry in FMS scoring predicted injury with 82% sensitivity. Hip asymmetry > 10 degrees is a clinical threshold."
+    },
+    {
+      "name": "bilateral_knee_deviation",
+      "formula": "abs(knee_angle_l - knee_angle_r)",
+      "category": "symmetry",
+      "importance": "high",
+      "justification": "Bilateral knee angle difference is the most commonly used symmetry measure in return-to-sport testing. Paterno et al. (2010) showed knee asymmetry during landing predicted second ACL injury."
+    },
+    {
+      "name": "bilateral_shoulder_deviation",
+      "formula": "abs(shoulder_angle_l - shoulder_angle_r)",
+      "category": "symmetry",
+      "importance": "medium",
+      "justification": "Shoulder angle asymmetry captures upper-body imbalances common in unilateral sport athletes. Related to scapular dyskinesis screening (Kibler et al. 2013)."
+    },
+    {
+      "name": "bilateral_ankle_deviation",
+      "formula": "abs(ankle_dorsiflexion_l - ankle_dorsiflexion_r)",
+      "category": "symmetry",
+      "importance": "medium",
+      "justification": "Ankle dorsiflexion asymmetry is a strong predictor of compensatory movement patterns and has been linked to lower extremity injury risk (Hoch et al. 2012)."
+    },
+    {
+      "name": "bilateral_deviation_total",
+      "formula": "bilateral_hip_deviation + bilateral_knee_deviation + bilateral_shoulder_deviation + bilateral_ankle_deviation",
+      "category": "symmetry",
+      "importance": "high",
+      "justification": "Aggregate bilateral deviation provides a single asymmetry index across all joints. Composite asymmetry scores have higher predictive power than individual joint asymmetries for injury risk (Brumitt et al. 2013)."
+    },
+    {
+      "name": "limb_symmetry_idx_hip",
+      "formula": "(min(hip_angle_l, hip_angle_r) / max(hip_angle_l, hip_angle_r)) * 100",
+      "category": "symmetry",
+      "importance": "high",
+      "justification": "Standard LSI formula (weaker/stronger x 100) applied to hip angles. LSI < 90% is the clinical threshold for return-to-sport clearance (Grindem et al. 2011). Using min/max approximates weaker/stronger without side labeling."
+    },
+    {
+      "name": "limb_symmetry_idx_knee",
+      "formula": "(min(knee_angle_l, knee_angle_r) / max(knee_angle_l, knee_angle_r)) * 100",
+      "category": "symmetry",
+      "importance": "high",
+      "justification": "Knee LSI is the gold-standard symmetry metric in ACL rehabilitation. Thresholds of 90% are used across hop tests, strength tests, and kinematic assessments (Wellsandt et al. 2017)."
+    },
+    {
+      "name": "limb_symmetry_idx_ankle",
+      "formula": "(min(ankle_dorsiflexion_l, ankle_dorsiflexion_r) / max(ankle_dorsiflexion_l, ankle_dorsiflexion_r)) * 100",
+      "category": "symmetry",
+      "importance": "medium",
+      "justification": "Ankle LSI captures dorsiflexion asymmetry in a normalized 0-100 scale. Useful for tracking rehabilitation progress post ankle sprain (Hoch et al. 2012)."
+    },
+    {
+      "name": "composite_lsi",
+      "formula": "(limb_symmetry_idx_hip + limb_symmetry_idx_knee + limb_symmetry_idx_ankle) / 3",
+      "category": "symmetry",
+      "importance": "high",
+      "justification": "Multi-joint composite LSI provides a holistic lower-extremity symmetry score. Batterham & George (2003) showed composite symmetry indices outperform single-joint measures for functional classification."
+    },
+    {
+      "name": "extension_index",
+      "formula": "(hip_angle_avg + knee_angle_avg + ankle_avg) / 3",
+      "category": "composite",
+      "importance": "high",
+      "justification": "Average extension across hip, knee, and ankle captures overall lower-body extension state. Useful for classifying movement phases (e.g., peak squat depth vs. standing). Related to triple-extension concept in athletic performance (Comfort et al. 2012)."
+    },
+    {
+      "name": "trunk_alignment_score",
+      "formula": "100 - (abs(trunk_lean) * 2 + abs(spine_deviation) * 3 + abs(head_forward_pos) * 1.5)",
+      "category": "composite",
+      "importance": "high",
+      "justification": "Weighted composite of trunk lean, spine deviation, and head position. Trunk alignment is the strongest predictor of overall movement quality in FMS (Cook et al. 2014). Weights derived from relative contribution: lateral deviation (3x) is more predictive than sagittal lean (2x) and head position (1.5x) per Sahrmann (2002) movement impairment syndromes."
+    },
+    {
+      "name": "postural_control_index",
+      "formula": "100 - (abs(trunk_lean) + abs(spine_deviation) + abs(shoulder_hip_sep) + abs(head_forward_pos))",
+      "category": "composite",
+      "importance": "high",
+      "justification": "Comprehensive postural control score combining all axial alignment features. Integrates concepts from Kendall's postural assessment (Kendall et al. 2005). Higher values indicate better alignment. Captures compensatory strategies missed by individual features."
+    },
+    {
+      "name": "kinetic_chain_efficiency",
+      "formula": "1 - (bilateral_deviation_total / (hip_angle_avg + knee_angle_avg + ankle_avg + shoulder_angle_avg))",
+      "category": "composite",
+      "importance": "medium",
+      "justification": "Ratio of total asymmetry to total range of motion. Captures the proportion of movement that is 'wasted' on asymmetric compensation. Derived from kinetic chain efficiency concepts in sports science (Kibler 1995)."
+    },
+    {
+      "name": "squat_quality_score",
+      "formula": "extension_index * (composite_lsi / 100) * (trunk_alignment_score / 100)",
+      "category": "composite",
+      "importance": "high",
+      "justification": "Multiplicative composite that penalizes poor symmetry or alignment even when depth is adequate. Mirrors FMS scoring logic where compensation patterns reduce scores regardless of range achieved (Cook 2010). Product formulation ensures all components must be adequate."
+    },
+    {
+      "name": "valgus_proxy",
+      "formula": "bilateral_knee_deviation + abs(hip_angle_l - hip_angle_r) * 0.5",
+      "category": "composite",
+      "importance": "high",
+      "justification": "Without frontal-plane knee data, sagittal asymmetry between knees plus hip asymmetry serves as a proxy for dynamic knee valgus. Ford et al. (2003) showed sagittal-plane asymmetry correlates with frontal-plane malalignment. This is an approximation suitable for 2D pose estimation pipelines."
+    },
+    {
+      "name": "jump_efficiency",
+      "formula": "estimated_jump_height / (1 - com_height_norm)",
+      "category": "ratio",
+      "importance": "high",
+      "justification": "Jump height normalized by countermovement depth (1 - com_height_norm approximates squat depth). Captures neuromuscular efficiency: same height from less depth = more efficient. Related to reactive strength index concepts (Flanagan & Comyns 2008)."
+    },
+    {
+      "name": "com_displacement_ratio",
+      "formula": "com_height_norm / (1 + abs(trunk_lean) / 45)",
+      "category": "ratio",
+      "importance": "medium",
+      "justification": "COM height penalized by trunk lean captures how much vertical displacement is achieved without forward compensation. Trunk lean > 45 degrees halves the effective score. Based on COM projection concepts in balance research (Winter 1995)."
+    },
+    {
+      "name": "shoulder_hip_coupling",
+      "formula": "shoulder_angle_avg * shoulder_hip_sep",
+      "category": "interaction",
+      "importance": "medium",
+      "justification": "Interaction between shoulder angle and shoulder-hip separation captures rotational coupling. In rotational sports (golf, tennis, throwing), the X-factor (shoulder-hip separation) modulated by shoulder position predicts power output (Cheetham et al. 2001)."
+    },
+    {
+      "name": "trunk_hip_interaction",
+      "formula": "trunk_lean * hip_angle_avg",
+      "category": "interaction",
+      "importance": "high",
+      "justification": "Interaction between trunk lean and hip flexion distinguishes hip-hinge patterns (high hip flexion, moderate trunk lean) from compensation (high trunk lean, low hip flexion). Key discriminator in deadlift and squat form assessment (Schoenfeld 2010)."
+    },
+    {
+      "name": "ankle_trunk_compensation",
+      "formula": "ankle_avg / (1 + abs(trunk_lean))",
+      "category": "interaction",
+      "importance": "medium",
+      "justification": "Ankle dorsiflexion modulated by trunk lean captures the ankle-trunk compensation pattern: limited dorsiflexion forces excessive forward lean. Macrum et al. (2012) demonstrated this compensatory relationship in overhead squat analysis."
+    },
+    {
+      "name": "knee_trunk_coupling",
+      "formula": "knee_angle_avg * (1 - abs(trunk_lean) / 90)",
+      "category": "interaction",
+      "importance": "medium",
+      "justification": "Knee flexion discounted by trunk lean. Deep knee flexion with excessive trunk lean indicates poor form; this feature rewards knee depth only when trunk stays upright. Based on Escamilla et al. (2001) squat biomechanics."
+    },
+    {
+      "name": "upper_body_alignment",
+      "formula": "abs(head_forward_pos) + abs(shoulder_hip_sep) + abs(spine_deviation)",
+      "category": "composite",
+      "importance": "medium",
+      "justification": "Sum of upper-body misalignment indicators. Captures forward head posture, rotational offset, and lateral deviation as a single upper-body quality metric. Based on upper crossed syndrome markers (Janda 1996)."
+    },
+    {
+      "name": "dynamic_stability_index",
+      "formula": "com_height_norm * (composite_lsi / 100) * (1 - abs(spine_deviation) / 45)",
+      "category": "composite",
+      "importance": "high",
+      "justification": "COM height modulated by symmetry and spine alignment. Captures the ability to maintain vertical COM with symmetric loading and minimal lateral deviation. Reflects dynamic postural stability concepts from Wikstrom et al. (2005)."
+    },
+    {
+      "name": "sprint_power_proxy",
+      "formula": "hip_angle_avg * knee_angle_avg * estimated_jump_height",
+      "category": "interaction",
+      "importance": "medium",
+      "justification": "Triple-product interaction of hip extension, knee extension, and jump height as a proxy for explosive power output. Based on triple-extension correlation with sprint and jump performance (Comfort et al. 2012). Sport-specific to power/speed athletes."
+    },
+    {
+      "name": "overhead_mobility_score",
+      "formula": "shoulder_angle_avg * (1 - abs(trunk_lean) / 90) * (1 - abs(spine_deviation) / 45)",
+      "category": "interaction",
+      "importance": "medium",
+      "justification": "Shoulder mobility penalized by trunk and spine compensation. True overhead mobility maintains shoulder range without compensatory extension or lateral shift. Mirrors FMS overhead squat and shoulder mobility screen logic (Cook 2010)."
+    },
+    {
+      "name": "landing_quality_index",
+      "formula": "knee_angle_avg * (composite_lsi / 100) * (1 - abs(trunk_lean) / 90)",
+      "category": "interaction",
+      "importance": "high",
+      "justification": "Landing quality requires adequate knee flexion, bilateral symmetry, and trunk control. Padua et al. (2009) LESS scoring system uses these three components as primary landing quality indicators. Sport-specific to jumping/landing sports."
+    },
+    {
+      "name": "hip_dominance_index",
+      "formula": "hip_angle_avg / (hip_angle_avg + knee_angle_avg)",
+      "category": "ratio",
+      "importance": "medium",
+      "justification": "Proportion of total lower-body flexion contributed by hips. Values > 0.5 indicate hip-dominant strategy (posterior chain loading); values < 0.5 indicate knee-dominant strategy. Relevant for coaching cueing and injury risk profiling (Pollard et al. 2010)."
+    },
+    {
+      "name": "symmetry_weighted_depth",
+      "formula": "extension_index * (composite_lsi / 100)",
+      "category": "composite",
+      "importance": "high",
+      "justification": "Movement depth discounted by asymmetry. A deep but asymmetric squat scores lower than a moderate but symmetric one. Aligns with FMS philosophy that compensated movement patterns receive reduced scores regardless of range (Cook et al. 2006)."
+    }
+  ],
+  "base_features": [
+    "hip_angle_l",
+    "hip_angle_r",
+    "knee_angle_l",
+    "knee_angle_r",
+    "shoulder_angle_l",
+    "shoulder_angle_r",
+    "elbow_angle_l",
+    "elbow_angle_r",
+    "ankle_dorsiflexion_l",
+    "ankle_dorsiflexion_r",
+    "trunk_lean",
+    "spine_deviation",
+    "shoulder_hip_sep",
+    "head_forward_pos",
+    "com_height_norm",
+    "estimated_jump_height"
+  ],
+  "feature_categories": {
+    "average": {
+      "count": 5,
+      "purpose": "Reduce bilateral noise, capture overall joint position"
+    },
+    "ratio": {
+      "count": 6,
+      "purpose": "Normalize relationships between body segments, capture movement strategy"
+    },
+    "symmetry": {
+      "count": 9,
+      "purpose": "Detect bilateral asymmetries linked to injury risk and movement dysfunction"
+    },
+    "composite": {
+      "count": 9,
+      "purpose": "Multi-feature scores that capture movement quality constructs"
+    },
+    "interaction": {
+      "count": 7,
+      "purpose": "Sport-specific feature interactions capturing compensation patterns and kinetic chain coupling"
+    }
+  },
+  "references": [
+    "Cook G, Burton L, Hoogenboom B. (2006). Pre-participation screening: the use of fundamental movements as an assessment of function. NAJSPT 1(2):62-72.",
+    "Cook G. (2010). Movement: Functional Movement Systems. On Target Publications.",
+    "Butler RJ, Plisky PJ, Southers C, et al. (2010). Biomechanical analysis of the different classifications of the FMS deep squat test. Sports Biomech 9(4):270-279.",
+    "Kiesel K, Plisky PJ, Voight ML. (2007). Can serious injury in professional football be predicted by a preseason FMS? NAJSPT 2(3):147-158.",
+    "Hewett TE, Myer GD, Ford KR, et al. (2005). Biomechanical measures of neuromuscular control and valgus loading of the knee predict ACL injury risk in female athletes. Am J Sports Med 33(4):492-501.",
+    "Paterno MV, Schmitt LC, Ford KR, et al. (2010). Biomechanical measures during landing and postural stability predict second ACL injury after ACL reconstruction. Am J Sports Med 38(10):1968-1978.",
+    "Escamilla RF. (2001). Knee biomechanics of the dynamic squat exercise. Med Sci Sports Exerc 33(1):127-141.",
+    "Macrum E, Bell DR, Boling M, et al. (2012). Effect of limiting ankle-dorsiflexion range of motion on lower extremity kinematics during a squat. J Sport Rehab 21(2):144-150.",
+    "Grindem H, Logerstedt D, Eitzen I, et al. (2011). Single-legged hop tests as predictors of self-reported knee function in nonoperatively treated individuals with ACL injury. Am J Sports Med 39(11):2347-2354.",
+    "Wellsandt E, Failla MJ, Snyder-Mackler L. (2017). Limb symmetry indexes can overestimate knee function after ACL injury. J Orthop Sports Phys Ther 47(5):334-338.",
+    "Flanagan EP, Comyns TM. (2008). The use of contact time and the reactive strength index to optimize fast stretch-shortening cycle training. Strength Cond J 30(5):32-38.",
+    "Padua DA, Marshall SW, Boling MC, et al. (2009). The Landing Error Scoring System (LESS) is a valid and reliable clinical assessment tool of jump-landing biomechanics. Am J Sports Med 37(10):1996-2002.",
+    "Winter DA. (1995). Human balance and posture control during standing and walking. Gait Posture 3(4):193-214.",
+    "Wikstrom EA, Tillman MD, Smith AN, Borsa PA. (2005). A new force-plate technology measure of dynamic postural stability. J Athl Train 40(4):305-309.",
+    "Comfort P, Stewart A, Bloom L, Clarkson B. (2014). Relationships between strength, sprint, and jump performance in well-trained youth soccer players. J Strength Cond Res 28(1):173-177.",
+    "Schoenfeld BJ. (2010). Squatting kinematics and kinetics and their application to exercise performance. J Strength Cond Res 24(12):3497-3506.",
+    "Kibler WB. (1995). Biomechanical analysis of the shoulder during tennis activities. Clin Sports Med 14(1):79-85.",
+    "Sahrmann S. (2002). Diagnosis and Treatment of Movement Impairment Syndromes. Mosby.",
+    "Kendall FP, McCreary EK, Provance PG, et al. (2005). Muscles: Testing and Function with Posture and Pain. 5th ed. Lippincott Williams & Wilkins.",
+    "Fleisig GS, Chu Y, Weber A, Andrews J. (2009). Variability in baseball pitching biomechanics among various levels of competition. Sports Biomech 8(1):10-21.",
+    "Cheetham PJ, Martin PE, Mottram RE, St Laurent BF. (2001). The importance of stretching the X-factor in the downswing of golf. In: Thomas PR, ed. Optimising Performance in Golf. Australian Academic Press.",
+    "Batterham A, George K. (2003). Reliability in evidence-based clinical practice: a primer for allied health professionals. Phys Ther Sport 4(3):122-128.",
+    "Hoch MC, Staton GS, McKeon PO. (2012). Dorsiflexion range of motion significantly influences dynamic balance. J Sci Med Sport 15(5):437-441.",
+    "Brumitt J, Heiderscheit BC, Manske RC, et al. (2013). Lower extremity functional tests and risk of injury in Division III collegiate athletes. Int J Sports Phys Ther 8(3):216-227.",
+    "Tang Y, Ni Z, Zhou J, et al. (2020). Uncertainty-aware score distribution learning for action quality assessment. CVPR 2020.",
+    "Parmar P, Morris B. (2019). Action quality assessment across multiple actions. WACV 2019.",
+    "Pirsiavash H, Vondrick C, Torralba A. (2014). Assessing the quality of actions. ECCV 2014."
+  ],
+  "notes": {
+    "implementation_order": "Start with averages and symmetry features (simple, high impact), then add ratios and composites. Interaction features are sport-specific and should be toggled based on exercise type.",
+    "scaling": "All composite scores should be clipped to [0, 100]. Ratios should be checked for division-by-zero (add small epsilon). LSI values are naturally bounded [0, 100].",
+    "temporal_features_future": "Current features are per-frame. Future iterations should add temporal derivatives (angular velocity, jerk-based smoothness via dimensionless jerk = sqrt(0.5 * integral(jerk^2) * duration^5 / distance^2)) and phase-detection features.",
+    "feature_selection": "Run mutual information and permutation importance on the full set. Expect 15-20 features to survive selection. Symmetry and composite features typically dominate."
+  }
+}

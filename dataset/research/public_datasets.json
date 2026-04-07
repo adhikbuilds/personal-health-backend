@@ -1,0 +1,42 @@
+{
+  "datasets": [],
+  "skipped": [
+    {
+      "name": "SportsPose",
+      "reason": "Requires university access / registration"
+    },
+    {
+      "name": "FIT3D Fitness Dataset",
+      "reason": "Requires registration at fit3d.imar.ro"
+    },
+    {
+      "name": "Human3.6M",
+      "reason": "Requires academic registration"
+    },
+    {
+      "name": "COCO Keypoints",
+      "reason": "Large download (18GB+), general pose — not sport-specific"
+    },
+    {
+      "name": "Penn Action Dataset",
+      "reason": "Requires university access"
+    },
+    {
+      "name": "MTL-AQA / Fitness-AQA",
+      "reason": "Requires registration, diving/gymnastics focused"
+    },
+    {
+      "name": "Leeds Sports Pose",
+      "reason": "2D bounding boxes only, no joint angles"
+    },
+    {
+      "name": "InfiniteRep",
+      "reason": "Requires API access from Tempo"
+    },
+    {
+      "name": "Yoga-82 (Kaggle)",
+      "reason": "Yoga poses only, image classification — no joint angles"
+    }
+  ],
+  "notes": "Web search was unavailable during dataset discovery. All synthetic data is grounded in literature-based biomechanical reference values instead. Future work should integrate real pose data from video extraction or public datasets."
+}
