@@ -25,27 +25,26 @@ References:
 
 from __future__ import annotations
 
-import base64
-import time
 from collections import deque
-from typing import List, Optional, Dict, Any
+from typing import Any
 
 import numpy as np
 from scipy.signal import butter, filtfilt
 
 # ─── Bandpass Filter ────────────────────────────────────────────────────────
 
+
 def _bandpass(signal: np.ndarray, fs: float, low: float = 0.67, high: float = 3.0) -> np.ndarray:
     """Butterworth bandpass filter. fs = sample rate in Hz."""
     nyq = 0.5 * fs
-    low_n  = low  / nyq
+    low_n = low / nyq
     high_n = high / nyq
     # Clamp to valid range
-    low_n  = max(0.01, min(low_n,  0.99))
+    low_n = max(0.01, min(low_n, 0.99))
     high_n = max(0.01, min(high_n, 0.99))
     if low_n >= high_n:
         return signal
-    b, a = butter(4, [low_n, high_n], btype='band')
+    b, a = butter(4, [low_n, high_n], btype="band")
     padlen = min(len(signal) - 1, 3 * max(len(a), len(b)))
     if len(signal) < 15:  # too short for meaningful filtering
         return signal
@@ -53,6 +52,7 @@ def _bandpass(signal: np.ndarray, fs: float, low: float = 0.67, high: float = 3.
 
 
 # ─── CHROM rPPG ─────────────────────────────────────────────────────────────
+
 
 def _chrom_bvp(r: np.ndarray, g: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
@@ -69,19 +69,20 @@ def _chrom_bvp(r: np.ndarray, g: np.ndarray, b: np.ndarray) -> np.ndarray:
     b_n = b / (np.mean(b) + 1e-9)
 
     # CHROM chrominance signals
-    xs = 3 * r_n - 2 * g_n          # Xs
+    xs = 3 * r_n - 2 * g_n  # Xs
     ys = 1.5 * r_n + g_n - 1.5 * b_n  # Ys
 
     # Standardize
     std_xs = np.std(xs) + 1e-9
     std_ys = np.std(ys) + 1e-9
-    alpha  = std_xs / std_ys
+    alpha = std_xs / std_ys
 
     bvp = xs - alpha * ys
     return bvp
 
 
 # ─── RPPGProcessor ──────────────────────────────────────────────────────────
+
 
 class RPPGProcessor:
     """
@@ -93,27 +94,27 @@ class RPPGProcessor:
         result = proc.compute()  # call any time
     """
 
-    WINDOW_SEC     = 10.0     # sliding window length (seconds)
-    MIN_FRAMES     = 20       # 20 frames sufficient for FFT
-    TARGET_FPS     = 30.0     # WebSockets unlock 30fps
-    BPM_LOW        = 40
-    BPM_HIGH       = 180
+    WINDOW_SEC = 10.0  # sliding window length (seconds)
+    MIN_FRAMES = 20  # 20 frames sufficient for FFT
+    TARGET_FPS = 30.0  # WebSockets unlock 30fps
+    BPM_LOW = 40
+    BPM_HIGH = 180
 
     def __init__(self):
-        self._r:  deque = deque()
-        self._g:  deque = deque()
-        self._b:  deque = deque()
+        self._r: deque = deque()
+        self._g: deque = deque()
+        self._b: deque = deque()
         self._ts: deque = deque()
 
-        self.last_bpm:      float = 0.0
-        self.last_hrv:      float = 0.0
-        self.last_quality:  str   = "waiting"
-        self.last_waveform: list  = []
-        self.frames_total:  int   = 0
+        self.last_bpm: float = 0.0
+        self.last_hrv: float = 0.0
+        self.last_quality: str = "waiting"
+        self.last_waveform: list = []
+        self.frames_total: int = 0
 
     # ── Public API ─────────────────────────────────────────────────────────
 
-    def add_rgb(self, r_val: float, g_val: float, b_val: float, timestamp: float) -> Dict[str, Any]:
+    def add_rgb(self, r_val: float, g_val: float, b_val: float, timestamp: float) -> dict[str, Any]:
         """
         Directly receive R, G, B stream from edge device. No face detection needed server-side.
         """
@@ -126,10 +127,14 @@ class RPPGProcessor:
 
         self._trim_window()
 
+        # PF-09: Signal validation — reject invalid RGB
+        if (r_val < 10 and g_val < 10 and b_val < 10) or (r_val > 245 and g_val > 245 and b_val > 245):
+            return {"face_found": True, "signal_quality": "invalid", "message": "Adjust lighting", "bpm": 0}
+
         quality = self._signal_quality()
         return {"face_found": True, "signal_quality": quality, "r": r_val, "g": g_val, "b": b_val}
 
-    def compute(self) -> Dict[str, Any]:
+    def compute(self) -> dict[str, Any]:
         """
         Compute BPM from current window.
         Returns: { bpm, hrv_ms, signal_quality, waveform, fps, frames_in_window, status }
@@ -139,13 +144,13 @@ class RPPGProcessor:
 
         if n < self.MIN_FRAMES:
             return {
-                "bpm":              self.last_bpm,
-                "hrv_ms":           self.last_hrv,
-                "signal_quality":   quality,
-                "waveform":         self.last_waveform,
+                "bpm": self.last_bpm,
+                "hrv_ms": self.last_hrv,
+                "signal_quality": quality,
+                "waveform": self.last_waveform,
                 "frames_in_window": n,
-                "status":           "warmup",
-                "message":          f"Collecting signal… {n}/{self.MIN_FRAMES} frames",
+                "status": "warmup",
+                "message": f"Collecting signal… {n}/{self.MIN_FRAMES} frames",
             }
 
         # Estimate effective sample rate
@@ -154,18 +159,18 @@ class RPPGProcessor:
         fs = (n - 1) / (elapsed + 1e-9)
         fs = float(np.clip(fs, 5.0, 60.0))
 
-        r  = np.array(self._r)
-        g  = np.array(self._g)
-        b  = np.array(self._b)
+        r = np.array(self._r)
+        g = np.array(self._g)
+        b = np.array(self._b)
 
         # 1. Resample to uniform time grid to eliminate network jitter noise
         from scipy.interpolate import interp1d
         from scipy.signal import detrend
-        
+
         uniform_ts = np.linspace(ts_arr[0], ts_arr[-1], n)
-        r = interp1d(ts_arr, r, kind='linear')(uniform_ts)
-        g = interp1d(ts_arr, g, kind='linear')(uniform_ts)
-        b = interp1d(ts_arr, b, kind='linear')(uniform_ts)
+        r = interp1d(ts_arr, r, kind="linear")(uniform_ts)
+        g = interp1d(ts_arr, g, kind="linear")(uniform_ts)
+        b = interp1d(ts_arr, b, kind="linear")(uniform_ts)
 
         # CHROM BVP
         bvp = _chrom_bvp(r, g, b)
@@ -178,17 +183,39 @@ class RPPGProcessor:
 
         # FFT
         n_fft = len(bvp_f)
-        freqs   = np.fft.rfftfreq(n_fft, d=1.0 / fs)
-        power   = np.abs(np.fft.rfft(bvp_f)) ** 2
+        freqs = np.fft.rfftfreq(n_fft, d=1.0 / fs)
+        power = np.abs(np.fft.rfft(bvp_f)) ** 2
 
         # Restrict to BPM range
-        mask    = (freqs >= self.BPM_LOW / 60.0) & (freqs <= self.BPM_HIGH / 60.0)
+        mask = (freqs >= self.BPM_LOW / 60.0) & (freqs <= self.BPM_HIGH / 60.0)
         if mask.sum() == 0:
             bpm_raw = self.last_bpm or 75.0
         else:
             peak_idx = np.argmax(power[mask])
             bpm_raw = float(freqs[mask][peak_idx] * 60.0)
-            
+
+        # PF-09: Variance check on last 20 RGB samples — flat signal = no skin/no pulse
+        if n >= 20:
+            r_var = float(np.var(np.array(self._r)[-20:]))
+            g_var = float(np.var(np.array(self._g)[-20:]))
+            b_var = float(np.var(np.array(self._b)[-20:]))
+            if r_var < 0.5 and g_var < 0.5 and b_var < 0.5:
+                return {
+                    "bpm": self.last_bpm,
+                    "hrv_ms": self.last_hrv,
+                    "signal_quality": "no_pulse",
+                    "message": "Ensure face is visible — no signal variance detected",
+                    "waveform": self.last_waveform,
+                    "frames_in_window": n,
+                    "status": "invalid",
+                }
+
+        # PF-09: Artifact detection — hold previous BPM if change > 40 BPM between readings
+        artifact_flag = False
+        if self.last_bpm > 0 and abs(bpm_raw - self.last_bpm) > 40:
+            bpm_raw = self.last_bpm  # Hold previous reading
+            artifact_flag = True
+
         # 3. Temporal Smoothing (Exponential Moving Average)
         if self.last_bpm > 0:
             # Reject massive artifact spikes (>20 bpm change in a fraction of a sec)
@@ -216,7 +243,7 @@ class RPPGProcessor:
 
         # HRV approximation: std of inter-beat intervals estimated from BVP peaks
         hrv_ms_raw = self._estimate_hrv(bvp_f, fs)
-        
+
         # Smooth HRV
         if self.last_hrv > 0 and hrv_ms_raw > 0:
             hrv_ms = self.last_hrv * 0.80 + hrv_ms_raw * 0.20
@@ -224,25 +251,26 @@ class RPPGProcessor:
             hrv_ms = hrv_ms_raw
 
         # Waveform: downsample to 50 points for the app
-        wf_ds = bvp_f[::max(1, len(bvp_f) // 50)].tolist()
+        wf_ds = bvp_f[:: max(1, len(bvp_f) // 50)].tolist()
         # Normalize to -1..1
         wf_max = max(abs(v) for v in wf_ds) or 1.0
         wf_norm = [round(v / wf_max, 3) for v in wf_ds]
 
-        self.last_bpm      = round(bpm, 1)
-        self.last_hrv      = hrv_ms
-        self.last_quality  = quality_str
+        self.last_bpm = round(bpm, 1)
+        self.last_hrv = hrv_ms
+        self.last_quality = quality_str
         self.last_waveform = wf_norm
 
         return {
-            "bpm":              self.last_bpm,
-            "hrv_ms":           hrv_ms,
-            "signal_quality":   quality_str,
-            "waveform":         wf_norm,
-            "fps":              round(fs, 1),
+            "bpm": self.last_bpm,
+            "hrv_ms": hrv_ms,
+            "signal_quality": "artifact" if artifact_flag else quality_str,
+            "waveform": wf_norm,
+            "fps": round(fs, 1),
             "frames_in_window": n,
-            "snr":              round(snr, 4),
-            "status":           "ok",
+            "snr": round(snr, 4),
+            "status": "ok",
+            "artifact_detected": artifact_flag,
         }
 
     # ── Private helpers ────────────────────────────────────────────────────
@@ -272,6 +300,7 @@ class RPPGProcessor:
         """
         try:
             from scipy.signal import find_peaks
+
             # Find systolic peaks. Lower prominence for webcam BVP signals.
             min_dist = int(fs * 60.0 / 180)  # max 180 BPM
             peaks, _ = find_peaks(bvp, distance=min_dist, prominence=0.01)

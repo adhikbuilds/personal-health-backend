@@ -1,0 +1,49 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  ruff-lint:
+    name: "Ruff: lint + format"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ruff
+      - name: Lint
+        run: ruff check . --config ruff.toml
+      - name: Format check
+        run: ruff format --check .
+
+  python-syntax:
+    name: "Python: compile check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile core files
+        run: |
+          python -m py_compile api_server.py
+          python -m py_compile database.py
+          for f in routes/*.py; do python -m py_compile "$f"; done
+          echo "All files compile OK"
+
+  ci-pass:
+    name: "All checks passed"
+    needs: [ruff-lint, python-syntax]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Backend CI passed."

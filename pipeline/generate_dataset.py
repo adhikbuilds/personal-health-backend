@@ -22,9 +22,8 @@ Phase labels: setup, descent, takeoff, flight, landing
 
 import csv
 import json
-import math
-import random
 import os
+import random
 from pathlib import Path
 
 SEED = 42
@@ -41,232 +40,233 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 SPORT_DISTRIBUTIONS = {
     "vertical_jump": {
         "elite": {
-            "hip_angle":         (92, 6),    # deep squat, ~90°
-            "knee_angle":        (95, 8),    # ~90-100° at peak descent
-            "ankle_dorsiflexion":(88, 8),
-            "trunk_lean":        (12, 5),
-            "shoulder_angle":    (60, 10),
-            "elbow_angle":       (120, 15),
-            "symmetry_bonus":    0.96,
-            "jump_height_cm":    (58, 8),    # elite athletes: 55-65cm
+            "hip_angle": (92, 6),  # deep squat, ~90°
+            "knee_angle": (95, 8),  # ~90-100° at peak descent
+            "ankle_dorsiflexion": (88, 8),
+            "trunk_lean": (12, 5),
+            "shoulder_angle": (60, 10),
+            "elbow_angle": (120, 15),
+            "symmetry_bonus": 0.96,
+            "jump_height_cm": (58, 8),  # elite athletes: 55-65cm
             "phases": ["setup", "descent", "takeoff", "flight", "landing"],
-            "phase_weights": [0.15, 0.25, 0.25, 0.2, 0.15]
+            "phase_weights": [0.15, 0.25, 0.25, 0.2, 0.15],
         },
         "good": {
-            "hip_angle":         (100, 10),
-            "knee_angle":        (105, 10),
-            "ankle_dorsiflexion":(85, 10),
-            "trunk_lean":        (18, 8),
-            "shoulder_angle":    (70, 15),
-            "elbow_angle":       (130, 20),
-            "symmetry_bonus":    0.88,
-            "jump_height_cm":    (44, 7),
+            "hip_angle": (100, 10),
+            "knee_angle": (105, 10),
+            "ankle_dorsiflexion": (85, 10),
+            "trunk_lean": (18, 8),
+            "shoulder_angle": (70, 15),
+            "elbow_angle": (130, 20),
+            "symmetry_bonus": 0.88,
+            "jump_height_cm": (44, 7),
         },
         "average": {
-            "hip_angle":         (115, 12),
-            "knee_angle":        (120, 12),
-            "ankle_dorsiflexion":(78, 12),
-            "trunk_lean":        (25, 10),
-            "shoulder_angle":    (80, 20),
-            "elbow_angle":       (140, 25),
-            "symmetry_bonus":    0.80,
-            "jump_height_cm":    (32, 6),
+            "hip_angle": (115, 12),
+            "knee_angle": (120, 12),
+            "ankle_dorsiflexion": (78, 12),
+            "trunk_lean": (25, 10),
+            "shoulder_angle": (80, 20),
+            "elbow_angle": (140, 25),
+            "symmetry_bonus": 0.80,
+            "jump_height_cm": (32, 6),
         },
         "poor": {
-            "hip_angle":         (135, 15),
-            "knee_angle":        (140, 15),
-            "ankle_dorsiflexion":(68, 15),
-            "trunk_lean":        (40, 15),
-            "shoulder_angle":    (90, 25),
-            "elbow_angle":       (150, 30),
-            "symmetry_bonus":    0.70,
-            "jump_height_cm":    (20, 8),
-        }
+            "hip_angle": (135, 15),
+            "knee_angle": (140, 15),
+            "ankle_dorsiflexion": (68, 15),
+            "trunk_lean": (40, 15),
+            "shoulder_angle": (90, 25),
+            "elbow_angle": (150, 30),
+            "symmetry_bonus": 0.70,
+            "jump_height_cm": (20, 8),
+        },
     },
     "snatch": {
         "elite": {
-            "hip_angle":         (88, 8),
-            "knee_angle":        (100, 10),
-            "ankle_dorsiflexion":(90, 8),
-            "trunk_lean":        (22, 6),
-            "shoulder_angle":    (42, 8),   # bar overhead
-            "elbow_angle":       (178, 5),   # fully extended
-            "symmetry_bonus":    0.95,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (88, 8),
+            "knee_angle": (100, 10),
+            "ankle_dorsiflexion": (90, 8),
+            "trunk_lean": (22, 6),
+            "shoulder_angle": (42, 8),  # bar overhead
+            "elbow_angle": (178, 5),  # fully extended
+            "symmetry_bonus": 0.95,
+            "jump_height_cm": (0, 0),
         },
         "good": {
-            "hip_angle":         (96, 10),
-            "knee_angle":        (110, 12),
-            "ankle_dorsiflexion":(85, 10),
-            "trunk_lean":        (28, 8),
-            "shoulder_angle":    (50, 12),
-            "elbow_angle":       (172, 10),
-            "symmetry_bonus":    0.90,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (96, 10),
+            "knee_angle": (110, 12),
+            "ankle_dorsiflexion": (85, 10),
+            "trunk_lean": (28, 8),
+            "shoulder_angle": (50, 12),
+            "elbow_angle": (172, 10),
+            "symmetry_bonus": 0.90,
+            "jump_height_cm": (0, 0),
         },
         "average": {
-            "hip_angle":         (108, 14),
-            "knee_angle":        (125, 15),
-            "ankle_dorsiflexion":(80, 12),
-            "trunk_lean":        (38, 12),
-            "shoulder_angle":    (65, 18),
-            "elbow_angle":       (160, 18),
-            "symmetry_bonus":    0.82,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (108, 14),
+            "knee_angle": (125, 15),
+            "ankle_dorsiflexion": (80, 12),
+            "trunk_lean": (38, 12),
+            "shoulder_angle": (65, 18),
+            "elbow_angle": (160, 18),
+            "symmetry_bonus": 0.82,
+            "jump_height_cm": (0, 0),
         },
         "poor": {
-            "hip_angle":         (128, 18),
-            "knee_angle":        (145, 18),
-            "ankle_dorsiflexion":(72, 15),
-            "trunk_lean":        (52, 18),
-            "shoulder_angle":    (80, 20),
-            "elbow_angle":       (145, 25),
-            "symmetry_bonus":    0.72,
-            "jump_height_cm":    (0, 0),
-        }
+            "hip_angle": (128, 18),
+            "knee_angle": (145, 18),
+            "ankle_dorsiflexion": (72, 15),
+            "trunk_lean": (52, 18),
+            "shoulder_angle": (80, 20),
+            "elbow_angle": (145, 25),
+            "symmetry_bonus": 0.72,
+            "jump_height_cm": (0, 0),
+        },
     },
     "sprint": {
         "elite": {
-            "hip_angle":         (48, 8),   # powerful hip drive
-            "knee_angle":        (92, 10),
-            "ankle_dorsiflexion":(72, 8),
-            "trunk_lean":        (14, 5),
-            "shoulder_angle":    (75, 12),
-            "elbow_angle":       (88, 10),   # 90° arm swing
-            "symmetry_bonus":    0.90,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (48, 8),  # powerful hip drive
+            "knee_angle": (92, 10),
+            "ankle_dorsiflexion": (72, 8),
+            "trunk_lean": (14, 5),
+            "shoulder_angle": (75, 12),
+            "elbow_angle": (88, 10),  # 90° arm swing
+            "symmetry_bonus": 0.90,
+            "jump_height_cm": (0, 0),
         },
         "good": {
-            "hip_angle":         (58, 10),
-            "knee_angle":        (102, 12),
-            "ankle_dorsiflexion":(78, 10),
-            "trunk_lean":        (20, 8),
-            "shoulder_angle":    (85, 15),
-            "elbow_angle":       (98, 15),
-            "symmetry_bonus":    0.85,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (58, 10),
+            "knee_angle": (102, 12),
+            "ankle_dorsiflexion": (78, 10),
+            "trunk_lean": (20, 8),
+            "shoulder_angle": (85, 15),
+            "elbow_angle": (98, 15),
+            "symmetry_bonus": 0.85,
+            "jump_height_cm": (0, 0),
         },
         "average": {
-            "hip_angle":         (72, 12),
-            "knee_angle":        (118, 14),
-            "ankle_dorsiflexion":(84, 12),
-            "trunk_lean":        (28, 10),
-            "shoulder_angle":    (95, 18),
-            "elbow_angle":       (112, 18),
-            "symmetry_bonus":    0.80,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (72, 12),
+            "knee_angle": (118, 14),
+            "ankle_dorsiflexion": (84, 12),
+            "trunk_lean": (28, 10),
+            "shoulder_angle": (95, 18),
+            "elbow_angle": (112, 18),
+            "symmetry_bonus": 0.80,
+            "jump_height_cm": (0, 0),
         },
         "poor": {
-            "hip_angle":         (90, 15),
-            "knee_angle":        (135, 18),
-            "ankle_dorsiflexion":(90, 15),
-            "trunk_lean":        (40, 15),
-            "shoulder_angle":    (105, 20),
-            "elbow_angle":       (130, 25),
-            "symmetry_bonus":    0.72,
-            "jump_height_cm":    (0, 0),
-        }
+            "hip_angle": (90, 15),
+            "knee_angle": (135, 18),
+            "ankle_dorsiflexion": (90, 15),
+            "trunk_lean": (40, 15),
+            "shoulder_angle": (105, 20),
+            "elbow_angle": (130, 25),
+            "symmetry_bonus": 0.72,
+            "jump_height_cm": (0, 0),
+        },
     },
     "javelin": {
         "elite": {
-            "hip_angle":         (105, 10),
-            "knee_angle":        (148, 10),
-            "ankle_dorsiflexion":(85, 8),
-            "trunk_lean":        (35, 8),
-            "shoulder_angle":    (168, 8),   # throwing arm extended
-            "elbow_angle":       (128, 12),
-            "symmetry_bonus":    0.78,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (105, 10),
+            "knee_angle": (148, 10),
+            "ankle_dorsiflexion": (85, 8),
+            "trunk_lean": (35, 8),
+            "shoulder_angle": (168, 8),  # throwing arm extended
+            "elbow_angle": (128, 12),
+            "symmetry_bonus": 0.78,
+            "jump_height_cm": (0, 0),
         },
         "good": {
-            "hip_angle":         (115, 12),
-            "knee_angle":        (155, 12),
-            "ankle_dorsiflexion":(82, 10),
-            "trunk_lean":        (43, 10),
-            "shoulder_angle":    (158, 12),
-            "elbow_angle":       (138, 15),
-            "symmetry_bonus":    0.74,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (115, 12),
+            "knee_angle": (155, 12),
+            "ankle_dorsiflexion": (82, 10),
+            "trunk_lean": (43, 10),
+            "shoulder_angle": (158, 12),
+            "elbow_angle": (138, 15),
+            "symmetry_bonus": 0.74,
+            "jump_height_cm": (0, 0),
         },
         "average": {
-            "hip_angle":         (128, 15),
-            "knee_angle":        (162, 12),
-            "ankle_dorsiflexion":(78, 12),
-            "trunk_lean":        (52, 14),
-            "shoulder_angle":    (145, 18),
-            "elbow_angle":       (150, 20),
-            "symmetry_bonus":    0.68,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (128, 15),
+            "knee_angle": (162, 12),
+            "ankle_dorsiflexion": (78, 12),
+            "trunk_lean": (52, 14),
+            "shoulder_angle": (145, 18),
+            "elbow_angle": (150, 20),
+            "symmetry_bonus": 0.68,
+            "jump_height_cm": (0, 0),
         },
         "poor": {
-            "hip_angle":         (145, 18),
-            "knee_angle":        (168, 15),
-            "ankle_dorsiflexion":(72, 15),
-            "trunk_lean":        (60, 18),
-            "shoulder_angle":    (130, 22),
-            "elbow_angle":       (162, 25),
-            "symmetry_bonus":    0.60,
-            "jump_height_cm":    (0, 0),
-        }
+            "hip_angle": (145, 18),
+            "knee_angle": (168, 15),
+            "ankle_dorsiflexion": (72, 15),
+            "trunk_lean": (60, 18),
+            "shoulder_angle": (130, 22),
+            "elbow_angle": (162, 25),
+            "symmetry_bonus": 0.60,
+            "jump_height_cm": (0, 0),
+        },
     },
     "cricket_bat": {
         "elite": {
-            "hip_angle":         (120, 10),
-            "knee_angle":        (138, 10),
-            "ankle_dorsiflexion":(90, 8),
-            "trunk_lean":        (20, 8),
-            "shoulder_angle":    (88, 12),
-            "elbow_angle":       (142, 15),
-            "symmetry_bonus":    0.82,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (120, 10),
+            "knee_angle": (138, 10),
+            "ankle_dorsiflexion": (90, 8),
+            "trunk_lean": (20, 8),
+            "shoulder_angle": (88, 12),
+            "elbow_angle": (142, 15),
+            "symmetry_bonus": 0.82,
+            "jump_height_cm": (0, 0),
         },
         "good": {
-            "hip_angle":         (130, 12),
-            "knee_angle":        (148, 12),
-            "ankle_dorsiflexion":(88, 10),
-            "trunk_lean":        (26, 10),
-            "shoulder_angle":    (98, 15),
-            "elbow_angle":       (152, 18),
-            "symmetry_bonus":    0.78,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (130, 12),
+            "knee_angle": (148, 12),
+            "ankle_dorsiflexion": (88, 10),
+            "trunk_lean": (26, 10),
+            "shoulder_angle": (98, 15),
+            "elbow_angle": (152, 18),
+            "symmetry_bonus": 0.78,
+            "jump_height_cm": (0, 0),
         },
         "average": {
-            "hip_angle":         (145, 15),
-            "knee_angle":        (158, 14),
-            "ankle_dorsiflexion":(85, 12),
-            "trunk_lean":        (35, 12),
-            "shoulder_angle":    (112, 20),
-            "elbow_angle":       (162, 22),
-            "symmetry_bonus":    0.72,
-            "jump_height_cm":    (0, 0),
+            "hip_angle": (145, 15),
+            "knee_angle": (158, 14),
+            "ankle_dorsiflexion": (85, 12),
+            "trunk_lean": (35, 12),
+            "shoulder_angle": (112, 20),
+            "elbow_angle": (162, 22),
+            "symmetry_bonus": 0.72,
+            "jump_height_cm": (0, 0),
         },
         "poor": {
-            "hip_angle":         (160, 18),
-            "knee_angle":        (165, 18),
-            "ankle_dorsiflexion":(80, 15),
-            "trunk_lean":        (48, 18),
-            "shoulder_angle":    (130, 25),
-            "elbow_angle":       (170, 25),
-            "symmetry_bonus":    0.62,
-            "jump_height_cm":    (0, 0),
-        }
-    }
+            "hip_angle": (160, 18),
+            "knee_angle": (165, 18),
+            "ankle_dorsiflexion": (80, 15),
+            "trunk_lean": (48, 18),
+            "shoulder_angle": (130, 25),
+            "elbow_angle": (170, 25),
+            "symmetry_bonus": 0.62,
+            "jump_height_cm": (0, 0),
+        },
+    },
 }
 
 
 # ─── Feedback Tag Mapping ─────────────────────────────────────────────────────
 
 FEEDBACK_BY_QUALITY = {
-    "elite":   ["Great form! Maintain position.", "Elite biomechanics detected.", "Hold this form."],
-    "good":    ["Good depth, push harder through the heels.", "Slight asymmetry detected.", "Extend hips fully."],
+    "elite": ["Great form! Maintain position.", "Elite biomechanics detected.", "Hold this form."],
+    "good": ["Good depth, push harder through the heels.", "Slight asymmetry detected.", "Extend hips fully."],
     "average": ["Lower your hips.", "Control trunk lean.", "Activate core more."],
-    "poor":    ["LOWER HIPS!", "Critical form deviation.", "Adjust knee alignment.", "Work on symmetry."]
+    "poor": ["LOWER HIPS!", "Critical form deviation.", "Adjust knee alignment.", "Work on symmetry."],
 }
 
 PHASES = ["setup", "descent", "takeoff", "flight", "landing"]
 
 
 # ─── Sample Generator ────────────────────────────────────────────────────────
+
 
 def _sample(mean: float, std: float, lo: float = 0, hi: float = 180) -> float:
     value = random.gauss(mean, std)
@@ -366,18 +366,23 @@ def _generate_record(sport: str, quality: str, session_id: str, frame_num: int) 
 
 SAMPLES_PER_SPORT_QUALITY = 100  # 5 sports × 4 qualities × 100 = 2000 rows
 
+
 def generate_dataset():
     print("[DATASET] Generating labeled biomechanical training dataset...")
 
     records = []
     session_counter = 0
+    sequence_counter = 0  # PF-11: track sequences for temporal coherence
 
-    for sport in SPORT_DISTRIBUTIONS.keys():
+    for sport in SPORT_DISTRIBUTIONS:
         for quality in ["elite", "good", "average", "poor"]:
             session_id = f"SES_{sport[:3].upper()}_{quality[:3].upper()}_{session_counter:04d}"
             for frame_num in range(SAMPLES_PER_SPORT_QUALITY):
                 record = _generate_record(sport, quality, session_id, frame_num)
+                # PF-11: Tag with sequence_id (each batch of 30 frames = 1 sequence)
+                record["sequence_id"] = sequence_counter + (frame_num // 30)
                 records.append(record)
+            sequence_counter += (SAMPLES_PER_SPORT_QUALITY // 30) + 1
             session_counter += 1
             print(f"  [OK] {sport} / {quality}: {SAMPLES_PER_SPORT_QUALITY} samples")
 
@@ -396,7 +401,14 @@ def generate_dataset():
 
     # Compute stats
     stats = {}
-    for field in ["hip_angle_l", "knee_angle_l", "trunk_lean", "form_score", "limb_symmetry_idx", "estimated_jump_height"]:
+    for field in [
+        "hip_angle_l",
+        "knee_angle_l",
+        "trunk_lean",
+        "form_score",
+        "limb_symmetry_idx",
+        "estimated_jump_height",
+    ]:
         values = [r[field] for r in records]
         stats[field] = {
             "min": round(min(values), 2),
@@ -406,14 +418,16 @@ def generate_dataset():
 
     stats["total_samples"] = len(records)
     stats["sports"] = list(SPORT_DISTRIBUTIONS.keys())
-    stats["quality_distribution"] = {q: sum(1 for r in records if r["quality_label"] == q) for q in ["elite", "good", "average", "poor"]}
+    stats["quality_distribution"] = {
+        q: sum(1 for r in records if r["quality_label"] == q) for q in ["elite", "good", "average", "poor"]
+    }
     stats["phase_distribution"] = {p: sum(1 for r in records if r["phase_label"] == p) for p in PHASES}
     stats["reference_datasets"] = [
         "SportsPose (CVPR 2023) — 176K 3D poses, 24 subjects, 5 sports",
         "AthletePose3D (2025) — 1.3M frames, 12 sport movements",
         "MMPose CMJ Benchmark (2024) — countermovement jump kinematics validated vs. marker mocap",
         "Leeds Sports Pose Extended (LSPe) — 10K sports images, 14 joints",
-        "COCO Keypoints — 200K images, 17 keypoints (pre-training base)"
+        "COCO Keypoints — 200K images, 17 keypoints (pre-training base)",
     ]
 
     json_path = OUTPUT_DIR / "sample_stats.json"

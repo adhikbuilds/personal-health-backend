@@ -27,30 +27,38 @@ After exporting, mix with synthetic data and retrain:
   python model_trainer.py --dataset dataset/mixed_training.csv
 """
 
-import json
-import csv
 import argparse
-from pathlib import Path
+import csv
+import json
 from datetime import datetime, timedelta
-
+from pathlib import Path
 
 DB_PATH = Path(__file__).parent / "db"
 DATASET_PATH = Path(__file__).parent / "dataset"
 
 FEATURE_FIELDS = [
-    "hip_angle_l", "hip_angle_r",
-    "knee_angle_l", "knee_angle_r",
-    "shoulder_angle_l", "shoulder_angle_r",
-    "elbow_angle_l", "elbow_angle_r",
-    "ankle_dorsiflexion_l", "ankle_dorsiflexion_r",
-    "trunk_lean", "spine_deviation", "shoulder_hip_sep", "head_forward_pos",
-    "com_height_norm", "estimated_jump_height", "limb_symmetry_idx",
+    "hip_angle_l",
+    "hip_angle_r",
+    "knee_angle_l",
+    "knee_angle_r",
+    "shoulder_angle_l",
+    "shoulder_angle_r",
+    "elbow_angle_l",
+    "elbow_angle_r",
+    "ankle_dorsiflexion_l",
+    "ankle_dorsiflexion_r",
+    "trunk_lean",
+    "spine_deviation",
+    "shoulder_hip_sep",
+    "head_forward_pos",
+    "com_height_norm",
+    "estimated_jump_height",
+    "limb_symmetry_idx",
     "form_score",
 ]
 
 
-def export(quality_label: str, output_path: str, min_frames: int = 30,
-           days: int = None, dry_run: bool = False):
+def export(quality_label: str, output_path: str, min_frames: int = 30, days: int = None, dry_run: bool = False):
     sessions_file = DB_PATH / "sessions.json"
     if not sessions_file.exists():
         print("[EXPORT] db/sessions.json not found. Run the backend first.")
@@ -108,23 +116,23 @@ def export(quality_label: str, output_path: str, min_frames: int = 30,
                 continue
 
             row = {
-                "session_id":   sid,
-                "athlete_id":   athlete_id,
-                "frame_num":    frame.get("frame_num", 0),
-                "sport":        sport,
+                "session_id": sid,
+                "athlete_id": athlete_id,
+                "frame_num": frame.get("frame_num", 0),
+                "sport": sport,
             }
             for field in FEATURE_FIELDS:
                 row[field] = frame.get(field, 0.0)
 
-            row["phase_label"]   = frame.get("phase", "setup")
+            row["phase_label"] = frame.get("phase", "setup")
             row["quality_label"] = quality_label
-            row["feedback_tag"]  = frame.get("primary_feedback", "")
-            row["source"]        = "real"
+            row["feedback_tag"] = frame.get("primary_feedback", "")
+            row["source"] = "real"
 
             rows.append(row)
 
     # Stats
-    print(f"\n[EXPORT] Scan complete:")
+    print("\n[EXPORT] Scan complete:")
     print(f"  Total sessions:          {len(sessions)}")
     print(f"  Skipped (not complete):  {skipped_not_complete}")
     print(f"  Skipped (too old):       {skipped_old}")
@@ -143,7 +151,7 @@ def export(quality_label: str, output_path: str, min_frames: int = 30,
     sport_counts = {}
     for row in rows:
         sport_counts[row["sport"]] = sport_counts.get(row["sport"], 0) + 1
-    print(f"\n[EXPORT] Sport distribution:")
+    print("\n[EXPORT] Sport distribution:")
     for sport, count in sorted(sport_counts.items(), key=lambda x: -x[1]):
         print(f"  {sport:<20} {count:>5} frames")
 
@@ -163,25 +171,25 @@ def export(quality_label: str, output_path: str, min_frames: int = 30,
 
     print(f"\n[EXPORT] ✓ {len(rows)} rows → {out}")
     print(f"[EXPORT] Quality label applied: '{quality_label}'")
-    print(f"\nNext steps:")
+    print("\nNext steps:")
     print(f"  python mix_datasets.py --real {out} --synthetic dataset/training_data.csv \\")
-    print(f"                         --output dataset/mixed_training.csv --real-weight 4")
-    print(f"  python model_trainer.py --dataset dataset/mixed_training.csv")
+    print("                         --output dataset/mixed_training.csv --real-weight 4")
+    print("  python model_trainer.py --dataset dataset/mixed_training.csv")
     return rows
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Export real session data for model training")
-    parser.add_argument("--quality", required=True, choices=["elite", "good", "average", "poor"],
-                        help="Form quality label to apply to all exported frames")
-    parser.add_argument("--output", default="dataset/real_export.csv",
-                        help="Output CSV file path")
-    parser.add_argument("--min-frames", type=int, default=30,
-                        help="Minimum frames per session (skip shorter sessions)")
-    parser.add_argument("--days", type=int, default=None,
-                        help="Only include sessions from the last N days")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Preview what would be exported without writing")
+    parser.add_argument(
+        "--quality",
+        required=True,
+        choices=["elite", "good", "average", "poor"],
+        help="Form quality label to apply to all exported frames",
+    )
+    parser.add_argument("--output", default="dataset/real_export.csv", help="Output CSV file path")
+    parser.add_argument("--min-frames", type=int, default=30, help="Minimum frames per session (skip shorter sessions)")
+    parser.add_argument("--days", type=int, default=None, help="Only include sessions from the last N days")
+    parser.add_argument("--dry-run", action="store_true", help="Preview what would be exported without writing")
     args = parser.parse_args()
 
     export(

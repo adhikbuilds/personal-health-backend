@@ -1,0 +1,20 @@
+target-version = "py39"
+line-length = 120
+
+[lint]
+select = ["E", "F", "W", "I", "B", "SIM", "RUF"]
+ignore = [
+    "E402",   # imports after docstring (we use __future__ + docstrings)
+    "E501",   # line too long
+    "B008",   # function call in default arg (FastAPI pattern)
+    "UP007",  # Optional[X] vs X | None (need Optional for FastAPI on 3.9)
+    "N806",   # variable in function should be lowercase
+    "RUF001", # ambiguous unicode in strings
+    "SIM211", # ternary style preference
+]
+
+[lint.per-file-ignores]
+"seeds/*" = ["S311"]
+"tests/*" = ["S101"]
+"services/*" = ["ALL"]
+"pipeline/*" = ["ALL"]

@@ -14,55 +14,54 @@ Phase 3 (LATER): personalized model per athlete
 """
 
 from __future__ import annotations
-from typing import List, Dict, Any, Optional
-
 
 # ─── Sport-specific coaching rules ───────────────────────────────────────────
 
-SPORT_DRILLS: Dict[str, List[Dict[str, str]]] = {
+SPORT_DRILLS: dict[str, list[dict[str, str]]] = {
     "vertical_jump": [
-        {"drill": "Box Jumps (3×8)", "focus": "Explosive power",    "cue": "Drive arms up at peak"},
-        {"drill": "Hip Hinge Holds", "focus": "Hip loading",        "cue": "Feel the stretch in glutes"},
+        {"drill": "Box Jumps (3×8)", "focus": "Explosive power", "cue": "Drive arms up at peak"},
+        {"drill": "Hip Hinge Holds", "focus": "Hip loading", "cue": "Feel the stretch in glutes"},
         {"drill": "Single-Leg Calf Raises (3×15)", "focus": "Ankle stiffness", "cue": "Control the descent"},
     ],
     "snatch": [
-        {"drill": "Overhead Squat (light)", "focus": "Mobility",    "cue": "Wrists turned out, bar over heels"},
-        {"drill": "Hang Pulls",             "focus": "Bar path",    "cue": "Keep the bar close to body"},
-        {"drill": "Pause Squats",           "focus": "Leg drive",   "cue": "3-second pause at bottom"},
+        {"drill": "Overhead Squat (light)", "focus": "Mobility", "cue": "Wrists turned out, bar over heels"},
+        {"drill": "Hang Pulls", "focus": "Bar path", "cue": "Keep the bar close to body"},
+        {"drill": "Pause Squats", "focus": "Leg drive", "cue": "3-second pause at bottom"},
     ],
     "sprint": [
-        {"drill": "A-March",         "focus": "Knee drive",         "cue": "Drive knee to hip height"},
-        {"drill": "Wall Drives",     "focus": "Acceleration",       "cue": "45° body angle"},
-        {"drill": "Bounding Strides","focus": "Ground contact time","cue": "Minimise ground contact"},
+        {"drill": "A-March", "focus": "Knee drive", "cue": "Drive knee to hip height"},
+        {"drill": "Wall Drives", "focus": "Acceleration", "cue": "45° body angle"},
+        {"drill": "Bounding Strides", "focus": "Ground contact time", "cue": "Minimise ground contact"},
     ],
     "javelin": [
         {"drill": "Rotation Throws (medicine ball)", "focus": "Hip rotation", "cue": "Lead with elbow"},
-        {"drill": "Standing Release Drill",           "focus": "Release angle", "cue": "45° wrist snap"},
-        {"drill": "Step-Step-Throw Sequence",         "focus": "Run-up rhythm", "cue": "Plant foot wide"},
+        {"drill": "Standing Release Drill", "focus": "Release angle", "cue": "45° wrist snap"},
+        {"drill": "Step-Step-Throw Sequence", "focus": "Run-up rhythm", "cue": "Plant foot wide"},
     ],
     "cricket_bat": [
-        {"drill": "Shadow Cover Drive",    "focus": "Footwork",      "cue": "Front foot to pitch of ball"},
-        {"drill": "Tee Batting (front foot)", "focus": "Head position","cue": "Head level, watch the tee"},
-        {"drill": "Throw-Down Off-Spin",   "focus": "Reading spin",  "cue": "Read from the hand"},
+        {"drill": "Shadow Cover Drive", "focus": "Footwork", "cue": "Front foot to pitch of ball"},
+        {"drill": "Tee Batting (front foot)", "focus": "Head position", "cue": "Head level, watch the tee"},
+        {"drill": "Throw-Down Off-Spin", "focus": "Reading spin", "cue": "Read from the hand"},
     ],
 }
 
 TIER_BPI_THRESHOLDS = {
-    "Block":    0,
+    "Block": 0,
     "District": 5000,
-    "State":    15000,
+    "State": 15000,
     "National": 30000,
 }
 
 
 # ─── TrendAnalyzer ────────────────────────────────────────────────────────────
 
+
 class TrendAnalyzer:
     """Detects form score trend over the last N sessions."""
 
     MIN_SESSIONS = 3
 
-    def analyze(self, session_summaries: List[dict]) -> dict:
+    def analyze(self, session_summaries: list[dict]) -> dict:
         """
         Args:
             session_summaries: list of completed session summary dicts,
@@ -84,11 +83,11 @@ class TrendAnalyzer:
             }
 
         # Simple linear regression slope
-        n  = len(scores)
+        n = len(scores)
         xs = list(range(n))
         mx = sum(xs) / n
         my = sum(scores) / n
-        num   = sum((x - mx) * (y - my) for x, y in zip(xs, scores))
+        num = sum((x - mx) * (y - my) for x, y in zip(xs, scores))
         denom = sum((x - mx) ** 2 for x in xs) or 1
         slope = num / denom
 
@@ -100,21 +99,22 @@ class TrendAnalyzer:
             trend = "stable"
 
         return {
-            "trend":      trend,
-            "slope":      round(slope, 2),
-            "peak":       round(max(scores), 1),
+            "trend": trend,
+            "slope": round(slope, 2),
+            "peak": round(max(scores), 1),
             "recent_avg": round(sum(scores[-3:]) / min(len(scores), 3), 1),
         }
 
 
 # ─── AnomalyDetector ─────────────────────────────────────────────────────────
 
+
 class AnomalyDetector:
     """Flags sudden drops in form score that may signal fatigue or injury."""
 
-    DROP_THRESHOLD = 15.0   # drop of >15 points from prev session = anomaly
+    DROP_THRESHOLD = 15.0  # drop of >15 points from prev session = anomaly
 
-    def detect(self, session_summaries: List[dict]) -> List[dict]:
+    def detect(self, session_summaries: list[dict]) -> list[dict]:
         """
         Returns list of anomaly events, each:
             { session_id, score, prev_score, drop, flag: 'fatigue'|'injury_risk' }
@@ -125,28 +125,31 @@ class AnomalyDetector:
             score = s.get("avg_form_score", 0)
             if prev_score is not None and (prev_score - score) >= self.DROP_THRESHOLD:
                 drop = prev_score - score
-                anomalies.append({
-                    "session_id": s.get("session_id", ""),
-                    "score":      round(score, 1),
-                    "prev_score": round(prev_score, 1),
-                    "drop":       round(drop, 1),
-                    "flag":       "injury_risk" if drop >= 25 else "fatigue",
-                    "message":    (
-                        f"⚠️ Form dropped {drop:.0f}pts — consider rest or lighter training"
-                        if drop >= 25 else
-                        f"😤 Slight dip ({drop:.0f}pts) — may be fatigue"
-                    ),
-                })
+                anomalies.append(
+                    {
+                        "session_id": s.get("session_id", ""),
+                        "score": round(score, 1),
+                        "prev_score": round(prev_score, 1),
+                        "drop": round(drop, 1),
+                        "flag": "injury_risk" if drop >= 25 else "fatigue",
+                        "message": (
+                            f"⚠️ Form dropped {drop:.0f}pts — consider rest or lighter training"
+                            if drop >= 25
+                            else f"😤 Slight dip ({drop:.0f}pts) — may be fatigue"
+                        ),
+                    }
+                )
             prev_score = score
         return anomalies
 
 
 # ─── CoachRecommender ─────────────────────────────────────────────────────────
 
+
 class CoachRecommender:
     """Generates targeted drill recommendations from sport + joint angle data."""
 
-    def recommend(self, sport: str, avg_joint_angles: dict, trend: str) -> List[dict]:
+    def recommend(self, sport: str, avg_joint_angles: dict, trend: str) -> list[dict]:
         """
         Args:
             sport: sport key
@@ -159,7 +162,7 @@ class CoachRecommender:
 
         # Sort by relevance based on weakest joint angles
         knee_avg = (avg_joint_angles.get("KNEE_L", 170) + avg_joint_angles.get("KNEE_R", 170)) / 2
-        hip_avg  = (avg_joint_angles.get("HIP_L",  170) + avg_joint_angles.get("HIP_R",  170)) / 2
+        hip_avg = (avg_joint_angles.get("HIP_L", 170) + avg_joint_angles.get("HIP_R", 170)) / 2
 
         # Bump hip drill priority if hip angle is off
         if hip_avg < 150 and len(drills) > 1:
@@ -174,17 +177,18 @@ class CoachRecommender:
             message = "🟡 Maintain consistency — small gains add up."
 
         return {
-            "drills":  [dict(d, priority=("high" if i == 0 else "medium")) for i, d in enumerate(drills[:3])],
+            "drills": [dict(d, priority=("high" if i == 0 else "medium")) for i, d in enumerate(drills[:3])],
             "message": message,
         }
 
 
 # ─── ProgressPredictor ───────────────────────────────────────────────────────
 
+
 class ProgressPredictor:
     """Estimates weeks to reach next athlete tier based on BPI growth rate."""
 
-    def predict(self, current_bpi: int, sessions: List[dict]) -> dict:
+    def predict(self, current_bpi: int, sessions: list[dict]) -> dict:
         """
         Args:
             current_bpi: current BPI value
@@ -195,24 +199,24 @@ class ProgressPredictor:
         """
         # Find current and next tier
         current_tier = "Block"
-        next_tier    = "District"
+        next_tier = "District"
         for tier, threshold in reversed(list(TIER_BPI_THRESHOLDS.items())):
             if current_bpi >= threshold:
                 current_tier = tier
                 break
 
         tiers = list(TIER_BPI_THRESHOLDS.keys())
-        tier_idx   = tiers.index(current_tier)
-        next_tier  = tiers[tier_idx + 1] if tier_idx + 1 < len(tiers) else None
+        tier_idx = tiers.index(current_tier)
+        next_tier = tiers[tier_idx + 1] if tier_idx + 1 < len(tiers) else None
 
         if not next_tier:
             return {
-                "current_tier":    current_tier,
-                "next_tier":       None,
-                "weeks_to_next":   None,
+                "current_tier": current_tier,
+                "next_tier": None,
+                "weeks_to_next": None,
                 "sessions_needed": None,
-                "bpi_gap":         0,
-                "message":         "🏆 Maximum tier reached. Focus on national championships.",
+                "bpi_gap": 0,
+                "message": "🏆 Maximum tier reached. Focus on national championships.",
             }
 
         bpi_gap = TIER_BPI_THRESHOLDS[next_tier] - current_bpi
@@ -226,14 +230,14 @@ class ProgressPredictor:
 
         sessions_needed = max(1, round(bpi_gap / avg_gain_per_session))
         # Assume 3 sessions per week
-        weeks_to_next   = max(1, round(sessions_needed / 3))
+        weeks_to_next = max(1, round(sessions_needed / 3))
 
         return {
-            "current_tier":    current_tier,
-            "next_tier":       next_tier,
-            "weeks_to_next":   weeks_to_next,
+            "current_tier": current_tier,
+            "next_tier": next_tier,
+            "weeks_to_next": weeks_to_next,
             "sessions_needed": sessions_needed,
-            "bpi_gap":         bpi_gap,
+            "bpi_gap": bpi_gap,
             "message": (
                 f"📈 {bpi_gap:,} BPI to reach {next_tier} tier → "
                 f"~{sessions_needed} sessions (~{weeks_to_next} weeks at 3×/week)"
@@ -243,9 +247,10 @@ class ProgressPredictor:
 
 # ─── Combined Insights ────────────────────────────────────────────────────────
 
+
 def generate_insights(
     athlete: dict,
-    session_summaries: List[dict],
+    session_summaries: list[dict],
 ) -> dict:
     """
     Generates the full intelligence payload for /athlete/{id}/insights.
@@ -256,32 +261,30 @@ def generate_insights(
     Returns:
         Full insights dict
     """
-    sport    = athlete.get("sport", "vertical_jump")
-    bpi      = athlete.get("bpi", 0)
+    sport = athlete.get("sport", "vertical_jump")
+    bpi = athlete.get("bpi", 0)
 
-    trend_data  = TrendAnalyzer().analyze(session_summaries)
-    anomalies   = AnomalyDetector().detect(session_summaries)
+    trend_data = TrendAnalyzer().analyze(session_summaries)
+    anomalies = AnomalyDetector().detect(session_summaries)
 
     # Average joint angles across sessions (from FRAME_BUFFER would be ideal,
     # but we work with what's in summaries for now)
-    avg_angles: Dict[str, float] = {}  # populated from real session frames in future
+    avg_angles: dict[str, float] = {}  # populated from real session frames in future
 
-    coach_data  = CoachRecommender().recommend(sport, avg_angles, trend_data["trend"])
-    prediction  = ProgressPredictor().predict(bpi, session_summaries)
+    coach_data = CoachRecommender().recommend(sport, avg_angles, trend_data["trend"])
+    prediction = ProgressPredictor().predict(bpi, session_summaries)
 
     # Data source signal
     is_real_data = len(session_summaries) > 3
-    data_source  = "real" if is_real_data else "mock" if len(session_summaries) == 0 else "hybrid"
+    data_source = "real" if is_real_data else "mock" if len(session_summaries) == 0 else "hybrid"
 
     return {
-        "athlete_id":   athlete.get("id"),
-        "sport":        sport,
-        "data_source":  data_source,
-        "trend":        trend_data,
-        "anomalies":    anomalies,
-        "coaching":     coach_data,
-        "prediction":   prediction,
-        "summary": (
-            f"{trend_data['trend'].title()} form. {prediction['message']}"
-        ),
+        "athlete_id": athlete.get("id"),
+        "sport": sport,
+        "data_source": data_source,
+        "trend": trend_data,
+        "anomalies": anomalies,
+        "coaching": coach_data,
+        "prediction": prediction,
+        "summary": (f"{trend_data['trend'].title()} form. {prediction['message']}"),
     }
