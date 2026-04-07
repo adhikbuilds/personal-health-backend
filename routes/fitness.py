@@ -96,6 +96,23 @@ async def _broadcast(session_id: str, payload: dict):
             conns.remove(ws)
 
 
+def _resolve_sport_model_path(sport: str) -> Optional[str]:
+    """PF-10: pick a sport-specific .tflite if it exists, else fall back to the generic one.
+    Returns the resolved path as a string, or None if no model is available.
+    pose_analyzer is rule-based today, so this is attached to the analyzer for
+    observability / eventual on-device deployment — it does not change scoring."""
+    from pathlib import Path as _P
+
+    models_dir = _P(__file__).resolve().parent.parent / "models"
+    specific = models_dir / f"pose_classifier_{sport}.tflite"
+    generic = models_dir / "pose_classifier.tflite"
+    if specific.exists():
+        return str(specific)
+    if generic.exists():
+        return str(generic)
+    return None
+
+
 async def analysis_worker():
     while True:
         try:
@@ -105,7 +122,10 @@ async def analysis_worker():
                 from services.pose_analyzer import PoseAnalyzer
 
                 if session_id not in _POSE_ANALYZERS:
-                    _POSE_ANALYZERS[session_id] = PoseAnalyzer(sport=sport)
+                    analyzer = PoseAnalyzer(sport=sport)
+                    # PF-10: attach sport-specific model path (fallback to generic)
+                    analyzer.model_path = _resolve_sport_model_path(sport)
+                    _POSE_ANALYZERS[session_id] = analyzer
                 analyzer = _POSE_ANALYZERS[session_id]
                 result = analyzer.analyze_base64_image(image_b64, sport)
 
@@ -191,6 +211,37 @@ async def session_cleanup_worker():
         try:
             await asyncio.sleep(1800)
             now = time.time()
+
+            # PF-12: Delete persisted frame files for sessions that ended > 24h ago.
+            try:
+                from database import DB_PATH
+
+                frames_dir = DB_PATH / "frames"
+                if frames_dir.exists():
+                    removed = 0
+                    for fp in frames_dir.glob("*.jsonl"):
+                        sid = fp.stem
+                        session = SESSION_DB.get(sid)
+                        if not session or session.get("status") != "completed":
+                            continue
+                        ended_at = session.get("ended_at")
+                        if not ended_at:
+                            continue
+                        try:
+                            ended_ts = datetime.fromisoformat(str(ended_at).replace("Z", "+00:00")).timestamp()
+                        except Exception:
+                            continue
+                        if now - ended_ts > 86400:  # 24 hours
+                            try:
+                                fp.unlink()
+                                removed += 1
+                            except Exception as rm_err:
+                                print(f"[PF-12] Failed to remove {fp}: {rm_err}")
+                    if removed:
+                        print(f"[PF-12] Cleaned up {removed} expired frame files")
+            except Exception as cleanup_err:
+                print(f"[PF-12] Frame file cleanup error: {cleanup_err}")
+
             for sid, session in list(SESSION_DB.items()):
                 if session.get("status") != "active":
                     continue
@@ -357,6 +408,29 @@ async def end_session(session_id: str):
     if SESSION_DB[session_id]["status"] != "active":
         raise HTTPException(400, "Session already ended")
     frames = FRAME_BUFFER.get(session_id, [])
+    # PF-12: If memory buffer is empty but persisted frames exist on disk, load them.
+    if not frames:
+        try:
+            from database import DB_PATH
+
+            disk_path = DB_PATH / "frames" / f"{session_id}.jsonl"
+            if disk_path.exists():
+                recovered = []
+                with open(disk_path, encoding="utf-8") as fp:
+                    for line in fp:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            recovered.append(json.loads(line))
+                        except json.JSONDecodeError:
+                            continue
+                if recovered:
+                    frames = recovered
+                    FRAME_BUFFER[session_id] = recovered
+                    print(f"[PF-12] Recovered {len(recovered)} frames from disk for {session_id[:8]}")
+        except Exception as recover_err:
+            print(f"[PF-12] Recovery failed: {recover_err}")
     if not frames:
         summary = {
             "session_id": session_id,
@@ -553,7 +627,10 @@ async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
         from services.pose_analyzer import PoseAnalyzer
 
         if session_id not in _POSE_ANALYZERS:
-            _POSE_ANALYZERS[session_id] = PoseAnalyzer(sport=SESSION_DB[session_id].get("sport", "vertical_jump"))
+            _sport = SESSION_DB[session_id].get("sport", "vertical_jump")
+            _ana = PoseAnalyzer(sport=_sport)
+            _ana.model_path = _resolve_sport_model_path(_sport)  # PF-10
+            _POSE_ANALYZERS[session_id] = _ana
         analyzer = _POSE_ANALYZERS[session_id]
         while True:
             data = await websocket.receive_json()
