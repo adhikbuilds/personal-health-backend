@@ -20,7 +20,7 @@ Key landmark indices (MediaPipe standard):
 
 import math
 from collections import deque
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -83,6 +83,9 @@ class BiomechanicalFrame:
 
     # Phase classification
     phase: str = "setup"  # setup/descent/takeoff/flight/landing
+
+    # PF-07: Injury risk flags (asymmetry-based)
+    injury_flags: list = field(default_factory=list)
 
     # Metadata
     visibility_ok: bool = True
@@ -638,6 +641,15 @@ class PoseAnalyzer:
         if valid_pairs:
             avg_asymmetry = sum(abs(a - b) / max(a, b, 1) for a, b in valid_pairs) / len(valid_pairs)
             frame.limb_symmetry_idx = round(max(0.0, 1.0 - avg_asymmetry), 3)
+
+        # PF-07: Injury risk flags based on asymmetry
+        if frame.limb_symmetry_idx < 0.70:
+            frame.injury_flags.append("asymmetry_critical")
+        elif frame.limb_symmetry_idx < 0.80:
+            # Check if last 3 frames also had low symmetry
+            recent = list(self.frame_history)[-3:]
+            if len(recent) >= 2 and all(f.limb_symmetry_idx < 0.80 for f in recent):
+                frame.injury_flags.append("asymmetry_warning")
 
         # ── Phase Classification (PF-05: all 8 sports) ──
         if self.sport in ("vertical_jump", "squat", "snatch"):

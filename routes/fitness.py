@@ -139,6 +139,26 @@ async def analysis_worker():
                     RESULT_STORE[session_id] = result_entry
                     if FRAME_BUFFER.get(session_id):
                         FRAME_BUFFER[session_id][-1].update(update)
+
+                    # PF-08: Log prediction to db/predictions.jsonl for drift detection
+                    try:
+                        from database import DB_PATH
+
+                        log_entry = {
+                            "session_id": session_id,
+                            "frame_num": frame_dict["frame_num"],
+                            "timestamp": time.time(),
+                            "sport": sport,
+                            "form_score": result["form_score"],
+                            "form_quality": result["form_quality"],
+                            "phase": result["phase"],
+                            "symmetry_idx": result["symmetry_score"],
+                        }
+                        with open(DB_PATH / "predictions.jsonl", "a") as plog:
+                            plog.write(json.dumps(log_entry) + "\n")
+                    except Exception as plog_err:
+                        print(f"[PRED LOG] {plog_err}")
+
                     print(
                         f"[AI] session={session_id[:8]} score={result['form_score']:.0f} "
                         f"quality={result['form_quality']} phase={result['phase']}"
@@ -575,6 +595,54 @@ async def dataset_stats():
         return {"error": "Run: python generate_dataset.py"}
     with open(stats_path, encoding="utf-8") as f:
         return json.load(f)
+
+
+# PF-08: Model prediction stats endpoint
+@router.get("/model/stats", tags=["Model"])
+async def model_stats():
+    """Read prediction log and return aggregate stats for drift detection."""
+    from database import DB_PATH
+
+    log_path = DB_PATH / "predictions.jsonl"
+    if not log_path.exists():
+        return {"total_predictions": 0, "message": "No predictions logged yet"}
+
+    today = datetime.utcnow().date().isoformat()
+    today_count = 0
+    score_sum = 0.0
+    quality_dist: dict = {"poor": 0, "average": 0, "good": 0, "elite": 0, "unknown": 0}
+    sport_dist: dict = {}
+    total = 0
+
+    try:
+        with open(log_path) as f:
+            for line in f:
+                try:
+                    entry = json.loads(line)
+                except Exception:
+                    continue
+                total += 1
+                ts = entry.get("timestamp", 0)
+                entry_date = datetime.utcfromtimestamp(ts).date().isoformat() if ts else ""
+                if entry_date == today:
+                    today_count += 1
+                    score_sum += float(entry.get("form_score", 0))
+                    q = entry.get("form_quality", "unknown")
+                    if q in quality_dist:
+                        quality_dist[q] += 1
+                    sport = entry.get("sport", "unknown")
+                    sport_dist[sport] = sport_dist.get(sport, 0) + 1
+    except Exception as e:
+        return {"error": f"Could not read prediction log: {e}"}
+
+    avg_score = round(score_sum / today_count, 1) if today_count > 0 else 0
+    return {
+        "total_predictions": total,
+        "today_predictions": today_count,
+        "today_avg_form_score": avg_score,
+        "quality_distribution_today": quality_dist,
+        "predictions_by_sport_today": sport_dist,
+    }
 
 
 # ─── Fitness Test ───────────────────────────────────────────────────────────

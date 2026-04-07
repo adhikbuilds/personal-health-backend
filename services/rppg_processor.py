@@ -127,6 +127,10 @@ class RPPGProcessor:
 
         self._trim_window()
 
+        # PF-09: Signal validation — reject invalid RGB
+        if (r_val < 10 and g_val < 10 and b_val < 10) or (r_val > 245 and g_val > 245 and b_val > 245):
+            return {"face_found": True, "signal_quality": "invalid", "message": "Adjust lighting", "bpm": 0}
+
         quality = self._signal_quality()
         return {"face_found": True, "signal_quality": quality, "r": r_val, "g": g_val, "b": b_val}
 
