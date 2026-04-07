@@ -91,8 +91,8 @@ QUALITY_CLASSES = ["poor", "average", "good", "elite"]  # 0,1,2,3
 SPORT_CLASSES = ["vertical_jump", "snatch", "sprint", "javelin", "cricket_bat"]
 
 
-def load_data():
-    """Load and preprocess the training CSV."""
+def load_data(sport_filter=None):
+    """Load and preprocess the training CSV. PF-10: optionally filter by sport."""
     if not DATASET_PATH.exists():
         print("[ERROR] Dataset not found. Run: python generate_dataset.py")
         return None, None, None
@@ -101,6 +101,8 @@ def load_data():
     with open(DATASET_PATH) as f:
         reader = csv.DictReader(f)
         for row in reader:
+            if sport_filter and row.get("sport") != sport_filter:
+                continue
             rows.append(row)
 
     X = []
@@ -119,7 +121,7 @@ def load_data():
         except (ValueError, KeyError):
             continue
 
-    print(f"[DATA] Loaded {len(X)} samples")
+    print(f"[DATA] Loaded {len(X)} samples" + (f" (sport={sport_filter})" if sport_filter else ""))
     if not X:
         return None, None, None
 
@@ -129,7 +131,7 @@ def load_data():
     return X_with_sport, y, rows
 
 
-def train_model(X, y):
+def train_model(X, y, sport_suffix=""):
     """Train the classifier. Uses TF/Keras if available, sklearn RandomForest as fallback."""
 
     # Convert to numpy
@@ -260,8 +262,9 @@ def _train_keras(X_train, y_train, X_test, y_test):
     with open(MODEL_DIR / "training_metrics.json", "w") as f:
         json.dump(metrics, f, indent=2)
 
-    # Save Keras model
-    keras_path = MODEL_DIR / "pose_classifier.h5"
+    # PF-10: Save Keras model with optional sport suffix
+    suffix = f"_{sport_suffix}" if sport_suffix else ""
+    keras_path = MODEL_DIR / f"pose_classifier{suffix}.h5"
     model.save(keras_path)
     print(f"[SAVE] Keras model: {keras_path}")
 
@@ -271,7 +274,7 @@ def _train_keras(X_train, y_train, X_test, y_test):
         converter.optimizations = [tf.lite.Optimize.DEFAULT]  # INT8 quantization
         tflite_model = converter.convert()
 
-        tflite_path = MODEL_DIR / "pose_classifier.tflite"
+        tflite_path = MODEL_DIR / f"pose_classifier{suffix}.tflite"
         with open(tflite_path, "wb") as f:
             f.write(tflite_model)
         print(f"[EXPORT] TFLite model: {tflite_path} ({os.path.getsize(tflite_path) // 1024}KB)")
@@ -324,18 +327,26 @@ def _train_sklearn_fallback(X_train, y_train, X_test, y_test):
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Personal Health — Pose Classifier Training")
+    parser.add_argument("--sport", help="Train sport-specific model (PF-10)", default=None)
+    args = parser.parse_args()
+
     print("=" * 60)
-    print("ActiveBharat — Sports Pose Classifier Training")
+    print("Personal Health — Sports Pose Classifier Training")
+    if args.sport:
+        print(f"Mode: PER-SPORT ({args.sport})")
     print("=" * 60)
 
-    X, y, rows = load_data()
+    X, y, rows = load_data(sport_filter=args.sport)
     if X is None:
         sys.exit(1)
 
     label_dist = {cls: y.count(i) for i, cls in enumerate(QUALITY_CLASSES)}
     print(f"[DATA] Label distribution: {label_dist}")
 
-    model = train_model(X, y)
+    model = train_model(X, y, sport_suffix=args.sport or "")
     if model:
         print("\n[DONE] Training complete! Models saved to ml/models/")
         print("  → pose_classifier.h5    (Keras, Python inference)")
