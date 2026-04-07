@@ -372,13 +372,17 @@ def generate_dataset():
 
     records = []
     session_counter = 0
+    sequence_counter = 0  # PF-11: track sequences for temporal coherence
 
     for sport in SPORT_DISTRIBUTIONS:
         for quality in ["elite", "good", "average", "poor"]:
             session_id = f"SES_{sport[:3].upper()}_{quality[:3].upper()}_{session_counter:04d}"
             for frame_num in range(SAMPLES_PER_SPORT_QUALITY):
                 record = _generate_record(sport, quality, session_id, frame_num)
+                # PF-11: Tag with sequence_id (each batch of 30 frames = 1 sequence)
+                record["sequence_id"] = sequence_counter + (frame_num // 30)
                 records.append(record)
+            sequence_counter += (SAMPLES_PER_SPORT_QUALITY // 30) + 1
             session_counter += 1
             print(f"  [OK] {sport} / {quality}: {SAMPLES_PER_SPORT_QUALITY} samples")
 
