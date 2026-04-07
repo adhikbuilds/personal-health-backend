@@ -1,9 +1,9 @@
 {
-  "final_train_acc": 0.959,
-  "final_val_acc": 0.984,
-  "test_accuracy": 0.986,
-  "test_loss": 0.0462,
-  "epochs_trained": 120,
+  "final_train_acc": 0.948,
+  "final_val_acc": 0.95,
+  "test_accuracy": 0.952,
+  "test_loss": 0.1451,
+  "epochs_trained": 66,
   "model_type": "MLP_Keras",
   "input_features": 18,
   "num_classes": 4,
@@ -13,5 +13,5 @@
     "good",
     "elite"
   ],
-  "classification_report": "  poor    : P=0.99 R=1.00 F1=0.99\n  average : P=1.00 R=0.98 F1=0.99\n  good    : P=0.98 R=0.98 F1=0.98\n  elite   : P=0.98 R=0.99 F1=0.98\n"
+  "classification_report": "  poor    : P=0.97 R=0.98 F1=0.98\n  average : P=0.96 R=0.94 F1=0.95\n  good    : P=0.93 R=0.93 F1=0.93\n  elite   : P=0.95 R=0.96 F1=0.95\n"
 }
