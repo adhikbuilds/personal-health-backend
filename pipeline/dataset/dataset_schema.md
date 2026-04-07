@@ -37,6 +37,14 @@ Total: 2,000 labeled frames × 5 sports × 4 quality tiers
 | phase_label | str | — | Movement phase: setup/descent/takeoff/flight/landing |
 | quality_label | str | — | **TARGET LABEL**: elite / good / average / poor |
 | feedback_tag | str | — | Primary coaching correction cue |
+| sequence_id | int | — | PF-11: groups 30 consecutive frames into a coherent rep sequence |
+
+## Temporal Coherence (PF-11)
+Frames are generated in 30-frame sequences (1s @ 30fps). Within a sequence:
+- Joint angles change by at most 5° per frame (smooth trajectories)
+- Phases progress in order (setup → descent → takeoff → flight → landing)
+- form_score drifts by at most 5 points (models consistent effort across a rep)
+Use `sequence_id` to do sequence-level splits when training temporal models.
 
 ## Quality Label Definitions
 | Label | Form Score | Description |
