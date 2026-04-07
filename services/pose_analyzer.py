@@ -732,8 +732,18 @@ class PoseAnalyzer:
             if not results.pose_landmarks:
                 return {"pose_detected": False}
 
+            # PF-13: Multi-person guard — warn if primary detection confidence is low
+            multi_person_warning = None
+            try:
+                landmarks = results.pose_landmarks.landmark
+                avg_visibility = sum(lm.visibility for lm in landmarks) / len(landmarks)
+                if avg_visibility < 0.6:
+                    multi_person_warning = "Multiple people detected — ensure only you are in frame"
+            except Exception:
+                pass
+
             bio = self.analyze(results)
-            return {
+            result = {
                 "pose_detected": True,
                 "visibility_ok": bio.visibility_ok,
                 "form_score": bio.form_score,
@@ -753,7 +763,11 @@ class PoseAnalyzer:
                 "trunk_lean": round(bio.trunk_lean, 1),
                 "estimated_jump_height": round(bio.estimated_jump_height, 1),
                 "com_height_norm": round(bio.com_height_norm, 3),
+                "injury_flags": bio.injury_flags,
             }
+            if multi_person_warning:
+                result["warning"] = multi_person_warning
+            return result
         finally:
             self.sport = prev_sport
 
