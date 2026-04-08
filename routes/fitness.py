@@ -122,7 +122,10 @@ async def analysis_worker():
                 from services.pose_analyzer import PoseAnalyzer
 
                 if session_id not in _POSE_ANALYZERS:
-                    analyzer = PoseAnalyzer(sport=sport)
+                    # PF-03: use athlete's actual height for jump-height calc
+                    _ath_id = SESSION_DB.get(session_id, {}).get("athlete_id")
+                    _height = float(ATHLETE_DB.get(_ath_id, {}).get("height_cm", 170))
+                    analyzer = PoseAnalyzer(sport=sport, body_height_cm=_height)
                     # PF-10: attach sport-specific model path (fallback to generic)
                     analyzer.model_path = _resolve_sport_model_path(sport)
                     _POSE_ANALYZERS[session_id] = analyzer
@@ -628,7 +631,9 @@ async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
 
         if session_id not in _POSE_ANALYZERS:
             _sport = SESSION_DB[session_id].get("sport", "vertical_jump")
-            _ana = PoseAnalyzer(sport=_sport)
+            _ath_id = SESSION_DB[session_id].get("athlete_id")
+            _height = float(ATHLETE_DB.get(_ath_id, {}).get("height_cm", 170))  # PF-03
+            _ana = PoseAnalyzer(sport=_sport, body_height_cm=_height)
             _ana.model_path = _resolve_sport_model_path(_sport)  # PF-10
             _POSE_ANALYZERS[session_id] = _ana
         analyzer = _POSE_ANALYZERS[session_id]
