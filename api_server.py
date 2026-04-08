@@ -57,6 +57,7 @@ if FASTAPI_AVAILABLE:
     from routes.scorecard import router as scorecard_router
     from routes.session_replay import router as session_replay_router
     from routes.social import router as social_router
+
     from routes.streaks import router as streaks_router
     from routes.weekly_summary import router as summary_router
     from routes.wellness import router as wellness_router
@@ -65,6 +66,8 @@ if FASTAPI_AVAILABLE:
 
     configure_logging("INFO")
     log = get_logger("api_server")
+
+
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -125,11 +128,13 @@ if FASTAPI_AVAILABLE:
     app.include_router(fitness_router)
     app.include_router(athletes_router)
     app.include_router(social_router)
+
     app.include_router(progress_router)
     app.include_router(analytics_router)
     app.include_router(coach_router)
-    from routes.nutrition import router as nutrition_router
+    from routes.nutrition import router, nutrition_router
 
+    app.include_router(router)
     app.include_router(nutrition_router)
     app.include_router(plan_router)
     app.include_router(summary_router)
