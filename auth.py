@@ -8,19 +8,27 @@ import time
 import uuid
 from typing import Optional
 
-from fastapi import Depends, Header, HTTPException, Request, status
+from fastapi import Depends, Header, HTTPException, status
 
 from config import settings
 from logging_setup import get_logger
 from sqlite_store import (
-    get_user_by_email, get_user_by_id, insert_user, is_refresh_valid,
-    revoke_refresh, store_api_key, store_refresh, touch_login, verify_api_key_hash,
+    get_user_by_email,
+    get_user_by_id,
+    insert_user,
+    is_refresh_valid,
+    revoke_refresh,
+    store_api_key,
+    store_refresh,
+    touch_login,
+    verify_api_key_hash,
 )
 
 log = get_logger("auth")
 
 try:
     import bcrypt
+
     BCRYPT_AVAILABLE = True
 except ImportError:
     BCRYPT_AVAILABLE = False
@@ -28,6 +36,7 @@ except ImportError:
 
 try:
     import jwt
+
     JWT_AVAILABLE = True
 except ImportError:
     JWT_AVAILABLE = False
@@ -72,25 +81,29 @@ def _decode(token: str) -> dict:
 
 def issue_access_token(user_id: str, role: str) -> str:
     now = int(time.time())
-    return _encode({
-        "sub": user_id,
-        "role": role,
-        "type": "access",
-        "iat": now,
-        "exp": now + settings.jwt_ttl_minutes * 60,
-    })
+    return _encode(
+        {
+            "sub": user_id,
+            "role": role,
+            "type": "access",
+            "iat": now,
+            "exp": now + settings.jwt_ttl_minutes * 60,
+        }
+    )
 
 
 def issue_refresh_token(user_id: str) -> tuple[str, str]:
     jti = uuid.uuid4().hex
     now = int(time.time())
-    token = _encode({
-        "sub": user_id,
-        "jti": jti,
-        "type": "refresh",
-        "iat": now,
-        "exp": now + REFRESH_TTL_SECONDS,
-    })
+    token = _encode(
+        {
+            "sub": user_id,
+            "jti": jti,
+            "type": "refresh",
+            "iat": now,
+            "exp": now + REFRESH_TTL_SECONDS,
+        }
+    )
     store_refresh(jti, user_id, REFRESH_TTL_SECONDS)
     return token, jti
 
@@ -244,4 +257,5 @@ def require_role(*roles: str):
         if user["role"] not in roles:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "insufficient role")
         return user
+
     return _dep

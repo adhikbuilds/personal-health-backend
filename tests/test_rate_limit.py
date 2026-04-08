@@ -50,6 +50,7 @@ def test_independent_keys_independent_buckets():
 def test_429_response_shape(client, monkeypatch):
     """End-to-end: shrink the global limiter and trip it."""
     import middleware as mw
+
     original = mw._LIMITER
     mw._LIMITER = RateLimiter(per_minute=60, burst=2)
     try:

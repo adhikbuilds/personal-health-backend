@@ -26,7 +26,7 @@ os.environ["ENV"] = "dev"
 os.environ.pop("ANTHROPIC_API_KEY", None)  # force fallback path
 
 # Point sqlite at temp dir by monkey-patching settings *after* import
-import config  # noqa: E402
+import config
 
 object.__setattr__(config.settings, "db_path", Path(_tmp))
 
@@ -34,12 +34,14 @@ object.__setattr__(config.settings, "db_path", Path(_tmp))
 @pytest.fixture(scope="session")
 def app():
     # Import here so config patching above takes effect first.
-    import api_server  # noqa: WPS433
+    import api_server
+
     return api_server.app
 
 
 @pytest.fixture()
 def client(app):
     from fastapi.testclient import TestClient
+
     with TestClient(app) as c:
         yield c

@@ -26,6 +26,7 @@ log = get_logger("ai_coach")
 
 try:
     from anthropic import Anthropic
+
     ANTHROPIC_AVAILABLE = True
 except ImportError:
     ANTHROPIC_AVAILABLE = False
@@ -128,7 +129,7 @@ def fallback_note(athlete_name: str, sport: str, stats: dict) -> list[str]:
         regressed = f"Form dropped {trend:.1f}% — likely fatigue or rushed reps. Slow tempo on the next session."
     elif weak:
         j = weak[0]
-        regressed = f"{j.get('joint','joint').replace('_',' ').title()} is drifting {j.get('deviation_deg',0):.0f}° from ideal — fix angle before adding load."
+        regressed = f"{j.get('joint', 'joint').replace('_', ' ').title()} is drifting {j.get('deviation_deg', 0):.0f}° from ideal — fix angle before adding load."
     else:
         regressed = "Nothing red yet — keep the warmup honest and don't skip mobility."
 
@@ -166,21 +167,15 @@ def _call_anthropic(athlete_name: str, sport: str, stats: dict) -> list[str]:
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": build_user_prompt(athlete_name, sport, stats)}],
             )
-            text = "".join(
-                block.text for block in msg.content if getattr(block, "type", None) == "text"
-            ).strip()
-            bullets = [
-                line.lstrip("-*• 0123456789.)").strip()
-                for line in text.splitlines()
-                if line.strip()
-            ]
+            text = "".join(block.text for block in msg.content if getattr(block, "type", None) == "text").strip()
+            bullets = [line.lstrip("-*• 0123456789.)").strip() for line in text.splitlines() if line.strip()]
             bullets = [b for b in bullets if b]
             if len(bullets) < 2:
                 raise ValueError(f"model returned too few bullets: {bullets}")
             return bullets[:4]
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             last_exc = e
-            wait = 0.5 * (2 ** attempt)
+            wait = 0.5 * (2**attempt)
             log.warning(
                 "ai_coach attempt failed",
                 extra={"attempt": attempt + 1, "error": str(e), "backoff_s": wait},
@@ -191,11 +186,7 @@ def _call_anthropic(athlete_name: str, sport: str, stats: dict) -> list[str]:
 
 def generate_coach_note(athlete_name: str, sport: str, stats: dict) -> dict[str, Any]:
     """Public entrypoint. Always returns a dict; never raises to the caller."""
-    use_anthropic = (
-        ANTHROPIC_AVAILABLE
-        and bool(settings.anthropic_api_key)
-        and _BREAKER.allow()
-    )
+    use_anthropic = ANTHROPIC_AVAILABLE and bool(settings.anthropic_api_key) and _BREAKER.allow()
     if use_anthropic:
         try:
             bullets = _call_anthropic(athlete_name, sport, stats)
@@ -206,7 +197,7 @@ def generate_coach_note(athlete_name: str, sport: str, stats: dict) -> dict[str,
                 "bullets": bullets,
                 "stats_used": stats,
             }
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             _BREAKER.record_failure()
             log.error("ai_coach falling back", extra={"error": str(e)})
     return {

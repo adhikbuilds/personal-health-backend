@@ -173,8 +173,12 @@ def insert_user(user: dict) -> None:
             VALUES(?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                user["id"], user["email"], user["name"], user["password_hash"],
-                user.get("role", "athlete"), user.get("athlete_id"),
+                user["id"],
+                user["email"],
+                user["name"],
+                user["password_hash"],
+                user.get("role", "athlete"),
+                user.get("athlete_id"),
                 user.get("created_at", time.time()),
             ),
         )
@@ -216,9 +220,7 @@ def revoke_refresh(jti: str) -> None:
 
 def is_refresh_valid(jti: str) -> bool:
     with cursor() as cur:
-        row = cur.execute(
-            "SELECT revoked, expires_at FROM refresh_tokens WHERE jti = ?", (jti,)
-        ).fetchone()
+        row = cur.execute("SELECT revoked, expires_at FROM refresh_tokens WHERE jti = ?", (jti,)).fetchone()
         if not row:
             return False
         return row["revoked"] == 0 and row["expires_at"] > time.time()
@@ -248,9 +250,7 @@ def audit(action: str, **fields: Any) -> None:
 
 def recent_audit(limit: int = 100) -> list[dict]:
     with cursor() as cur:
-        rows = cur.execute(
-            "SELECT * FROM audit_log ORDER BY ts DESC LIMIT ?", (limit,)
-        ).fetchall()
+        rows = cur.execute("SELECT * FROM audit_log ORDER BY ts DESC LIMIT ?", (limit,)).fetchall()
         return [dict(r) for r in rows]
 
 
@@ -302,7 +302,8 @@ def upsert_daily_tracker(athlete_id: str, date: str, fields: dict) -> None:
               updated_at=excluded.updated_at
             """,
             (
-                athlete_id, date,
+                athlete_id,
+                date,
                 int(fields.get("steps", 0)),
                 int(fields.get("active_minutes", 0)),
                 float(fields.get("distance_km", 0)),
@@ -320,9 +321,7 @@ def upsert_daily_tracker(athlete_id: str, date: str, fields: dict) -> None:
 
 def idempotency_get(key: str, max_age_seconds: int = 86400) -> Optional[dict]:
     with cursor() as cur:
-        row = cur.execute(
-            "SELECT response_json, created_at FROM idempotency_cache WHERE key = ?", (key,)
-        ).fetchone()
+        row = cur.execute("SELECT response_json, created_at FROM idempotency_cache WHERE key = ?", (key,)).fetchone()
         if not row:
             return None
         if row["created_at"] + max_age_seconds < time.time():
@@ -354,9 +353,7 @@ def store_api_key(key_hash: str, label: str) -> None:
 
 def verify_api_key_hash(key_hash: str) -> Optional[dict]:
     with cursor() as cur:
-        row = cur.execute(
-            "SELECT * FROM api_keys WHERE key_hash = ? AND revoked = 0", (key_hash,)
-        ).fetchone()
+        row = cur.execute("SELECT * FROM api_keys WHERE key_hash = ? AND revoked = 0", (key_hash,)).fetchone()
         if not row:
             return None
         cur.execute("UPDATE api_keys SET last_used_at = ? WHERE key_hash = ?", (time.time(), key_hash))

@@ -88,7 +88,7 @@ class RequestLifecycleMiddleware(BaseHTTPMiddleware):
             ip = request.client.host if request.client else "unknown"
             group = path.split("/")[1] if "/" in path else "root"
             key = f"{ip}:{group}"
-            allowed, remaining, retry_after = _LIMITER.consume(key)
+            allowed, _remaining, retry_after = _LIMITER.consume(key)
             if not allowed:
                 log.warning("rate limited", extra={"ip": ip, "path": path, "retry_after": round(retry_after, 2)})
                 resp = JSONResponse(
@@ -127,7 +127,7 @@ class RequestLifecycleMiddleware(BaseHTTPMiddleware):
         start = time.perf_counter()
         try:
             response = await call_next(request)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             duration_ms = (time.perf_counter() - start) * 1000
             log.error(
                 "unhandled exception",
@@ -153,11 +153,7 @@ class RequestLifecycleMiddleware(BaseHTTPMiddleware):
 
         # 3b. cache successful idempotent POST responses — must buffer the
         # streaming body because BaseHTTPMiddleware yields a _StreamingResponse
-        if (
-            idem_key
-            and request.method == "POST"
-            and 200 <= response.status_code < 300
-        ):
+        if idem_key and request.method == "POST" and 200 <= response.status_code < 300:
             try:
                 body_chunks: list[bytes] = []
                 async for chunk in response.body_iterator:
@@ -175,7 +171,7 @@ class RequestLifecycleMiddleware(BaseHTTPMiddleware):
                     f"{request.method}:{path}:{idem_key}",
                     {"status": response.status_code, "body": body_obj},
                 )
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 log.warning("idempotency cache write failed", extra={"error": str(e)})
 
         # 4. headers + access log + metrics
@@ -202,9 +198,7 @@ class RequestLifecycleMiddleware(BaseHTTPMiddleware):
         response.headers.setdefault("Referrer-Policy", "no-referrer")
         response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
         if settings.is_prod:
-            response.headers.setdefault(
-                "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
-            )
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
 
 
 def install_middleware(app: FastAPI) -> None:

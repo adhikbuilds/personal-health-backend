@@ -8,7 +8,12 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, EmailStr, Field
 
 from auth import (
-    current_user, issue_token_pair, login_user, register_user, revoke, rotate_refresh,
+    current_user,
+    issue_token_pair,
+    login_user,
+    register_user,
+    revoke,
+    rotate_refresh,
 )
 from logging_setup import get_logger
 from sqlite_store import audit

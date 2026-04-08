@@ -26,6 +26,7 @@ def test_idempotent_register_replay(client):
 def test_api_key_round_trip():
     """Unit test the api key helpers end-to-end against sqlite."""
     from auth import create_api_key, verify_api_key
+
     raw = create_api_key("test-label")
     assert raw.startswith("phk_")
     row = verify_api_key(raw)
@@ -39,9 +40,14 @@ def test_daily_tracker_history_endpoint(client):
     # Write an entry, then fetch history
     athlete_id = "athlete_01"
     payload = {
-        "steps": 8500, "active_minutes": 45, "distance_km": 6.2,
-        "calories_burned": 420, "calorie_intake": 1900, "water_glasses": 6,
-        "sleep_hours": 7.5, "date": "2026-04-01",
+        "steps": 8500,
+        "active_minutes": 45,
+        "distance_km": 6.2,
+        "calories_burned": 420,
+        "calorie_intake": 1900,
+        "water_glasses": 6,
+        "sleep_hours": 7.5,
+        "date": "2026-04-01",
     }
     r = client.post(f"/athlete/{athlete_id}/daily-tracker", json=payload)
     if r.status_code == 404:

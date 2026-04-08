@@ -25,34 +25,34 @@ log = get_logger("routes.progress")
 # Conservative defaults — meant for ranking, not clinical diagnosis.
 IDEAL_RANGES: dict[str, dict[str, tuple[float, float]]] = {
     "vertical_jump": {
-        "knee_angle":   (90, 130),
-        "hip_angle":    (80, 120),
+        "knee_angle": (90, 130),
+        "hip_angle": (80, 120),
         "ankle_dorsiflexion": (15, 30),
-        "trunk_lean":   (0, 15),
+        "trunk_lean": (0, 15),
         "shoulder_angle": (140, 180),
     },
     "sprint": {
-        "knee_angle":   (85, 110),
-        "hip_angle":    (90, 130),
-        "trunk_lean":   (5, 18),
+        "knee_angle": (85, 110),
+        "hip_angle": (90, 130),
+        "trunk_lean": (5, 18),
         "shoulder_angle": (70, 110),
     },
     "snatch": {
-        "knee_angle":   (90, 140),
-        "hip_angle":    (60, 100),
+        "knee_angle": (90, 140),
+        "hip_angle": (60, 100),
         "shoulder_angle": (160, 180),
-        "elbow_angle":  (160, 180),
-        "trunk_lean":   (0, 12),
+        "elbow_angle": (160, 180),
+        "trunk_lean": (0, 12),
     },
     "javelin": {
         "shoulder_angle": (140, 180),
-        "elbow_angle":  (90, 160),
-        "trunk_lean":   (5, 25),
+        "elbow_angle": (90, 160),
+        "trunk_lean": (5, 25),
     },
     "cricket_bat": {
-        "elbow_angle":  (60, 120),
+        "elbow_angle": (60, 120),
         "shoulder_angle": (60, 120),
-        "trunk_lean":   (5, 20),
+        "trunk_lean": (5, 20),
     },
 }
 DEFAULT_RANGES = IDEAL_RANGES["vertical_jump"]
@@ -184,7 +184,7 @@ def _compute_weak_joints(athlete_id: str, days: int) -> list[dict]:
     metric_values: dict[str, list[float]] = defaultdict(list)
     for s in sessions:
         for frame in s.get("frames", []) or []:
-            for joint in ideal.keys():
+            for joint in ideal:
                 v = _frame_metric(frame, joint)
                 if v is not None:
                     metric_values[joint].append(v)
@@ -201,14 +201,16 @@ def _compute_weak_joints(athlete_id: str, days: int) -> list[dict]:
             deviation = mean_val - hi
         else:
             deviation = 0.0
-        out.append({
-            "joint": joint,
-            "mean_deg": round(mean_val, 1),
-            "ideal_min": lo,
-            "ideal_max": hi,
-            "deviation_deg": round(deviation, 1),
-            "samples": len(values),
-        })
+        out.append(
+            {
+                "joint": joint,
+                "mean_deg": round(mean_val, 1),
+                "ideal_min": lo,
+                "ideal_max": hi,
+                "deviation_deg": round(deviation, 1),
+                "samples": len(values),
+            }
+        )
     out.sort(key=lambda x: x["deviation_deg"], reverse=True)
     return out
 

@@ -18,9 +18,9 @@ _counters: dict[str, dict[tuple, float]] = defaultdict(lambda: defaultdict(float
 _gauges: dict[str, float] = defaultdict(float)
 # histogram: name -> labels-tuple -> {sum, count, buckets}
 _HIST_BUCKETS = (0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0)
-_histograms: dict[str, dict[tuple, dict]] = defaultdict(lambda: defaultdict(
-    lambda: {"sum": 0.0, "count": 0, "buckets": [0] * len(_HIST_BUCKETS)}
-))
+_histograms: dict[str, dict[tuple, dict]] = defaultdict(
+    lambda: defaultdict(lambda: {"sum": 0.0, "count": 0, "buckets": [0] * len(_HIST_BUCKETS)})
+)
 
 
 def inc_counter(name: str, labels: dict | None = None, value: float = 1.0) -> None:
@@ -79,9 +79,9 @@ def render() -> str:
                 cumulative = 0
                 for i, bound in enumerate(_HIST_BUCKETS):
                     cumulative += h["buckets"][i]
-                    bucket_labels = tuple(base_labels + [("le", str(bound))])
+                    bucket_labels = tuple([*base_labels, ("le", str(bound))])
                     lines.append(f"{name}_bucket{_format_labels(bucket_labels)} {cumulative}")
-                inf_labels = tuple(base_labels + [("le", "+Inf")])
+                inf_labels = tuple([*base_labels, ("le", "+Inf")])
                 lines.append(f"{name}_bucket{_format_labels(inf_labels)} {h['count']}")
                 lines.append(f"{name}_sum{_format_labels(labels)} {h['sum']}")
                 lines.append(f"{name}_count{_format_labels(labels)} {h['count']}")

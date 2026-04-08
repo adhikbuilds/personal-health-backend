@@ -216,6 +216,7 @@ async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
     # Mirror to SQLite v2 store so the /history endpoint has data even after restart
     try:
         from sqlite_store import upsert_daily_tracker
+
         upsert_daily_tracker(athlete_id, date_key, athlete["daily_tracker"][date_key])
     except Exception:
         pass
@@ -234,6 +235,7 @@ async def daily_tracker_history(athlete_id: str, days: int = 30):
     rows: list[dict] = []
     try:
         from sqlite_store import daily_tracker_history as _hist
+
         rows = _hist(athlete_id, days)
     except Exception:
         rows = []

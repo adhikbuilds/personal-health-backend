@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass
@@ -20,6 +21,7 @@ try:
     from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.openapi.utils import get_openapi
+
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
@@ -67,10 +69,10 @@ if FASTAPI_AVAILABLE:
         # Shutdown — drain workers, then save
         task.cancel()
         cleanup_task.cancel()
-        try:
+        import contextlib
+
+        with contextlib.suppress(Exception):
             await asyncio.gather(task, cleanup_task, return_exceptions=True)
-        except Exception:
-            pass
         _save_db()
         log.info("api shutdown — db saved")
 
@@ -112,11 +114,11 @@ if FASTAPI_AVAILABLE:
     def _custom_openapi():
         if app.openapi_schema:
             return app.openapi_schema
-        schema = get_openapi(
-            title=app.title, version=app.version, description=app.description, routes=app.routes
-        )
+        schema = get_openapi(title=app.title, version=app.version, description=app.description, routes=app.routes)
         schema.setdefault("components", {}).setdefault("securitySchemes", {})["bearerAuth"] = {
-            "type": "http", "scheme": "bearer", "bearerFormat": "JWT",
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
         }
         app.openapi_schema = schema
         return schema
