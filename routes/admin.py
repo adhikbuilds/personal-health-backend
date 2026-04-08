@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import PlainTextResponse
 
 import database
-from auth import require_role
+from auth import create_api_key, require_role
 from logging_setup import get_logger
 from metrics import render, set_gauge
 from sqlite_store import recent_audit
@@ -55,3 +55,10 @@ async def metrics():
 @router.get("/audit", dependencies=[Depends(require_role("admin"))])
 async def audit_log(limit: int = Query(default=100, ge=1, le=1000)):
     return {"entries": recent_audit(limit)}
+
+
+@router.post("/admin/api-keys", dependencies=[Depends(require_role("admin"))])
+async def mint_api_key(label: str = Query(min_length=1, max_length=80)):
+    """Create a new service-to-service API key. The raw token is returned ONCE."""
+    raw = create_api_key(label)
+    return {"label": label, "api_key": raw, "warning": "store now — cannot be retrieved later"}

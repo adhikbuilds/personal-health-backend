@@ -315,6 +315,54 @@ def upsert_daily_tracker(athlete_id: str, date: str, fields: dict) -> None:
         )
 
 
+# ─── Idempotency ────────────────────────────────────────────────────────────
+
+
+def idempotency_get(key: str, max_age_seconds: int = 86400) -> Optional[dict]:
+    with cursor() as cur:
+        row = cur.execute(
+            "SELECT response_json, created_at FROM idempotency_cache WHERE key = ?", (key,)
+        ).fetchone()
+        if not row:
+            return None
+        if row["created_at"] + max_age_seconds < time.time():
+            return None
+        try:
+            return json.loads(row["response_json"])
+        except Exception:
+            return None
+
+
+def idempotency_set(key: str, response: dict) -> None:
+    with cursor() as cur:
+        cur.execute(
+            "INSERT OR REPLACE INTO idempotency_cache(key, response_json, created_at) VALUES(?, ?, ?)",
+            (key, json.dumps(response, default=str), time.time()),
+        )
+
+
+# ─── API keys ───────────────────────────────────────────────────────────────
+
+
+def store_api_key(key_hash: str, label: str) -> None:
+    with cursor() as cur:
+        cur.execute(
+            "INSERT INTO api_keys(key_hash, label, created_at) VALUES(?, ?, ?)",
+            (key_hash, label, time.time()),
+        )
+
+
+def verify_api_key_hash(key_hash: str) -> Optional[dict]:
+    with cursor() as cur:
+        row = cur.execute(
+            "SELECT * FROM api_keys WHERE key_hash = ? AND revoked = 0", (key_hash,)
+        ).fetchone()
+        if not row:
+            return None
+        cur.execute("UPDATE api_keys SET last_used_at = ? WHERE key_hash = ?", (time.time(), key_hash))
+        return dict(row)
+
+
 def daily_tracker_history(athlete_id: str, days: int = 30) -> list[dict]:
     with cursor() as cur:
         rows = cur.execute(

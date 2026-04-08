@@ -213,4 +213,31 @@ async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
         "updated_at": datetime.utcnow().isoformat(),
     }
     _save_db()
+    # Mirror to SQLite v2 store so the /history endpoint has data even after restart
+    try:
+        from sqlite_store import upsert_daily_tracker
+        upsert_daily_tracker(athlete_id, date_key, athlete["daily_tracker"][date_key])
+    except Exception:
+        pass
     return {"athlete_id": athlete_id, "date": date_key, "ok": True}
+
+
+@router.get("/athlete/{athlete_id}/daily-tracker/history", tags=["Daily Tracker"])
+async def daily_tracker_history(athlete_id: str, days: int = 30):
+    """Returns up to `days` most recent daily-tracker entries, newest first.
+
+    Reads from SQLite v2 store first; falls back to the legacy JSON dict
+    on the athlete record so existing seeded data is still visible.
+    """
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(404, "athlete not found")
+    rows: list[dict] = []
+    try:
+        from sqlite_store import daily_tracker_history as _hist
+        rows = _hist(athlete_id, days)
+    except Exception:
+        rows = []
+    if not rows:
+        legacy = ATHLETE_DB[athlete_id].get("daily_tracker", {}) or {}
+        rows = [{"date": k, **v} for k, v in sorted(legacy.items(), reverse=True)[:days]]
+    return {"athlete_id": athlete_id, "days": days, "history": rows, "total": len(rows)}

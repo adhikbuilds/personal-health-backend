@@ -14,7 +14,7 @@ from config import settings
 from logging_setup import get_logger
 from sqlite_store import (
     get_user_by_email, get_user_by_id, insert_user, is_refresh_valid,
-    revoke_refresh, store_refresh, touch_login,
+    revoke_refresh, store_api_key, store_refresh, touch_login, verify_api_key_hash,
 )
 
 log = get_logger("auth")
@@ -200,6 +200,43 @@ def optional_user(authorization: Optional[str] = Header(default=None)) -> Option
         return get_user_by_id(payload["sub"])
     except Exception:
         return None
+
+
+# ─── API keys (service-to-service) ─────────────────────────────────────────
+
+
+import hashlib
+import secrets
+
+
+def _hash_key(raw: str) -> str:
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def create_api_key(label: str) -> str:
+    """Mint a new API key. Returns the raw token (shown once)."""
+    raw = "phk_" + secrets.token_urlsafe(32)
+    store_api_key(_hash_key(raw), label)
+    log.info("api key created", extra={"label": label})
+    return raw
+
+
+def verify_api_key(raw: str) -> Optional[dict]:
+    if not raw or not raw.startswith("phk_"):
+        return None
+    return verify_api_key_hash(_hash_key(raw))
+
+
+def current_principal(
+    authorization: Optional[str] = Header(default=None),
+    x_api_key: Optional[str] = Header(default=None),
+) -> dict:
+    """Accepts EITHER a Bearer JWT OR an X-API-Key header. Service-to-service ok."""
+    if x_api_key:
+        row = verify_api_key(x_api_key)
+        if row:
+            return {"id": "api_key:" + row["label"], "role": "service", "name": row["label"], "email": None}
+    return current_user(authorization)
 
 
 def require_role(*roles: str):

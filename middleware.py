@@ -13,6 +13,7 @@ Adds (in order):
 Designed to be FastAPI-friendly via BaseHTTPMiddleware.
 """
 
+import json
 import time
 import traceback
 import uuid
@@ -20,12 +21,13 @@ from collections import defaultdict
 from typing import Callable
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from config import settings
 from logging_setup import get_logger, request_id_var
 from metrics import observe_request
+from sqlite_store import idempotency_get, idempotency_set
 
 log = get_logger("middleware")
 
@@ -105,6 +107,22 @@ class RequestLifecycleMiddleware(BaseHTTPMiddleware):
                 request_id_var.reset(token)
                 return resp
 
+        # 2b. idempotency replay (POST + Idempotency-Key header)
+        idem_key = request.headers.get("Idempotency-Key")
+        if idem_key and request.method == "POST":
+            cached = idempotency_get(f"{request.method}:{path}:{idem_key}")
+            if cached:
+                log.info("idempotent replay", extra={"path": path, "key": idem_key})
+                resp = JSONResponse(
+                    status_code=cached.get("status", 200),
+                    content=cached.get("body"),
+                )
+                resp.headers["X-Request-ID"] = rid
+                resp.headers["X-Idempotent-Replay"] = "true"
+                self._add_security_headers(resp)
+                request_id_var.reset(token)
+                return resp
+
         # 3. dispatch with global exception handler
         start = time.perf_counter()
         try:
@@ -132,6 +150,33 @@ class RequestLifecycleMiddleware(BaseHTTPMiddleware):
             )
 
         duration_ms = (time.perf_counter() - start) * 1000
+
+        # 3b. cache successful idempotent POST responses — must buffer the
+        # streaming body because BaseHTTPMiddleware yields a _StreamingResponse
+        if (
+            idem_key
+            and request.method == "POST"
+            and 200 <= response.status_code < 300
+        ):
+            try:
+                body_chunks: list[bytes] = []
+                async for chunk in response.body_iterator:
+                    body_chunks.append(chunk if isinstance(chunk, bytes) else chunk.encode())
+                raw_body = b"".join(body_chunks)
+                # Rebuild the response so downstream still gets the body
+                response = Response(
+                    content=raw_body,
+                    status_code=response.status_code,
+                    headers=dict(response.headers),
+                    media_type=response.media_type,
+                )
+                body_obj = json.loads(raw_body) if raw_body else None
+                idempotency_set(
+                    f"{request.method}:{path}:{idem_key}",
+                    {"status": response.status_code, "body": body_obj},
+                )
+            except Exception as e:  # noqa: BLE001
+                log.warning("idempotency cache write failed", extra={"error": str(e)})
 
         # 4. headers + access log + metrics
         response.headers["X-Request-ID"] = rid
