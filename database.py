@@ -30,6 +30,10 @@ RPPG_STORE: dict[str, object] = {}
 _FOLLOWS: dict[str, set] = defaultdict(set)
 _RATE_LIMITS: dict[str, float] = {}  # PF-04: session_id → last frame timestamp
 
+# ─── Nutrition (WN module — used by intern PRs) ───────────────────────────
+NUTRITION_DB: dict[str, dict] = {}
+FOOD_DB: dict[str, dict] = {}
+
 
 # ─── Load / Save ────────────────────────────────────────────────────────────
 
@@ -49,6 +53,21 @@ def _load_db():
                 ATHLETE_DB.update(json.load(f))
         except Exception as e:
             print(f"[DB WARN] Could not load athletes: {e}")
+    # WN nutrition data (used by intern PRs)
+    nutrition_file = DB_PATH / "nutrition.json"
+    if nutrition_file.exists():
+        try:
+            with open(nutrition_file, encoding="utf-8") as f:
+                NUTRITION_DB.update(json.load(f))
+        except Exception as e:
+            print(f"[DB WARN] Could not load nutrition: {e}")
+    foods_file = DB_PATH / "foods.json"
+    if foods_file.exists():
+        try:
+            with open(foods_file, encoding="utf-8") as f:
+                FOOD_DB.update(json.load(f))
+        except Exception as e:
+            print(f"[DB WARN] Could not load foods: {e}")
     # Seed athletes and sessions if DB is sparse
     if len(ATHLETE_DB) < 10:
         try:
@@ -177,6 +196,9 @@ def _save_db():
         follows_data = {k: list(v) for k, v in _FOLLOWS.items()}
         with open(DB_PATH / "follows.json", "w", encoding="utf-8") as f:
             json.dump(follows_data, f, indent=2)
+        if NUTRITION_DB:
+            with open(DB_PATH / "nutrition.json", "w", encoding="utf-8") as f:
+                json.dump(NUTRITION_DB, f, indent=2, default=str)
     except Exception as e:
         print(f"[DB WARN] Could not save db: {e}")
 

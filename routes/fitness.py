@@ -17,10 +17,10 @@ from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconn
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
+import database
 from database import (
     _POSE_ANALYZERS,
     _RATE_LIMITS,
-    ANALYSIS_QUEUE,
     ATHLETE_DB,
     DATASET_PATH,
     FRAME_BUFFER,
@@ -116,7 +116,7 @@ def _resolve_sport_model_path(sport: str) -> Optional[str]:
 async def analysis_worker():
     while True:
         try:
-            item = await ANALYSIS_QUEUE.get()
+            item = await database.ANALYSIS_QUEUE.get()
             session_id, image_b64, sport, frame_dict = item
             try:
                 from services.pose_analyzer import PoseAnalyzer
@@ -201,7 +201,7 @@ async def analysis_worker():
             except Exception as e:
                 print(f"[WORKER ERROR] {e}")
             finally:
-                ANALYSIS_QUEUE.task_done()
+                database.ANALYSIS_QUEUE.task_done()
         except asyncio.CancelledError:
             break
         except Exception as e:
@@ -263,7 +263,7 @@ async def session_cleanup_worker():
                         last_ts = now
                 if now - last_ts > 7200:
                     session["status"] = "completed"
-                    session["ended_at"] = datetime.utcnow().isoformat()
+                    session["ended_at"] = datetime.now(timezone.utc).isoformat()
                     session["auto_ended"] = True
                     print(f"[CLEANUP] Auto-ended stale session {sid[:8]}")
             _save_db()
@@ -279,13 +279,15 @@ async def session_cleanup_worker():
 
 @router.post("/session/start", tags=["Sessions"])
 async def start_session(req: StartSessionRequest):
+    if req.athlete_id not in ATHLETE_DB:
+        raise HTTPException(404, "athlete not found — register via POST /athlete first")
     session_id = str(uuid.uuid4())
     session = {
         "session_id": session_id,
         "athlete_id": req.athlete_id,
         "sport": req.sport,
         "status": "active",
-        "started_at": datetime.utcnow().isoformat() + "Z",
+        "started_at": datetime.now(timezone.utc).isoformat() + "Z",
         "ended_at": None,
         "frame_count": 0,
         "summary": None,
@@ -329,9 +331,9 @@ async def add_frame(session_id: str, frame: FrameData):
     frame_dict["pose_detected"] = None
     FRAME_BUFFER[session_id].append(frame_dict)
     SESSION_DB[session_id]["frame_count"] += 1
-    if image_b64 and ANALYSIS_QUEUE is not None:
+    if image_b64 and database.ANALYSIS_QUEUE is not None:
         try:
-            ANALYSIS_QUEUE.put_nowait((session_id, image_b64, sport, frame_dict))
+            database.ANALYSIS_QUEUE.put_nowait((session_id, image_b64, sport, frame_dict))
         except asyncio.QueueFull:
             print(f"[WARN] Analysis queue full, dropping frame for {session_id[:8]}")
     latest = RESULT_STORE.get(session_id, {})
@@ -701,7 +703,7 @@ async def model_stats():
     if not log_path.exists():
         return {"total_predictions": 0, "message": "No predictions logged yet"}
 
-    today = datetime.utcnow().date().isoformat()
+    today = datetime.now(timezone.utc).date().isoformat()
     today_count = 0
     score_sum = 0.0
     quality_dist: dict = {"poor": 0, "average": 0, "good": 0, "elite": 0, "unknown": 0}
@@ -757,7 +759,7 @@ async def save_fitness_test(req: FitnessTestRequest):
         "sit_reach_cm": req.sit_reach_cm,
         "run_600_seconds": req.run_600_seconds,
         "age_group": req.age_group,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     athlete["fitness_tests"].insert(0, record)
     athlete["fitness_tests"] = athlete["fitness_tests"][:10]

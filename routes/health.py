@@ -5,7 +5,7 @@ Health & Meta endpoints — /, /health, /banner
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter
@@ -21,7 +21,7 @@ async def root():
         "service": "Personal Health Sports Analysis API",
         "version": "2.0.0",
         "status": "operational",
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
         "endpoints": {
             "sessions": "/sessions",
             "start_session": "POST /session/start",
@@ -46,7 +46,7 @@ async def health():
         "model_ready": (
             Path(os.path.dirname(os.path.abspath(__file__))).parent / "models" / "pose_classifier.tflite"
         ).exists(),
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
     }
 
 
@@ -57,6 +57,6 @@ async def banner():
         "server": "Personal Health API v2.0",
         "athletes": len(ATHLETE_DB),
         "sessions_today": sum(
-            1 for s in SESSION_DB.values() if s.get("started_at", "")[:10] == datetime.utcnow().date().isoformat()
+            1 for s in SESSION_DB.values() if s.get("started_at", "")[:10] == datetime.now(timezone.utc).date().isoformat()
         ),
     }

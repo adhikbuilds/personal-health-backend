@@ -124,15 +124,22 @@ def _compute_progress(athlete_id: str, days: int) -> dict:
     for s in sessions:
         ts = _parse_dt(s.get("started_at"))
         day = ts.date().isoformat() if ts else "unknown"
-        score = float(s.get("avg_form_score", s.get("form_score", 0)) or 0)
+        # Bug fix: end_session() and seed_sessions.py store metrics inside
+        # s["summary"], not at the session root. Read from both for compat.
+        summary = s.get("summary") or {}
+        score = float(
+            summary.get("avg_form_score") or s.get("avg_form_score") or s.get("form_score") or 0
+        )
         if score > 0:
             by_day[day].append(score)
             all_form_scores.append(score)
-        total_reps += int(s.get("rep_count", 0) or 0)
-        # Bug fix: sessions store this as `peak_jump_height_cm` (see fitness.py
-        # end_session and seed_sessions.py); the previous keys never matched,
-        # so best_jump_cm was always 0 in /progress responses.
-        bj = float(s.get("peak_jump_height_cm") or s.get("best_jump_height_cm") or s.get("best_jump") or 0)
+        total_reps += int(summary.get("rep_count") or s.get("rep_count") or 0)
+        bj = float(
+            summary.get("peak_jump_height_cm")
+            or s.get("peak_jump_height_cm")
+            or s.get("best_jump_height_cm")
+            or 0
+        )
         if bj > best_jump:
             best_jump = bj
         if "bpi_after" in s:
