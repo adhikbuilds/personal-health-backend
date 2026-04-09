@@ -38,6 +38,20 @@ router = APIRouter()
 # ─── Pydantic Models ────────────────────────────────────────────────────────
 
 
+VALID_SPORTS = frozenset(
+    {
+        "vertical_jump",
+        "sprint",
+        "snatch",
+        "javelin",
+        "cricket_bat",
+        "squat",
+        "push_up",
+        "pull_up",
+    }
+)
+
+
 class StartSessionRequest(BaseModel):
     athlete_id: str = "athlete_01"
     sport: str = "vertical_jump"
@@ -279,6 +293,11 @@ async def session_cleanup_worker():
 
 @router.post("/session/start", tags=["Sessions"])
 async def start_session(req: StartSessionRequest):
+    if req.sport not in VALID_SPORTS:
+        raise HTTPException(
+            400,
+            f"unknown sport '{req.sport}' — valid: {', '.join(sorted(VALID_SPORTS))}",
+        )
     session_id = str(uuid.uuid4())
     session = {
         "session_id": session_id,
