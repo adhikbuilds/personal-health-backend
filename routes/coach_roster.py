@@ -85,15 +85,17 @@ async def list_roster(coach_id: str):
         if not a:
             continue
         recent = _athlete_sessions(aid, 7)
-        athletes.append({
-            "id": aid,
-            "name": a.get("name", "Unknown"),
-            "sport": a.get("sport"),
-            "tier": a.get("tier"),
-            "bpi": a.get("bpi", 0),
-            "sessions_this_week": len(recent),
-            "last_session": recent[-1].get("started_at") if recent else None,
-        })
+        athletes.append(
+            {
+                "id": aid,
+                "name": a.get("name", "Unknown"),
+                "sport": a.get("sport"),
+                "tier": a.get("tier"),
+                "bpi": a.get("bpi", 0),
+                "sessions_this_week": len(recent),
+                "last_session": recent[-1].get("started_at") if recent else None,
+            }
+        )
 
     return {"coach_id": coach_id, "athletes": athletes, "count": len(athletes)}
 
@@ -136,15 +138,17 @@ async def coach_dashboard(coach_id: str):
         risk_band = risk.get("risk", "unknown")
         risk_counts[risk_band] = risk_counts.get(risk_band, 0) + 1
 
-        athlete_stats.append({
-            "id": aid,
-            "name": a.get("name", "Unknown"),
-            "sport": a.get("sport"),
-            "sessions_this_week": len(recent),
-            "avg_form_score": avg_form,
-            "injury_risk": risk_band,
-            "needs_attention": risk_band == "high" or len(recent) == 0,
-        })
+        athlete_stats.append(
+            {
+                "id": aid,
+                "name": a.get("name", "Unknown"),
+                "sport": a.get("sport"),
+                "sessions_this_week": len(recent),
+                "avg_form_score": avg_form,
+                "injury_risk": risk_band,
+                "needs_attention": risk_band == "high" or len(recent) == 0,
+            }
+        )
 
     # sort: athletes needing attention first, then by sessions this week desc
     athlete_stats.sort(key=lambda x: (not x["needs_attention"], -x["sessions_this_week"]))

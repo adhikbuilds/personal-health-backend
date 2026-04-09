@@ -10,6 +10,7 @@ from routes.streaks import _compute_streaks
 
 # streaks unit tests
 
+
 def test_streaks_empty():
     s = _compute_streaks([])
     assert s["current_streak"] == 0
@@ -39,6 +40,7 @@ def test_streaks_gap_breaks_current():
 
 
 # integration tests
+
 
 def test_coach_roster_empty(client):
     r = client.get("/coach/nonexistent_coach/athletes")
@@ -136,8 +138,22 @@ def test_highlights_with_session(client):
         "sport": "vertical_jump",
         "status": "completed",
         "frames": [
-            {"frame_num": 0, "form_score": 85, "form_quality": "good", "primary_feedback": "nice", "estimated_jump_height": 40, "limb_symmetry_idx": 0.98},
-            {"frame_num": 1, "form_score": 45, "form_quality": "poor", "primary_feedback": "knee cave", "estimated_jump_height": 35, "limb_symmetry_idx": 0.72},
+            {
+                "frame_num": 0,
+                "form_score": 85,
+                "form_quality": "good",
+                "primary_feedback": "nice",
+                "estimated_jump_height": 40,
+                "limb_symmetry_idx": 0.98,
+            },
+            {
+                "frame_num": 1,
+                "form_score": 45,
+                "form_quality": "poor",
+                "primary_feedback": "knee cave",
+                "estimated_jump_height": 35,
+                "limb_symmetry_idx": 0.72,
+            },
         ],
     }
     try:

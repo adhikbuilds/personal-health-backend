@@ -59,35 +59,39 @@ async def session_replay(
     # extract clean frame data
     timeline = []
     for i, f in enumerate(sampled):
-        timeline.append({
-            "idx": i,
-            "frame_num": f.get("frame_num", i),
-            "timestamp": f.get("timestamp"),
-            "form_score": f.get("form_score", 0),
-            "form_quality": f.get("form_quality", "unknown"),
-            "phase": f.get("phase", f.get("phase_label", "unknown")),
-            "knee_l": f.get("knee_angle_l"),
-            "knee_r": f.get("knee_angle_r"),
-            "hip_l": f.get("hip_angle_l"),
-            "hip_r": f.get("hip_angle_r"),
-            "elbow_l": f.get("elbow_angle_l"),
-            "elbow_r": f.get("elbow_angle_r"),
-            "trunk_lean": f.get("trunk_lean"),
-            "symmetry": f.get("limb_symmetry_idx"),
-            "jump_height": f.get("estimated_jump_height"),
-            "feedback": f.get("primary_feedback", ""),
-        })
+        timeline.append(
+            {
+                "idx": i,
+                "frame_num": f.get("frame_num", i),
+                "timestamp": f.get("timestamp"),
+                "form_score": f.get("form_score", 0),
+                "form_quality": f.get("form_quality", "unknown"),
+                "phase": f.get("phase", f.get("phase_label", "unknown")),
+                "knee_l": f.get("knee_angle_l"),
+                "knee_r": f.get("knee_angle_r"),
+                "hip_l": f.get("hip_angle_l"),
+                "hip_r": f.get("hip_angle_r"),
+                "elbow_l": f.get("elbow_angle_l"),
+                "elbow_r": f.get("elbow_angle_r"),
+                "trunk_lean": f.get("trunk_lean"),
+                "symmetry": f.get("limb_symmetry_idx"),
+                "jump_height": f.get("estimated_jump_height"),
+                "feedback": f.get("primary_feedback", ""),
+            }
+        )
 
     # detect phase transitions
     phases = []
     current_phase = None
     for t in timeline:
         if t["phase"] != current_phase:
-            phases.append({
-                "phase": t["phase"],
-                "starts_at_frame": t["frame_num"],
-                "starts_at_idx": t["idx"],
-            })
+            phases.append(
+                {
+                    "phase": t["phase"],
+                    "starts_at_frame": t["frame_num"],
+                    "starts_at_idx": t["idx"],
+                }
+            )
             current_phase = t["phase"]
 
     summary = session.get("summary") or {}
@@ -131,25 +135,29 @@ async def session_highlights(session_id: str):
     # best frame
     if scored:
         best = max(scored, key=lambda f: f.get("form_score", 0))
-        highlights.append({
-            "type": "best_form",
-            "label": "best form score",
-            "frame_num": best.get("frame_num"),
-            "form_score": best.get("form_score"),
-            "quality": best.get("form_quality"),
-            "feedback": best.get("primary_feedback", ""),
-        })
+        highlights.append(
+            {
+                "type": "best_form",
+                "label": "best form score",
+                "frame_num": best.get("frame_num"),
+                "form_score": best.get("form_score"),
+                "quality": best.get("form_quality"),
+                "feedback": best.get("primary_feedback", ""),
+            }
+        )
 
         # worst frame
         worst = min(scored, key=lambda f: f.get("form_score", 0))
-        highlights.append({
-            "type": "worst_form",
-            "label": "needs work",
-            "frame_num": worst.get("frame_num"),
-            "form_score": worst.get("form_score"),
-            "quality": worst.get("form_quality"),
-            "feedback": worst.get("primary_feedback", ""),
-        })
+        highlights.append(
+            {
+                "type": "worst_form",
+                "label": "needs work",
+                "frame_num": worst.get("frame_num"),
+                "form_score": worst.get("form_score"),
+                "quality": worst.get("form_quality"),
+                "feedback": worst.get("primary_feedback", ""),
+            }
+        )
 
     # biggest single-frame form drop
     for i in range(1, len(scored)):
@@ -157,26 +165,30 @@ async def session_highlights(session_id: str):
         curr_score = scored[i].get("form_score", 0)
         drop = prev_score - curr_score
         if drop > 15:
-            highlights.append({
-                "type": "form_drop",
-                "label": f"form dropped {drop:.0f} points",
-                "frame_num": scored[i].get("frame_num"),
-                "from_score": prev_score,
-                "to_score": curr_score,
-                "feedback": scored[i].get("primary_feedback", ""),
-            })
+            highlights.append(
+                {
+                    "type": "form_drop",
+                    "label": f"form dropped {drop:.0f} points",
+                    "frame_num": scored[i].get("frame_num"),
+                    "from_score": prev_score,
+                    "to_score": curr_score,
+                    "feedback": scored[i].get("primary_feedback", ""),
+                }
+            )
             break  # just the biggest one
 
     # best jump
     jumped = [f for f in frames if (f.get("estimated_jump_height") or 0) > 5]
     if jumped:
         best_jump = max(jumped, key=lambda f: f.get("estimated_jump_height", 0))
-        highlights.append({
-            "type": "best_jump",
-            "label": "highest jump",
-            "frame_num": best_jump.get("frame_num"),
-            "jump_height_cm": round(best_jump.get("estimated_jump_height", 0), 1),
-        })
+        highlights.append(
+            {
+                "type": "best_jump",
+                "label": "highest jump",
+                "frame_num": best_jump.get("frame_num"),
+                "jump_height_cm": round(best_jump.get("estimated_jump_height", 0), 1),
+            }
+        )
 
     # worst symmetry moment
     sym_frames = [f for f in frames if f.get("limb_symmetry_idx") is not None]
@@ -185,13 +197,15 @@ async def session_highlights(session_id: str):
         dev = abs(1.0 - worst_sym.get("limb_symmetry_idx", 1.0))
         if dev > 0.15:
             side = "left heavy" if worst_sym.get("limb_symmetry_idx", 1.0) > 1.0 else "right heavy"
-            highlights.append({
-                "type": "asymmetry",
-                "label": f"worst asymmetry ({side})",
-                "frame_num": worst_sym.get("frame_num"),
-                "symmetry_idx": round(worst_sym.get("limb_symmetry_idx", 1.0), 3),
-                "deviation_pct": round(dev * 100, 1),
-            })
+            highlights.append(
+                {
+                    "type": "asymmetry",
+                    "label": f"worst asymmetry ({side})",
+                    "frame_num": worst_sym.get("frame_num"),
+                    "symmetry_idx": round(worst_sym.get("limb_symmetry_idx", 1.0), 3),
+                    "deviation_pct": round(dev * 100, 1),
+                }
+            )
 
     return {
         "session_id": session_id,
