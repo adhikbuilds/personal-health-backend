@@ -44,7 +44,7 @@ if FASTAPI_AVAILABLE:
     from routes.health import router as health_router
     from routes.progress import router as progress_router
     from routes.social import router as social_router
-    from routes.nutrition import router as nutrition_router  # ✅ YOUR ADDITION
+    from routes.nutrition import router as nutrition_router 
     from sqlite_store import init_db
 
     configure_logging("INFO")
@@ -110,7 +110,7 @@ if FASTAPI_AVAILABLE:
     app.include_router(progress_router)
     app.include_router(analytics_router)
     app.include_router(coach_router)
-    app.include_router(nutrition_router)  # ✅ YOUR ADDITION
+    app.include_router(nutrition_router)
 
     # ─── OpenAPI ────────────────────────────────────────────
     def _custom_openapi():
@@ -132,9 +132,7 @@ if FASTAPI_AVAILABLE:
 
     app.openapi = _custom_openapi  # type: ignore[assignment]
 
-
 # ─── Entry point ────────────────────────────────────────────
-
 if __name__ == "__main__":
     if not FASTAPI_AVAILABLE:
         print("Install: pip install fastapi uvicorn pydantic")
