@@ -57,6 +57,8 @@ async def banner():
         "server": "Personal Health API v2.0",
         "athletes": len(ATHLETE_DB),
         "sessions_today": sum(
-            1 for s in SESSION_DB.values() if s.get("started_at", "")[:10] == datetime.now(timezone.utc).date().isoformat()
+            1
+            for s in SESSION_DB.values()
+            if s.get("started_at", "")[:10] == datetime.now(timezone.utc).date().isoformat()
         ),
     }

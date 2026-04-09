@@ -127,18 +127,13 @@ def _compute_progress(athlete_id: str, days: int) -> dict:
         # Bug fix: end_session() and seed_sessions.py store metrics inside
         # s["summary"], not at the session root. Read from both for compat.
         summary = s.get("summary") or {}
-        score = float(
-            summary.get("avg_form_score") or s.get("avg_form_score") or s.get("form_score") or 0
-        )
+        score = float(summary.get("avg_form_score") or s.get("avg_form_score") or s.get("form_score") or 0)
         if score > 0:
             by_day[day].append(score)
             all_form_scores.append(score)
         total_reps += int(summary.get("rep_count") or s.get("rep_count") or 0)
         bj = float(
-            summary.get("peak_jump_height_cm")
-            or s.get("peak_jump_height_cm")
-            or s.get("best_jump_height_cm")
-            or 0
+            summary.get("peak_jump_height_cm") or s.get("peak_jump_height_cm") or s.get("best_jump_height_cm") or 0
         )
         if bj > best_jump:
             best_jump = bj
