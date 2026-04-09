@@ -35,6 +35,7 @@ if FASTAPI_AVAILABLE:
     from logging_setup import configure_logging, get_logger
     from middleware import install_middleware
     from routes.admin import router as admin_router
+    from routes.analytics import router as analytics_router
     from routes.athletes import router as athletes_router
     from routes.auth import router as auth_router
     from routes.coach import router as coach_router
@@ -108,6 +109,7 @@ if FASTAPI_AVAILABLE:
     app.include_router(athletes_router)
     app.include_router(social_router)
     app.include_router(progress_router)
+    app.include_router(analytics_router)
     app.include_router(coach_router)
 
     # ─── OpenAPI: advertise bearer scheme ───────────────────────────────────

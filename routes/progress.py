@@ -76,7 +76,7 @@ def _parse_dt(value: str | None) -> datetime | None:
 
 
 def _athlete_sessions(athlete_id: str, days: int) -> list[dict]:
-    cutoff = datetime.utcnow() - timedelta(days=days)
+    cutoff = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
     out = []
     for s in SESSION_DB.values():
         if s.get("athlete_id") != athlete_id:
@@ -129,7 +129,10 @@ def _compute_progress(athlete_id: str, days: int) -> dict:
             by_day[day].append(score)
             all_form_scores.append(score)
         total_reps += int(s.get("rep_count", 0) or 0)
-        bj = float(s.get("best_jump_height_cm", s.get("best_jump", 0)) or 0)
+        # Bug fix: sessions store this as `peak_jump_height_cm` (see fitness.py
+        # end_session and seed_sessions.py); the previous keys never matched,
+        # so best_jump_cm was always 0 in /progress responses.
+        bj = float(s.get("peak_jump_height_cm") or s.get("best_jump_height_cm") or s.get("best_jump") or 0)
         if bj > best_jump:
             best_jump = bj
         if "bpi_after" in s:
