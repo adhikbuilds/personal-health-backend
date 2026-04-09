@@ -43,6 +43,7 @@ if FASTAPI_AVAILABLE:
     from routes.health import router as health_router
     from routes.progress import router as progress_router
     from routes.social import router as social_router
+    from routes.wellness import router as wellness_router
     from sqlite_store import init_db
 
     configure_logging("INFO")
@@ -109,6 +110,8 @@ if FASTAPI_AVAILABLE:
     app.include_router(social_router)
     app.include_router(progress_router)
     app.include_router(coach_router)
+    app.include_router(wellness_router)
+    # Future: app.include_router(nutrition_router)
 
     # ─── OpenAPI: advertise bearer scheme ───────────────────────────────────
     def _custom_openapi():
