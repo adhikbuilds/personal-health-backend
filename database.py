@@ -168,15 +168,25 @@ def _load_db():
     print(f"[DB] {len(SESSION_DB)} sessions, {len(ATHLETE_DB)} athletes loaded")
 
 
+def _atomic_write(filepath: Path, data, **kwargs):
+    """Write JSON atomically: write to temp file, then rename.
+
+    Prevents data corruption when concurrent requests call _save_db()
+    simultaneously (critical for huddle scenario with 15+ concurrent sessions).
+    os.replace() is atomic on POSIX and near-atomic on Windows.
+    """
+    tmp = filepath.with_suffix(".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, **kwargs)
+    os.replace(tmp, filepath)
+
+
 def _save_db():
     try:
-        with open(DB_PATH / "sessions.json", "w", encoding="utf-8") as f:
-            json.dump(SESSION_DB, f, indent=2, default=str)
-        with open(DB_PATH / "athletes.json", "w", encoding="utf-8") as f:
-            json.dump(ATHLETE_DB, f, indent=2, default=str)
+        _atomic_write(DB_PATH / "sessions.json", SESSION_DB, indent=2, default=str)
+        _atomic_write(DB_PATH / "athletes.json", ATHLETE_DB, indent=2, default=str)
         follows_data = {k: list(v) for k, v in _FOLLOWS.items()}
-        with open(DB_PATH / "follows.json", "w", encoding="utf-8") as f:
-            json.dump(follows_data, f, indent=2)
+        _atomic_write(DB_PATH / "follows.json", follows_data, indent=2)
     except Exception as e:
         print(f"[DB WARN] Could not save db: {e}")
 
@@ -191,9 +201,8 @@ def _load_json(filename: str) -> dict:
 
 
 def _save_json(filename: str, data):
-    """Save any data to a JSON file in db/ directory."""
-    with open(DB_PATH / filename, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, default=str)
+    """Save any data to a JSON file in db/ directory (atomic)."""
+    _atomic_write(DB_PATH / filename, data, indent=2, default=str)
 
 
 # ─── Helpers ────────────────────────────────────────────────────────────────

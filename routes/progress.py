@@ -219,37 +219,86 @@ def _compute_weak_joints(athlete_id: str, days: int) -> list[dict]:
 
 
 def _compute_injury_risk(athlete_id: str, days: int) -> dict:
+    """
+    Injury risk per VISION.md Layer 2 item 4:
+    - "if symmetry index drops below 0.80 for three consecutive sessions"
+    - "or a specific joint angle deviation is worsening week over week"
+    """
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")
     sessions = _athlete_sessions(athlete_id, days)
-    symmetry_values: list[float] = []
+
+    # Per-session avg symmetry (for consecutive-session check)
+    session_symmetries: list[float] = []
+    all_symmetry_values: list[float] = []
     for s in sessions:
+        session_sym: list[float] = []
         for frame in s.get("frames", []) or []:
             v = frame.get("limb_symmetry_idx")
             if v is not None:
-                symmetry_values.append(float(v))
+                fv = float(v)
+                session_sym.append(fv)
+                all_symmetry_values.append(fv)
+        if session_sym:
+            session_symmetries.append(statistics.mean(session_sym))
 
-    if not symmetry_values:
+    if not all_symmetry_values:
         return {
             "athlete_id": athlete_id,
             "window_days": days,
             "risk": "unknown",
             "reason": "no symmetry data captured in this window",
             "samples": 0,
+            "consecutive_bad_sessions": 0,
+            "worsening_week_over_week": False,
         }
 
-    mean_sym = statistics.mean(symmetry_values)
-    deviation_pct = abs(1.0 - mean_sym) * 100  # 1.0 == perfect symmetry
-    if deviation_pct < 5:
-        band = "low"
-        reason = f"limb symmetry deviation {deviation_pct:.1f}% — within normal range"
-    elif deviation_pct < 12:
-        band = "watch"
-        reason = f"limb symmetry deviation {deviation_pct:.1f}% — mild asymmetry, monitor"
-    else:
+    mean_sym = statistics.mean(all_symmetry_values)
+    deviation_pct = abs(1.0 - mean_sym) * 100
+
+    # VISION check: "symmetry < 0.80 for 3 consecutive sessions"
+    consecutive_bad = 0
+    max_consecutive_bad = 0
+    for sym in session_symmetries:
+        if sym < 0.80 or sym > 1.20:  # asymmetry in either direction
+            consecutive_bad += 1
+            max_consecutive_bad = max(max_consecutive_bad, consecutive_bad)
+        else:
+            consecutive_bad = 0
+
+    # VISION check: "worsening week over week"
+    worsening = False
+    if len(session_symmetries) >= 4:
+        half = len(session_symmetries) // 2
+        earlier = [abs(1.0 - s) for s in session_symmetries[:half]]
+        later = [abs(1.0 - s) for s in session_symmetries[half:]]
+        earlier_dev = statistics.mean(earlier)
+        later_dev = statistics.mean(later)
+        worsening = later_dev > earlier_dev * 1.1  # 10% worse
+
+    # Determine risk band
+    if max_consecutive_bad >= 3:
+        band = "high"
+        side = "left-dominant" if mean_sym > 1 else "right-dominant"
+        reason = (
+            f"symmetry below 0.80 for {max_consecutive_bad} consecutive sessions "
+            f"({side}) — stop loading, prioritise mobility"
+        )
+    elif worsening and deviation_pct > 8:
+        band = "high"
+        reason = (
+            f"asymmetry worsening week over week (deviation {deviation_pct:.1f}%) — reduce volume, address weaker side"
+        )
+    elif deviation_pct >= 12:
         band = "high"
         side = "left-dominant" if mean_sym > 1 else "right-dominant"
         reason = f"limb symmetry deviation {deviation_pct:.1f}% — {side}, recommend rest + mobility"
+    elif deviation_pct >= 5 or max_consecutive_bad >= 2 or worsening:
+        band = "watch"
+        reason = f"limb symmetry deviation {deviation_pct:.1f}% — mild asymmetry, monitor"
+    else:
+        band = "low"
+        reason = f"limb symmetry deviation {deviation_pct:.1f}% — within normal range"
 
     return {
         "athlete_id": athlete_id,
@@ -258,7 +307,9 @@ def _compute_injury_risk(athlete_id: str, days: int) -> dict:
         "deviation_pct": round(deviation_pct, 2),
         "mean_symmetry": round(mean_sym, 3),
         "reason": reason,
-        "samples": len(symmetry_values),
+        "samples": len(all_symmetry_values),
+        "consecutive_bad_sessions": max_consecutive_bad,
+        "worsening_week_over_week": worsening,
     }
 
 
