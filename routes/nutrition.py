@@ -69,7 +69,7 @@ async def set_goals(athlete_id: str, payload: NutritionGoals):
     if athlete_id not in data:
         data[athlete_id] = {}
 
-    data[athlete_id]["goals"] = payload.dict()
+    data[athlete_id]["goals"] = payload.model_dump()
     data[athlete_id]["goals"]["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     _save_json("nutrition.json", data)
