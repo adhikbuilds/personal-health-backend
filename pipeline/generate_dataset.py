@@ -364,27 +364,121 @@ def _generate_record(sport: str, quality: str, session_id: str, frame_num: int) 
 
 # ─── Dataset Generator ────────────────────────────────────────────────────────
 
-SAMPLES_PER_SPORT_QUALITY = 100  # 5 sports × 4 qualities × 100 = 2000 rows
+SEQUENCE_LENGTH = 30  # PF-11: 30 frames = 1 second at 30fps
+SEQUENCES_PER_SPORT_QUALITY = 4  # 8 sports * 4 qualities * 4 sequences * 30 frames ≈ 3840 rows
+MAX_JOINT_DELTA = 5.0  # PF-11: max degrees of change per frame
+MAX_SCORE_DRIFT = 5.0  # PF-11: max form_score drift within a sequence
+
+# PF-11: Movement phase ordering per sport — phases are traversed in order
+# across the 30-frame sequence, simulating a single rep.
+PHASE_ORDER_BY_SPORT = {
+    "vertical_jump": ["setup", "descent", "takeoff", "flight", "landing"],
+    "snatch": ["setup", "descent", "takeoff", "flight", "landing"],
+    "sprint": ["setup", "descent", "takeoff"],
+    "javelin": ["setup", "descent", "takeoff", "flight"],
+    "cricket_bat": ["setup", "descent", "takeoff", "flight"],
+}
+DEFAULT_PHASE_ORDER = ["setup", "descent", "takeoff"]
+
+
+def _smooth_delta(prev: float, mean: float, std: float, lo: float, hi: float) -> float:
+    """PF-11: move prev toward a new target but clamp the per-frame delta to MAX_JOINT_DELTA."""
+    target = random.gauss(mean, std)
+    delta = target - prev
+    if delta > MAX_JOINT_DELTA:
+        delta = MAX_JOINT_DELTA
+    elif delta < -MAX_JOINT_DELTA:
+        delta = -MAX_JOINT_DELTA
+    return round(max(lo, min(hi, prev + delta)), 2)
+
+
+def _generate_sequence(sport: str, quality: str, session_id: str, start_frame: int, sequence_id: int) -> list[dict]:
+    """PF-11: generate a temporally coherent 30-frame sequence.
+
+    - Joint angles evolve smoothly (max MAX_JOINT_DELTA degrees per frame)
+    - Phases progress in order defined by PHASE_ORDER_BY_SPORT
+    - form_score drifts by at most MAX_SCORE_DRIFT points across the sequence
+    """
+    # Anchor the sequence with an independently sampled frame, then evolve from it.
+    anchor = _generate_record(sport, quality, session_id, start_frame)
+    base_score = anchor["form_score"]
+    score_lo = max(0, base_score - MAX_SCORE_DRIFT / 2)
+    score_hi = min(100, base_score + MAX_SCORE_DRIFT / 2)
+
+    phase_order = PHASE_ORDER_BY_SPORT.get(sport, DEFAULT_PHASE_ORDER)
+    params = SPORT_DISTRIBUTIONS[sport][quality]
+    hip_mean, hip_std = params["hip_angle"]
+    knee_mean, knee_std = params["knee_angle"]
+    ank_mean, ank_std = params["ankle_dorsiflexion"]
+    trunk_mean, trunk_std = params["trunk_lean"]
+    sh_mean, sh_std = params["shoulder_angle"]
+    el_mean, el_std = params["elbow_angle"]
+
+    sequence = []
+    prev = anchor
+    for i in range(SEQUENCE_LENGTH):
+        if i == 0:
+            current = dict(anchor)
+            current["frame_num"] = start_frame
+        else:
+            current = dict(prev)
+            current["frame_num"] = start_frame + i
+            current["hip_angle_l"] = _smooth_delta(prev["hip_angle_l"], hip_mean, hip_std, 30, 175)
+            current["hip_angle_r"] = _smooth_delta(prev["hip_angle_r"], hip_mean, hip_std * 0.8, 30, 175)
+            current["knee_angle_l"] = _smooth_delta(prev["knee_angle_l"], knee_mean, knee_std, 10, 178)
+            current["knee_angle_r"] = _smooth_delta(prev["knee_angle_r"], knee_mean, knee_std * 0.8, 10, 178)
+            current["ankle_dorsiflexion_l"] = _smooth_delta(prev["ankle_dorsiflexion_l"], ank_mean, ank_std, 30, 150)
+            current["ankle_dorsiflexion_r"] = _smooth_delta(
+                prev["ankle_dorsiflexion_r"], ank_mean, ank_std * 0.8, 30, 150
+            )
+            current["shoulder_angle_l"] = _smooth_delta(prev["shoulder_angle_l"], sh_mean, sh_std, 10, 180)
+            current["shoulder_angle_r"] = _smooth_delta(prev["shoulder_angle_r"], sh_mean, sh_std * 0.8, 10, 180)
+            current["elbow_angle_l"] = _smooth_delta(prev["elbow_angle_l"], el_mean, el_std, 10, 180)
+            current["elbow_angle_r"] = _smooth_delta(prev["elbow_angle_r"], el_mean, el_std * 0.8, 10, 180)
+            current["trunk_lean"] = _smooth_delta(prev["trunk_lean"], trunk_mean, trunk_std, 0, 80)
+            # Recompute symmetry from the smoothed joints so it stays consistent
+            asym = abs(current["hip_angle_l"] - current["hip_angle_r"]) / max(current["hip_angle_l"], 1e-3) + abs(
+                current["knee_angle_l"] - current["knee_angle_r"]
+            ) / max(current["knee_angle_l"], 1e-3)
+            current["limb_symmetry_idx"] = round(max(0.5, min(1.0, params["symmetry_bonus"] - asym * 0.3)), 3)
+            # Drift form_score by at most 0.5 per frame, clamped to the sequence band
+            new_score = prev["form_score"] + random.uniform(-0.5, 0.5)
+            current["form_score"] = round(max(score_lo, min(score_hi, new_score)), 1)
+
+        # Phase progression: slice the sequence evenly across the ordered phases
+        phase_idx = min(len(phase_order) - 1, (i * len(phase_order)) // SEQUENCE_LENGTH)
+        current["phase_label"] = phase_order[phase_idx]
+        current["sequence_id"] = sequence_id
+        sequence.append(current)
+        prev = current
+
+    return sequence
 
 
 def generate_dataset():
-    print("[DATASET] Generating labeled biomechanical training dataset...")
+    print("[DATASET] Generating labeled biomechanical training dataset (PF-11: temporally coherent)...")
 
     records = []
     session_counter = 0
-    sequence_counter = 0  # PF-11: track sequences for temporal coherence
+    sequence_counter = 0
+    frame_counter = 0
 
     for sport in SPORT_DISTRIBUTIONS:
         for quality in ["elite", "good", "average", "poor"]:
             session_id = f"SES_{sport[:3].upper()}_{quality[:3].upper()}_{session_counter:04d}"
-            for frame_num in range(SAMPLES_PER_SPORT_QUALITY):
-                record = _generate_record(sport, quality, session_id, frame_num)
-                # PF-11: Tag with sequence_id (each batch of 30 frames = 1 sequence)
-                record["sequence_id"] = sequence_counter + (frame_num // 30)
-                records.append(record)
-            sequence_counter += (SAMPLES_PER_SPORT_QUALITY // 30) + 1
+            seq_frames_for_pair = 0
+            for _ in range(SEQUENCES_PER_SPORT_QUALITY):
+                seq = _generate_sequence(
+                    sport, quality, session_id, start_frame=frame_counter, sequence_id=sequence_counter
+                )
+                records.extend(seq)
+                seq_frames_for_pair += len(seq)
+                frame_counter += len(seq)
+                sequence_counter += 1
             session_counter += 1
-            print(f"  [OK] {sport} / {quality}: {SAMPLES_PER_SPORT_QUALITY} samples")
+            print(
+                f"  [OK] {sport} / {quality}: {seq_frames_for_pair} samples across {SEQUENCES_PER_SPORT_QUALITY} sequences"
+            )
 
     # Shuffle
     random.shuffle(records)
@@ -478,6 +572,14 @@ Total: 2,000 labeled frames × 5 sports × 4 quality tiers
 | phase_label | str | — | Movement phase: setup/descent/takeoff/flight/landing |
 | quality_label | str | — | **TARGET LABEL**: elite / good / average / poor |
 | feedback_tag | str | — | Primary coaching correction cue |
+| sequence_id | int | — | PF-11: groups 30 consecutive frames into a coherent rep sequence |
+
+## Temporal Coherence (PF-11)
+Frames are generated in 30-frame sequences (1s @ 30fps). Within a sequence:
+- Joint angles change by at most 5° per frame (smooth trajectories)
+- Phases progress in order (setup → descent → takeoff → flight → landing)
+- form_score drifts by at most 5 points (models consistent effort across a rep)
+Use `sequence_id` to do sequence-level splits when training temporal models.
 
 ## Quality Label Definitions
 | Label | Form Score | Description |

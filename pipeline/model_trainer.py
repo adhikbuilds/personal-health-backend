@@ -147,9 +147,10 @@ def train_model(X, y, sport_suffix=""):
 
     X_norm = [[(v - mean_vals[i]) / std_vals[i] for i, v in enumerate(row)] for row in X_arr]
 
-    # Save normalization params
+    # Save normalization params (PF-10: per-sport variant gets its own file)
+    suffix = f"_{sport_suffix}" if sport_suffix else ""
     norm_params = {"mean": mean_vals, "std": std_vals, "features": FEATURE_COLS + ["sport_idx"]}
-    with open(MODEL_DIR / "norm_params.json", "w") as f:
+    with open(MODEL_DIR / f"norm_params{suffix}.json", "w") as f:
         json.dump(norm_params, f, indent=2)
     print("[NORM] Normalization params saved")
 
@@ -173,15 +174,15 @@ def train_model(X, y, sport_suffix=""):
     print(f"[SPLIT] Train: {len(X_train)}, Test: {len(X_test)}")
 
     if TF_AVAILABLE:
-        return _train_keras(X_train, y_train, X_test, y_test)
+        return _train_keras(X_train, y_train, X_test, y_test, sport_suffix=sport_suffix)
     elif SKLEARN_AVAILABLE:
-        return _train_sklearn_fallback(X_train, y_train, X_test, y_test)
+        return _train_sklearn_fallback(X_train, y_train, X_test, y_test, sport_suffix=sport_suffix)
     else:
         print("[ERROR] Neither TensorFlow nor scikit-learn available.")
         return None
 
 
-def _train_keras(X_train, y_train, X_test, y_test):
+def _train_keras(X_train, y_train, X_test, y_test, sport_suffix=""):
     """Train MLP with Keras and export to TFLite."""
     import numpy as np
 
@@ -259,11 +260,11 @@ def _train_keras(X_train, y_train, X_test, y_test):
     print(f"[REPORT]\n{report_text}")
     metrics["classification_report"] = report_text
 
-    with open(MODEL_DIR / "training_metrics.json", "w") as f:
+    # PF-10: per-sport training metrics get their own file
+    suffix = f"_{sport_suffix}" if sport_suffix else ""
+    with open(MODEL_DIR / f"training_metrics{suffix}.json", "w") as f:
         json.dump(metrics, f, indent=2)
 
-    # PF-10: Save Keras model with optional sport suffix
-    suffix = f"_{sport_suffix}" if sport_suffix else ""
     keras_path = MODEL_DIR / f"pose_classifier{suffix}.h5"
     model.save(keras_path)
     print(f"[SAVE] Keras model: {keras_path}")
@@ -284,7 +285,7 @@ def _train_keras(X_train, y_train, X_test, y_test):
     return model
 
 
-def _train_sklearn_fallback(X_train, y_train, X_test, y_test):
+def _train_sklearn_fallback(X_train, y_train, X_test, y_test, sport_suffix=""):
     """Fallback: train a RandomForest when TensorFlow is unavailable."""
     import pickle
 
@@ -315,10 +316,11 @@ def _train_sklearn_fallback(X_train, y_train, X_test, y_test):
         "n_estimators": 200,
         "feature_importances": {n: round(float(v), 4) for n, v in importance_dict},
     }
-    with open(MODEL_DIR / "training_metrics.json", "w") as f:
+    suffix = f"_{sport_suffix}" if sport_suffix else ""
+    with open(MODEL_DIR / f"training_metrics{suffix}.json", "w") as f:
         json.dump(metrics, f, indent=2)
 
-    model_path = MODEL_DIR / "pose_classifier_rf.pkl"
+    model_path = MODEL_DIR / f"pose_classifier_rf{suffix}.pkl"
     with open(model_path, "wb") as f:
         pickle.dump(clf, f)
     print(f"[SAVE] RandomForest model: {model_path}")
