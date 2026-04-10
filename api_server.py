@@ -50,6 +50,7 @@ if FASTAPI_AVAILABLE:
     from routes.leaderboard import router as leaderboard_router
     from routes.load import router as load_router
     from routes.notifications import router as notifications_router
+    from routes.nutrition import router as nutrition_router
     from routes.nutrition_ai import router as nutrition_ai_router
     from routes.plan import router as plan_router
     from routes.progress import router as progress_router
@@ -128,8 +129,6 @@ if FASTAPI_AVAILABLE:
     app.include_router(progress_router)
     app.include_router(analytics_router)
     app.include_router(coach_router)
-    from routes.nutrition import router as nutrition_router
-
     app.include_router(nutrition_router)
     app.include_router(plan_router)
     app.include_router(summary_router)
