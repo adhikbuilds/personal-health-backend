@@ -1,4 +1,5 @@
 
+
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query
@@ -133,6 +134,7 @@ async def get_nutrition_summary(
             "carbs_g": carb,
             "fat_g": fat_g,
             "fiber_g": fib,
+
         }
 
     meals_logged = len(day_log)
@@ -178,7 +180,9 @@ async def get_nutrition_summary(
         "fiber_g": fiber,
         "meals_logged": meals_logged,
         "slots": slots,
+
         "goals": athlete_goals,
         "pct_of_goal": pct_of_goal,
     }
+
 
