@@ -263,7 +263,7 @@ async def session_cleanup_worker():
                         last_ts = now
                 if now - last_ts > 7200:
                     session["status"] = "completed"
-                    session["ended_at"] = datetime.utcnow().isoformat()
+                    session["ended_at"] = datetime.now(timezone.utc).isoformat()
                     session["auto_ended"] = True
                     print(f"[CLEANUP] Auto-ended stale session {sid[:8]}")
             _save_db()
@@ -285,7 +285,7 @@ async def start_session(req: StartSessionRequest):
         "athlete_id": req.athlete_id,
         "sport": req.sport,
         "status": "active",
-        "started_at": datetime.utcnow().isoformat() + "Z",
+        "started_at": datetime.now(timezone.utc).isoformat(),
         "ended_at": None,
         "frame_count": 0,
         "summary": None,
@@ -451,15 +451,17 @@ async def end_session(session_id: str):
         }
     else:
         valid = [f for f in frames if f.get("form_score", 0) > 0]
-        scores = [f["form_score"] for f in valid]
-        jump_heights = [f["estimated_jump_height"] for f in frames if f.get("estimated_jump_height", 0) > 5]
-        symmetries = [f["limb_symmetry_idx"] for f in valid]
+        scores = [f.get("form_score", 0) for f in valid]
+        jump_heights = [f.get("estimated_jump_height", 0) for f in frames if f.get("estimated_jump_height", 0) > 5]
+        symmetries = [f.get("limb_symmetry_idx", 1.0) for f in valid]
         quality_counts = {"elite": 0, "good": 0, "average": 0, "poor": 0}
         for f in frames:
             q = f.get("form_quality", "unknown")
             if q in quality_counts:
                 quality_counts[q] += 1
-        duration = frames[-1]["timestamp"] - frames[0]["timestamp"] if len(frames) > 1 else 0
+        t_end = frames[-1].get("timestamp", 0) if frames else 0
+        t_start = frames[0].get("timestamp", 0) if frames else 0
+        duration = (t_end - t_start) if t_end and t_start else 0
         summary = {
             "session_id": session_id,
             "athlete_id": SESSION_DB[session_id]["athlete_id"],
@@ -483,6 +485,7 @@ async def end_session(session_id: str):
     if athlete_id in ATHLETE_DB:
         ATHLETE_DB[athlete_id]["sessions"] = ATHLETE_DB[athlete_id].get("sessions", 0) + 1
         ATHLETE_DB[athlete_id]["bpi"] = ATHLETE_DB[athlete_id].get("bpi", 0) + summary["xp_earned"]
+        SESSION_DB[session_id]["bpi_after"] = ATHLETE_DB[athlete_id]["bpi"]
     _RATE_LIMITS.pop(session_id, None)  # PF-04: cleanup rate limit tracker
     _save_db()
     return summary
@@ -511,7 +514,10 @@ async def list_sessions(
     if status:
         sessions = [s for s in sessions if s.get("status") == status]
     sessions.sort(key=lambda x: x.get("started_at", ""), reverse=True)
-    return {"total": len(sessions), "offset": offset, "limit": limit, "sessions": sessions[offset : offset + limit]}
+    # strip frames from list view to avoid sending megabytes of frame data
+    page = sessions[offset : offset + limit]
+    stripped = [{k: v for k, v in s.items() if k != "frames"} for s in page]
+    return {"total": len(sessions), "offset": offset, "limit": limit, "sessions": stripped}
 
 
 @router.get("/sessions/active", tags=["Sessions"])
@@ -622,8 +628,8 @@ async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
     await websocket.accept()
     print(f"[WS-STREAM] Native phone streaming for {session_id[:8]}")
     if session_id not in SESSION_DB:
-        SESSION_DB[session_id] = {"athlete_id": "test", "sport": "vertical_jump", "status": "active"}
-        FRAME_BUFFER[session_id] = []
+        await websocket.close(code=4004, reason="session not found — call POST /session/start first")
+        return
     try:
         import types
 
@@ -677,7 +683,14 @@ async def export_dataset(format: str = Query(default="csv")):
         str_fields = {"session_id", "athlete_id", "sport", "phase_label", "quality_label", "feedback_tag"}
         with open(csv_path, encoding="utf-8") as f:
             for row in csv.DictReader(f):
-                rows.append({k: v if k in str_fields else float(v) for k, v in row.items()})
+
+                def _safe_float(val):
+                    try:
+                        return float(val)
+                    except (ValueError, TypeError):
+                        return 0.0
+
+                rows.append({k: v if k in str_fields else _safe_float(v) for k, v in row.items()})
         return JSONResponse({"data": rows, "count": len(rows)})
     return FileResponse(csv_path, media_type="text/csv", filename="personal_health_dataset.csv")
 
@@ -701,7 +714,7 @@ async def model_stats():
     if not log_path.exists():
         return {"total_predictions": 0, "message": "No predictions logged yet"}
 
-    today = datetime.utcnow().date().isoformat()
+    today = datetime.now(timezone.utc).date().isoformat()
     today_count = 0
     score_sum = 0.0
     quality_dist: dict = {"poor": 0, "average": 0, "good": 0, "elite": 0, "unknown": 0}
@@ -757,7 +770,7 @@ async def save_fitness_test(req: FitnessTestRequest):
         "sit_reach_cm": req.sit_reach_cm,
         "run_600_seconds": req.run_600_seconds,
         "age_group": req.age_group,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     athlete["fitness_tests"].insert(0, record)
     athlete["fitness_tests"] = athlete["fitness_tests"][:10]

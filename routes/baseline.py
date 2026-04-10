@@ -166,8 +166,10 @@ async def session_quality_check(session_id: str):
         ratio = round(valid_frames / total_frames * 100, 0)
         issues.append(f"only {ratio}% valid frames (minimum {MIN_VALID_RATIO * 100:.0f}%)")
 
-    if avg_score > 0 and avg_score < MIN_AVG_SCORE:
+    if 0 < avg_score < MIN_AVG_SCORE:
         issues.append(f"avg form score {avg_score:.1f} is suspiciously low (minimum {MIN_AVG_SCORE})")
+    elif avg_score == 0 and total_frames > 0:
+        issues.append("no valid form scores detected — camera may not have captured the athlete")
 
     if duration > 0 and duration < MIN_DURATION_SECONDS:
         issues.append(f"session only lasted {duration:.0f}s (minimum {MIN_DURATION_SECONDS}s)")

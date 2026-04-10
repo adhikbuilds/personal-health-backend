@@ -84,7 +84,7 @@ def _extract_training_rows(min_score: float = 0.0) -> list[dict]:
 @router.get("/sessions")
 async def export_sessions_csv(
     min_score: float = Query(default=0.0, ge=0, description="min form_score to include"),
-    sport: str = Query(default=None, description="filter by sport"),
+    sport: str | None = Query(default=None, description="filter by sport"),
 ):
     """
     Export real session frames as CSV in the same format as training_data.csv.
