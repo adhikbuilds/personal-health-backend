@@ -21,6 +21,7 @@ DATASET_PATH = Path(os.path.dirname(os.path.abspath(__file__))) / "dataset"
 
 SESSION_DB: dict[str, dict] = {}
 ATHLETE_DB: dict[str, dict] = {}
+FOOD_DB: dict[str, dict] = {}
 FRAME_BUFFER: dict[str, list[dict]] = defaultdict(list)
 WS_CONNECTIONS: dict[str, list] = defaultdict(list)
 ANALYSIS_QUEUE: asyncio.Queue | None = None
