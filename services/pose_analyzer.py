@@ -196,11 +196,53 @@ SPORT_IDEAL_ANGLES = {
 
 def compute_form_score(frame: BiomechanicalFrame, sport: str) -> tuple[float, str, str]:
     """
-    Compute a 0-100 form score based on how close key metrics are to
-    the sport-specific ideal ranges.
+    Compute a 0-100 form score.
+
+    Strategy: try the trained MLP classifier first (data flywheel path).
+    If model prediction succeeds, use it as primary — it captures patterns
+    the rule-based scorer can't. Fall through to rule-based scoring when
+    the model isn't loaded (no TF, first deploy, inference error).
 
     Returns: (score, quality_label, primary_feedback)
     """
+    # ── ML model path (primary when available) ──
+    try:
+        from services.model_registry import predict_quality
+
+        frame_dict = {
+            "hip_angle_l": frame.hip_angle_l,
+            "hip_angle_r": frame.hip_angle_r,
+            "knee_angle_l": frame.knee_angle_l,
+            "knee_angle_r": frame.knee_angle_r,
+            "shoulder_angle_l": frame.shoulder_angle_l,
+            "shoulder_angle_r": frame.shoulder_angle_r,
+            "elbow_angle_l": frame.elbow_angle_l,
+            "elbow_angle_r": frame.elbow_angle_r,
+            "ankle_dorsiflexion_l": frame.ankle_dorsiflexion_l,
+            "ankle_dorsiflexion_r": frame.ankle_dorsiflexion_r,
+            "trunk_lean": frame.trunk_lean,
+            "spine_deviation": frame.spine_deviation,
+            "shoulder_hip_sep": frame.shoulder_hip_sep,
+            "head_forward_pos": frame.head_forward_pos,
+            "com_height_norm": frame.com_height_norm,
+            "estimated_jump_height": frame.estimated_jump_height,
+            "limb_symmetry_idx": frame.limb_symmetry_idx,
+        }
+        prediction = predict_quality(frame_dict, sport)
+        if prediction is not None and prediction["confidence"] >= 0.5:
+            # Use model score but still generate rule-based feedback
+            # (model gives quality class, rules give actionable coaching cue)
+            _, _, rule_feedback = _rule_based_form_score(frame, sport)
+            return prediction["form_score"], prediction["quality"], rule_feedback
+    except Exception:
+        pass  # fall through to rules
+
+    # ── Rule-based fallback (always works, no dependencies) ──
+    return _rule_based_form_score(frame, sport)
+
+
+def _rule_based_form_score(frame: BiomechanicalFrame, sport: str) -> tuple[float, str, str]:
+    """Rule-based form scoring from sport-specific ideal angle ranges."""
     if sport not in SPORT_IDEAL_ANGLES:
         sport = "vertical_jump"  # default
 
