@@ -7,11 +7,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 113,
         "protein_g": 2.0,
         "carbs_g": 23.0,
         "fat_g": 2.5,
-        "fiber_g": 0.8
+        "fiber_g": 0.8,
+        "calories": 113
       },
       "tags": [
         "vegetarian",
@@ -26,11 +26,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 135,
         "protein_g": 3.2,
         "carbs_g": 22.1,
         "fat_g": 4.8,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 135
       },
       "tags": [
         "vegetarian"
@@ -43,11 +43,11 @@
       "cuisine": "indian",
       "serving_g": 120,
       "per_100g": {
-        "calories_g": 58,
         "protein_g": 2.0,
         "carbs_g": 11.4,
         "fat_g": 0.4,
-        "fiber_g": 0.7
+        "fiber_g": 0.7,
+        "calories": 58
       },
       "tags": [
         "vegetarian",
@@ -63,11 +63,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 133,
         "protein_g": 3.6,
         "carbs_g": 19.5,
         "fat_g": 4.7,
-        "fiber_g": 1.3
+        "fiber_g": 1.3,
+        "calories": 133
       },
       "tags": [
         "vegetarian",
@@ -82,11 +82,11 @@
       "cuisine": "indian",
       "serving_g": 80,
       "per_100g": {
-        "calories_g": 162,
         "protein_g": 3.9,
         "carbs_g": 25.5,
         "fat_g": 4.8,
-        "fiber_g": 0.8
+        "fiber_g": 0.8,
+        "calories": 162
       },
       "tags": [
         "vegetarian",
@@ -101,11 +101,11 @@
       "cuisine": "indian",
       "serving_g": 120,
       "per_100g": {
-        "calories_g": 107,
         "protein_g": 3.1,
         "carbs_g": 17.2,
         "fat_g": 2.8,
-        "fiber_g": 1.1
+        "fiber_g": 1.1,
+        "calories": 107
       },
       "tags": [
         "vegetarian",
@@ -120,11 +120,11 @@
       "cuisine": "indian",
       "serving_g": 60,
       "per_100g": {
-        "calories_g": 225,
         "protein_g": 7.6,
         "carbs_g": 29.8,
         "fat_g": 9.1,
-        "fiber_g": 2.4
+        "fiber_g": 2.4,
+        "calories": 225
       },
       "tags": [
         "vegetarian",
@@ -139,11 +139,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 160,
         "protein_g": 8.2,
         "carbs_g": 22.0,
         "fat_g": 4.5,
-        "fiber_g": 4.1
+        "fiber_g": 4.1,
+        "calories": 160
       },
       "tags": [
         "vegetarian",
@@ -159,11 +159,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 155,
         "protein_g": 9.5,
         "carbs_g": 21.0,
         "fat_g": 3.5,
-        "fiber_g": 4.5
+        "fiber_g": 4.5,
+        "calories": 155
       },
       "tags": [
         "vegetarian",
@@ -179,11 +179,11 @@
       "cuisine": "indian",
       "serving_g": 80,
       "per_100g": {
-        "calories_g": 300,
         "protein_g": 6.8,
         "carbs_g": 45.0,
         "fat_g": 10.5,
-        "fiber_g": 2.8
+        "fiber_g": 2.8,
+        "calories": 300
       },
       "tags": [
         "vegetarian"
@@ -196,11 +196,11 @@
       "cuisine": "indian",
       "serving_g": 120,
       "per_100g": {
-        "calories_g": 256,
         "protein_g": 5.5,
         "carbs_g": 38.5,
         "fat_g": 9.2,
-        "fiber_g": 2.6
+        "fiber_g": 2.6,
+        "calories": 256
       },
       "tags": [
         "vegetarian"
@@ -213,11 +213,11 @@
       "cuisine": "indian",
       "serving_g": 120,
       "per_100g": {
-        "calories_g": 248,
         "protein_g": 5.8,
         "carbs_g": 37.0,
         "fat_g": 9.0,
-        "fiber_g": 3.2
+        "fiber_g": 3.2,
+        "calories": 248
       },
       "tags": [
         "vegetarian"
@@ -230,11 +230,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 265,
         "protein_g": 7.2,
         "carbs_g": 38.8,
         "fat_g": 9.5,
-        "fiber_g": 4.0
+        "fiber_g": 4.0,
+        "calories": 265
       },
       "tags": [
         "vegetarian"
@@ -247,11 +247,11 @@
       "cuisine": "indian",
       "serving_g": 35,
       "per_100g": {
-        "calories_g": 297,
         "protein_g": 9.0,
         "carbs_g": 53.0,
         "fat_g": 4.5,
-        "fiber_g": 3.5
+        "fiber_g": 3.5,
+        "calories": 297
       },
       "tags": [
         "vegetarian",
@@ -265,11 +265,11 @@
       "cuisine": "indian",
       "serving_g": 35,
       "per_100g": {
-        "calories_g": 285,
         "protein_g": 9.8,
         "carbs_g": 50.0,
         "fat_g": 4.8,
-        "fiber_g": 5.2
+        "fiber_g": 5.2,
+        "calories": 285
       },
       "tags": [
         "vegetarian",
@@ -284,11 +284,11 @@
       "cuisine": "indian",
       "serving_g": 40,
       "per_100g": {
-        "calories_g": 349,
         "protein_g": 10.4,
         "carbs_g": 72.6,
         "fat_g": 1.9,
-        "fiber_g": 4.2
+        "fiber_g": 4.2,
+        "calories": 349
       },
       "tags": [
         "vegetarian",
@@ -303,11 +303,11 @@
       "cuisine": "indian",
       "serving_g": 40,
       "per_100g": {
-        "calories_g": 361,
         "protein_g": 11.6,
         "carbs_g": 67.5,
         "fat_g": 5.0,
-        "fiber_g": 1.2
+        "fiber_g": 1.2,
+        "calories": 361
       },
       "tags": [
         "vegetarian",
@@ -322,11 +322,11 @@
       "cuisine": "indian",
       "serving_g": 70,
       "per_100g": {
-        "calories_g": 355,
         "protein_g": 8.8,
         "carbs_g": 66.0,
         "fat_g": 3.6,
-        "fiber_g": 2.7
+        "fiber_g": 2.7,
+        "calories": 355
       },
       "tags": [
         "vegetarian",
@@ -341,11 +341,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 130,
         "protein_g": 2.7,
         "carbs_g": 28.2,
         "fat_g": 0.3,
-        "fiber_g": 0.4
+        "fiber_g": 0.4,
+        "calories": 130
       },
       "tags": [
         "vegetarian",
@@ -360,11 +360,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 362,
         "protein_g": 7.9,
         "carbs_g": 76.2,
         "fat_g": 2.7,
-        "fiber_g": 3.5
+        "fiber_g": 3.5,
+        "calories": 362
       },
       "tags": [
         "vegetarian",
@@ -380,11 +380,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 95,
         "protein_g": 6.2,
         "carbs_g": 11.0,
         "fat_g": 3.2,
-        "fiber_g": 2.5
+        "fiber_g": 2.5,
+        "calories": 95
       },
       "tags": [
         "vegetarian",
@@ -400,11 +400,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 135,
         "protein_g": 7.0,
         "carbs_g": 14.5,
         "fat_g": 5.8,
-        "fiber_g": 3.8
+        "fiber_g": 3.8,
+        "calories": 135
       },
       "tags": [
         "vegetarian",
@@ -419,11 +419,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 105,
         "protein_g": 7.0,
         "carbs_g": 15.8,
         "fat_g": 0.8,
-        "fiber_g": 4.1
+        "fiber_g": 4.1,
+        "calories": 105
       },
       "tags": [
         "vegetarian",
@@ -439,11 +439,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 114,
         "protein_g": 9.0,
         "carbs_g": 20.0,
         "fat_g": 0.5,
-        "fiber_g": 7.9
+        "fiber_g": 7.9,
+        "calories": 114
       },
       "tags": [
         "vegetarian",
@@ -460,11 +460,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 164,
         "protein_g": 8.9,
         "carbs_g": 27.5,
         "fat_g": 2.7,
-        "fiber_g": 7.6
+        "fiber_g": 7.6,
+        "calories": 164
       },
       "tags": [
         "vegetarian",
@@ -480,11 +480,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 110,
         "protein_g": 6.8,
         "carbs_g": 17.5,
         "fat_g": 1.6,
-        "fiber_g": 5.8
+        "fiber_g": 5.8,
+        "calories": 110
       },
       "tags": [
         "vegetarian",
@@ -500,11 +500,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 145,
         "protein_g": 7.2,
         "carbs_g": 20.5,
         "fat_g": 5.0,
-        "fiber_g": 6.8
+        "fiber_g": 6.8,
+        "calories": 145
       },
       "tags": [
         "vegetarian",
@@ -520,11 +520,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 265,
         "protein_g": 14.1,
         "carbs_g": 5.2,
         "fat_g": 21.0,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 265
       },
       "tags": [
         "vegetarian",
@@ -539,11 +539,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 185,
         "protein_g": 10.5,
         "carbs_g": 9.5,
         "fat_g": 12.5,
-        "fiber_g": 1.8
+        "fiber_g": 1.8,
+        "calories": 185
       },
       "tags": [
         "vegetarian",
@@ -558,11 +558,11 @@
       "cuisine": "indian",
       "serving_g": 180,
       "per_100g": {
-        "calories_g": 176,
         "protein_g": 9.8,
         "carbs_g": 8.0,
         "fat_g": 12.0,
-        "fiber_g": 3.2
+        "fiber_g": 3.2,
+        "calories": 176
       },
       "tags": [
         "vegetarian",
@@ -577,11 +577,11 @@
       "cuisine": "indian",
       "serving_g": 180,
       "per_100g": {
-        "calories_g": 220,
         "protein_g": 9.5,
         "carbs_g": 8.5,
         "fat_g": 17.0,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 220
       },
       "tags": [
         "vegetarian",
@@ -595,11 +595,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 124,
         "protein_g": 4.5,
         "carbs_g": 22.0,
         "fat_g": 2.1,
-        "fiber_g": 2.0
+        "fiber_g": 2.0,
+        "calories": 124
       },
       "tags": [
         "vegetarian",
@@ -614,11 +614,11 @@
       "cuisine": "indian",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 175,
         "protein_g": 3.8,
         "carbs_g": 30.0,
         "fat_g": 4.8,
-        "fiber_g": 1.2
+        "fiber_g": 1.2,
+        "calories": 175
       },
       "tags": [
         "vegetarian",
@@ -632,11 +632,11 @@
       "cuisine": "indian",
       "serving_g": 350,
       "per_100g": {
-        "calories_g": 198,
         "protein_g": 11.5,
         "carbs_g": 28.0,
         "fat_g": 4.5,
-        "fiber_g": 0.8
+        "fiber_g": 0.8,
+        "calories": 198
       },
       "tags": [
         "non-vegetarian",
@@ -651,11 +651,11 @@
       "cuisine": "indian",
       "serving_g": 350,
       "per_100g": {
-        "calories_g": 215,
         "protein_g": 12.0,
         "carbs_g": 27.0,
         "fat_g": 6.5,
-        "fiber_g": 0.9
+        "fiber_g": 0.9,
+        "calories": 215
       },
       "tags": [
         "non-vegetarian",
@@ -670,11 +670,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 150,
         "protein_g": 14.0,
         "carbs_g": 4.5,
         "fat_g": 8.5,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 150
       },
       "tags": [
         "non-vegetarian",
@@ -689,11 +689,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 170,
         "protein_g": 12.0,
         "carbs_g": 8.0,
         "fat_g": 10.5,
-        "fiber_g": 1.2
+        "fiber_g": 1.2,
+        "calories": 170
       },
       "tags": [
         "non-vegetarian",
@@ -708,11 +708,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 180,
         "protein_g": 14.5,
         "carbs_g": 5.5,
         "fat_g": 11.5,
-        "fiber_g": 0.8
+        "fiber_g": 0.8,
+        "calories": 180
       },
       "tags": [
         "non-vegetarian",
@@ -727,11 +727,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 115,
         "protein_g": 16.0,
         "carbs_g": 4.0,
         "fat_g": 4.0,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 115
       },
       "tags": [
         "non-vegetarian",
@@ -747,11 +747,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 120,
         "protein_g": 18.0,
         "carbs_g": 4.5,
         "fat_g": 3.5,
-        "fiber_g": 0.6
+        "fiber_g": 0.6,
+        "calories": 120
       },
       "tags": [
         "non-vegetarian",
@@ -767,11 +767,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 135,
         "protein_g": 9.5,
         "carbs_g": 5.0,
         "fat_g": 9.0,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 135
       },
       "tags": [
         "non-vegetarian",
@@ -786,11 +786,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 98,
         "protein_g": 2.4,
         "carbs_g": 14.5,
         "fat_g": 3.8,
-        "fiber_g": 3.0
+        "fiber_g": 3.0,
+        "calories": 98
       },
       "tags": [
         "vegetarian",
@@ -805,11 +805,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 93,
         "protein_g": 2.0,
         "carbs_g": 10.5,
         "fat_g": 4.8,
-        "fiber_g": 3.2
+        "fiber_g": 3.2,
+        "calories": 93
       },
       "tags": [
         "vegetarian",
@@ -824,11 +824,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 72,
         "protein_g": 1.8,
         "carbs_g": 8.5,
         "fat_g": 3.5,
-        "fiber_g": 4.8
+        "fiber_g": 4.8,
+        "calories": 72
       },
       "tags": [
         "vegetarian",
@@ -843,11 +843,11 @@
       "cuisine": "indian",
       "serving_g": 180,
       "per_100g": {
-        "calories_g": 162,
         "protein_g": 9.5,
         "carbs_g": 10.5,
         "fat_g": 9.8,
-        "fiber_g": 2.8
+        "fiber_g": 2.8,
+        "calories": 162
       },
       "tags": [
         "vegetarian",
@@ -862,11 +862,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 104,
         "protein_g": 3.2,
         "carbs_g": 16.0,
         "fat_g": 3.2,
-        "fiber_g": 2.5
+        "fiber_g": 2.5,
+        "calories": 104
       },
       "tags": [
         "vegetarian",
@@ -881,11 +881,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 82,
         "protein_g": 3.8,
         "carbs_g": 6.0,
         "fat_g": 4.5,
-        "fiber_g": 3.9
+        "fiber_g": 3.9,
+        "calories": 82
       },
       "tags": [
         "vegetarian",
@@ -899,11 +899,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 55,
         "protein_g": 0.9,
         "carbs_g": 7.5,
         "fat_g": 2.0,
-        "fiber_g": 0.8
+        "fiber_g": 0.8,
+        "calories": 55
       },
       "tags": [
         "vegetarian",
@@ -919,11 +919,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 48,
         "protein_g": 1.2,
         "carbs_g": 6.5,
         "fat_g": 1.8,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 48
       },
       "tags": [
         "vegetarian",
@@ -939,11 +939,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 110,
         "protein_g": 4.5,
         "carbs_g": 12.5,
         "fat_g": 5.0,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 110
       },
       "tags": [
         "vegetarian",
@@ -957,11 +957,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 98,
         "protein_g": 3.1,
         "carbs_g": 4.7,
         "fat_g": 6.0,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 98
       },
       "tags": [
         "vegetarian",
@@ -975,11 +975,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 62,
         "protein_g": 3.8,
         "carbs_g": 4.8,
         "fat_g": 2.5,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 62
       },
       "tags": [
         "vegetarian",
@@ -994,11 +994,11 @@
       "cuisine": "indian",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 40,
         "protein_g": 1.5,
         "carbs_g": 4.8,
         "fat_g": 1.0,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 40
       },
       "tags": [
         "vegetarian",
@@ -1013,11 +1013,11 @@
       "cuisine": "indian",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 75,
         "protein_g": 3.5,
         "carbs_g": 10.5,
         "fat_g": 2.5,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 75
       },
       "tags": [
         "vegetarian",
@@ -1031,11 +1031,11 @@
       "cuisine": "indian",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 58,
         "protein_g": 3.0,
         "carbs_g": 6.5,
         "fat_g": 2.5,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 58
       },
       "tags": [
         "vegetarian",
@@ -1050,11 +1050,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 296,
         "protein_g": 18.3,
         "carbs_g": 1.2,
         "fat_g": 24.1,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 296
       },
       "tags": [
         "vegetarian",
@@ -1069,11 +1069,11 @@
       "cuisine": "indian",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 585,
         "protein_g": 25.8,
         "carbs_g": 21.0,
         "fat_g": 46.1,
-        "fiber_g": 8.5
+        "fiber_g": 8.5,
+        "calories": 585
       },
       "tags": [
         "vegetarian",
@@ -1089,11 +1089,11 @@
       "cuisine": "indian",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 362,
         "protein_g": 22.5,
         "carbs_g": 58.0,
         "fat_g": 5.2,
-        "fiber_g": 16.8
+        "fiber_g": 16.8,
+        "calories": 362
       },
       "tags": [
         "vegetarian",
@@ -1109,11 +1109,11 @@
       "cuisine": "indian",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 347,
         "protein_g": 9.7,
         "carbs_g": 76.9,
         "fat_g": 0.1,
-        "fiber_g": 14.5
+        "fiber_g": 14.5,
+        "calories": 347
       },
       "tags": [
         "vegetarian",
@@ -1129,11 +1129,11 @@
       "cuisine": "indian",
       "serving_g": 50,
       "per_100g": {
-        "calories_g": 345,
         "protein_g": 52.0,
         "carbs_g": 33.0,
         "fat_g": 0.5,
-        "fiber_g": 13.0
+        "fiber_g": 13.0,
+        "calories": 345
       },
       "tags": [
         "vegetarian",
@@ -1149,11 +1149,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 129,
         "protein_g": 14.0,
         "carbs_g": 16.0,
         "fat_g": 1.5,
-        "fiber_g": 5.0
+        "fiber_g": 5.0,
+        "calories": 129
       },
       "tags": [
         "vegetarian",
@@ -1169,11 +1169,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 30,
         "protein_g": 3.0,
         "carbs_g": 5.5,
         "fat_g": 0.2,
-        "fiber_g": 1.8
+        "fiber_g": 1.8,
+        "calories": 30
       },
       "tags": [
         "vegetarian",
@@ -1190,11 +1190,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 110,
         "protein_g": 7.2,
         "carbs_g": 18.5,
         "fat_g": 0.8,
-        "fiber_g": 5.5
+        "fiber_g": 5.5,
+        "calories": 110
       },
       "tags": [
         "vegetarian",
@@ -1210,11 +1210,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 55,
         "protein_g": 2.8,
         "carbs_g": 8.5,
         "fat_g": 1.0,
-        "fiber_g": 2.5
+        "fiber_g": 2.5,
+        "calories": 55
       },
       "tags": [
         "vegetarian",
@@ -1229,11 +1229,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 35,
         "protein_g": 1.5,
         "carbs_g": 5.5,
         "fat_g": 0.8,
-        "fiber_g": 0.9
+        "fiber_g": 0.9,
+        "calories": 35
       },
       "tags": [
         "vegetarian",
@@ -1249,11 +1249,11 @@
       "cuisine": "indian",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 210,
         "protein_g": 2.5,
         "carbs_g": 10.5,
         "fat_g": 18.5,
-        "fiber_g": 4.5
+        "fiber_g": 4.5,
+        "calories": 210
       },
       "tags": [
         "vegetarian",
@@ -1268,11 +1268,11 @@
       "cuisine": "indian",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 152,
         "protein_g": 4.0,
         "carbs_g": 22.5,
         "fat_g": 5.5,
-        "fiber_g": 3.0
+        "fiber_g": 3.0,
+        "calories": 152
       },
       "tags": [
         "vegetarian"
@@ -1285,11 +1285,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 232,
         "protein_g": 5.2,
         "carbs_g": 35.0,
         "fat_g": 8.0,
-        "fiber_g": 2.8
+        "fiber_g": 2.8,
+        "calories": 232
       },
       "tags": [
         "vegetarian"
@@ -1302,11 +1302,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 160,
         "protein_g": 7.0,
         "carbs_g": 28.0,
         "fat_g": 2.5,
-        "fiber_g": 2.0
+        "fiber_g": 2.0,
+        "calories": 160
       },
       "tags": [
         "vegetarian",
@@ -1321,11 +1321,11 @@
       "cuisine": "indian",
       "serving_g": 80,
       "per_100g": {
-        "calories_g": 155,
         "protein_g": 6.5,
         "carbs_g": 20.0,
         "fat_g": 5.5,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 155
       },
       "tags": [
         "vegetarian",
@@ -1339,11 +1339,11 @@
       "cuisine": "indian",
       "serving_g": 60,
       "per_100g": {
-        "calories_g": 395,
         "protein_g": 7.5,
         "carbs_g": 50.0,
         "fat_g": 19.5,
-        "fiber_g": 2.5
+        "fiber_g": 2.5,
+        "calories": 395
       },
       "tags": [
         "vegetarian",
@@ -1357,11 +1357,11 @@
       "cuisine": "indian",
       "serving_g": 90,
       "per_100g": {
-        "calories_g": 360,
         "protein_g": 8.0,
         "carbs_g": 52.0,
         "fat_g": 13.5,
-        "fiber_g": 2.2
+        "fiber_g": 2.2,
+        "calories": 360
       },
       "tags": [
         "vegetarian"
@@ -1374,11 +1374,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 310,
         "protein_g": 4.5,
         "carbs_g": 50.0,
         "fat_g": 10.0,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 310
       },
       "tags": [
         "vegetarian"
@@ -1391,11 +1391,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 120,
         "protein_g": 4.2,
         "carbs_g": 19.5,
         "fat_g": 3.0,
-        "fiber_g": 2.8
+        "fiber_g": 2.8,
+        "calories": 120
       },
       "tags": [
         "vegetarian",
@@ -1410,11 +1410,11 @@
       "cuisine": "indian",
       "serving_g": 120,
       "per_100g": {
-        "calories_g": 75,
         "protein_g": 2.5,
         "carbs_g": 13.5,
         "fat_g": 1.5,
-        "fiber_g": 0.8
+        "fiber_g": 0.8,
+        "calories": 75
       },
       "tags": [
         "vegetarian"
@@ -1427,11 +1427,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 145,
         "protein_g": 8.5,
         "carbs_g": 22.0,
         "fat_g": 2.5,
-        "fiber_g": 4.2
+        "fiber_g": 4.2,
+        "calories": 145
       },
       "tags": [
         "vegetarian",
@@ -1447,11 +1447,11 @@
       "cuisine": "indian",
       "serving_g": 80,
       "per_100g": {
-        "calories_g": 125,
         "protein_g": 2.8,
         "carbs_g": 25.5,
         "fat_g": 1.5,
-        "fiber_g": 0.8
+        "fiber_g": 0.8,
+        "calories": 125
       },
       "tags": [
         "vegetarian",
@@ -1466,11 +1466,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 354,
         "protein_g": 6.0,
         "carbs_g": 76.0,
         "fat_g": 1.5,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 354
       },
       "tags": [
         "vegetarian",
@@ -1485,11 +1485,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 88,
         "protein_g": 2.0,
         "carbs_g": 8.5,
         "fat_g": 5.5,
-        "fiber_g": 3.0
+        "fiber_g": 3.0,
+        "calories": 88
       },
       "tags": [
         "vegetarian",
@@ -1504,11 +1504,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 95,
         "protein_g": 3.5,
         "carbs_g": 10.5,
         "fat_g": 4.5,
-        "fiber_g": 3.5
+        "fiber_g": 3.5,
+        "calories": 95
       },
       "tags": [
         "vegetarian",
@@ -1523,11 +1523,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 143,
         "protein_g": 4.5,
         "carbs_g": 24.0,
         "fat_g": 3.5,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 143
       },
       "tags": [
         "vegetarian",
@@ -1541,11 +1541,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 100,
         "protein_g": 2.8,
         "carbs_g": 17.5,
         "fat_g": 2.5,
-        "fiber_g": 0.3
+        "fiber_g": 0.3,
+        "calories": 100
       },
       "tags": [
         "vegetarian",
@@ -1559,11 +1559,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 148,
         "protein_g": 2.5,
         "carbs_g": 26.5,
         "fat_g": 4.0,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 148
       },
       "tags": [
         "vegetarian",
@@ -1578,11 +1578,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 185,
         "protein_g": 3.0,
         "carbs_g": 32.5,
         "fat_g": 5.5,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 185
       },
       "tags": [
         "vegetarian",
@@ -1597,11 +1597,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 225,
         "protein_g": 4.8,
         "carbs_g": 30.5,
         "fat_g": 10.0,
-        "fiber_g": 2.5
+        "fiber_g": 2.5,
+        "calories": 225
       },
       "tags": [
         "vegetarian",
@@ -1615,11 +1615,11 @@
       "cuisine": "indian",
       "serving_g": 80,
       "per_100g": {
-        "calories_g": 195,
         "protein_g": 3.5,
         "carbs_g": 30.0,
         "fat_g": 7.0,
-        "fiber_g": 2.5
+        "fiber_g": 2.5,
+        "calories": 195
       },
       "tags": [
         "vegetarian",
@@ -1634,11 +1634,11 @@
       "cuisine": "indian",
       "serving_g": 70,
       "per_100g": {
-        "calories_g": 265,
         "protein_g": 5.0,
         "carbs_g": 34.5,
         "fat_g": 12.5,
-        "fiber_g": 2.8
+        "fiber_g": 2.8,
+        "calories": 265
       },
       "tags": [
         "vegetarian"
@@ -1651,11 +1651,11 @@
       "cuisine": "indian",
       "serving_g": 60,
       "per_100g": {
-        "calories_g": 380,
         "protein_g": 7.0,
         "carbs_g": 42.0,
         "fat_g": 20.0,
-        "fiber_g": 3.0
+        "fiber_g": 3.0,
+        "calories": 380
       },
       "tags": [
         "vegetarian"
@@ -1668,11 +1668,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 90,
         "protein_g": 3.5,
         "carbs_g": 10.0,
         "fat_g": 4.0,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 90
       },
       "tags": [
         "vegetarian",
@@ -1686,11 +1686,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 128,
         "protein_g": 5.0,
         "carbs_g": 22.5,
         "fat_g": 2.5,
-        "fiber_g": 1.8
+        "fiber_g": 1.8,
+        "calories": 128
       },
       "tags": [
         "vegetarian",
@@ -1705,11 +1705,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 285,
         "protein_g": 4.8,
         "carbs_g": 38.5,
         "fat_g": 12.5,
-        "fiber_g": 2.5
+        "fiber_g": 2.5,
+        "calories": 285
       },
       "tags": [
         "vegetarian"
@@ -1722,11 +1722,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 120,
         "protein_g": 3.5,
         "carbs_g": 18.5,
         "fat_g": 4.0,
-        "fiber_g": 0.2
+        "fiber_g": 0.2,
+        "calories": 120
       },
       "tags": [
         "vegetarian",
@@ -1740,11 +1740,11 @@
       "cuisine": "indian",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 430,
         "protein_g": 12.0,
         "carbs_g": 48.0,
         "fat_g": 22.5,
-        "fiber_g": 5.0
+        "fiber_g": 5.0,
+        "calories": 430
       },
       "tags": [
         "vegetarian",
@@ -1759,11 +1759,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 336,
         "protein_g": 7.3,
         "carbs_g": 72.0,
         "fat_g": 1.5,
-        "fiber_g": 11.5
+        "fiber_g": 11.5,
+        "calories": 336
       },
       "tags": [
         "vegetarian",
@@ -1779,11 +1779,11 @@
       "cuisine": "indian",
       "serving_g": 80,
       "per_100g": {
-        "calories_g": 120,
         "protein_g": 3.0,
         "carbs_g": 22.0,
         "fat_g": 2.0,
-        "fiber_g": 3.5
+        "fiber_g": 3.5,
+        "calories": 120
       },
       "tags": [
         "vegetarian",
@@ -1798,11 +1798,11 @@
       "cuisine": "indian",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 87,
         "protein_g": 5.5,
         "carbs_g": 16.5,
         "fat_g": 0.5,
-        "fiber_g": 3.5
+        "fiber_g": 3.5,
+        "calories": 87
       },
       "tags": [
         "vegetarian",
@@ -1818,11 +1818,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 248,
         "protein_g": 8.5,
         "carbs_g": 40.5,
         "fat_g": 5.8,
-        "fiber_g": 5.5
+        "fiber_g": 5.5,
+        "calories": 248
       },
       "tags": [
         "vegetarian"
@@ -1835,11 +1835,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 148,
         "protein_g": 4.0,
         "carbs_g": 22.5,
         "fat_g": 4.5,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 148
       },
       "tags": [
         "vegetarian",
@@ -1854,11 +1854,11 @@
       "cuisine": "indian",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 175,
         "protein_g": 7.0,
         "carbs_g": 26.5,
         "fat_g": 5.0,
-        "fiber_g": 5.5
+        "fiber_g": 5.5,
+        "calories": 175
       },
       "tags": [
         "vegetarian"
@@ -1871,11 +1871,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 118,
         "protein_g": 3.0,
         "carbs_g": 17.0,
         "fat_g": 4.5,
-        "fiber_g": 3.8
+        "fiber_g": 3.8,
+        "calories": 118
       },
       "tags": [
         "vegetarian",
@@ -1889,11 +1889,11 @@
       "cuisine": "indian",
       "serving_g": 120,
       "per_100g": {
-        "calories_g": 190,
         "protein_g": 12.0,
         "carbs_g": 3.5,
         "fat_g": 14.5,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 190
       },
       "tags": [
         "non-vegetarian",
@@ -1908,11 +1908,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 185,
         "protein_g": 16.5,
         "carbs_g": 6.5,
         "fat_g": 10.5,
-        "fiber_g": 2.0
+        "fiber_g": 2.0,
+        "calories": 185
       },
       "tags": [
         "non-vegetarian",
@@ -1927,11 +1927,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 165,
         "protein_g": 25.0,
         "carbs_g": 4.0,
         "fat_g": 5.5,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 165
       },
       "tags": [
         "non-vegetarian",
@@ -1947,11 +1947,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 185,
         "protein_g": 28.0,
         "carbs_g": 3.5,
         "fat_g": 6.5,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 185
       },
       "tags": [
         "non-vegetarian",
@@ -1966,11 +1966,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 195,
         "protein_g": 24.0,
         "carbs_g": 5.5,
         "fat_g": 8.5,
-        "fiber_g": 0.8
+        "fiber_g": 0.8,
+        "calories": 195
       },
       "tags": [
         "non-vegetarian",
@@ -1985,11 +1985,11 @@
       "cuisine": "indian",
       "serving_g": 120,
       "per_100g": {
-        "calories_g": 135,
         "protein_g": 5.5,
         "carbs_g": 18.5,
         "fat_g": 4.5,
-        "fiber_g": 2.0
+        "fiber_g": 2.0,
+        "calories": 135
       },
       "tags": [
         "vegetarian",
@@ -2003,11 +2003,11 @@
       "cuisine": "indian",
       "serving_g": 60,
       "per_100g": {
-        "calories_g": 186,
         "protein_g": 5.5,
         "carbs_g": 36.5,
         "fat_g": 2.5,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 186
       },
       "tags": [
         "vegetarian",
@@ -2021,11 +2021,11 @@
       "cuisine": "indian",
       "serving_g": 50,
       "per_100g": {
-        "calories_g": 380,
         "protein_g": 5.5,
         "carbs_g": 60.5,
         "fat_g": 13.0,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 380
       },
       "tags": [
         "vegetarian"
@@ -2038,11 +2038,11 @@
       "cuisine": "indian",
       "serving_g": 10,
       "per_100g": {
-        "calories_g": 140,
         "protein_g": 1.5,
         "carbs_g": 10.5,
         "fat_g": 10.5,
-        "fiber_g": 2.0
+        "fiber_g": 2.0,
+        "calories": 140
       },
       "tags": [
         "vegetarian",
@@ -2057,11 +2057,11 @@
       "cuisine": "indian",
       "serving_g": 20,
       "per_100g": {
-        "calories_g": 350,
         "protein_g": 22.5,
         "carbs_g": 55.5,
         "fat_g": 5.5,
-        "fiber_g": 3.8
+        "fiber_g": 3.8,
+        "calories": 350
       },
       "tags": [
         "vegetarian",
@@ -2076,11 +2076,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 143,
         "protein_g": 3.5,
         "carbs_g": 22.5,
         "fat_g": 4.5,
-        "fiber_g": 0.3
+        "fiber_g": 0.3,
+        "calories": 143
       },
       "tags": [
         "vegetarian"
@@ -2093,11 +2093,11 @@
       "cuisine": "indian",
       "serving_g": 60,
       "per_100g": {
-        "calories_g": 270,
         "protein_g": 8.0,
         "carbs_g": 38.5,
         "fat_g": 9.5,
-        "fiber_g": 4.5
+        "fiber_g": 4.5,
+        "calories": 270
       },
       "tags": [
         "vegetarian"
@@ -2110,11 +2110,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 90,
         "protein_g": 5.0,
         "carbs_g": 13.5,
         "fat_g": 2.0,
-        "fiber_g": 2.5
+        "fiber_g": 2.5,
+        "calories": 90
       },
       "tags": [
         "vegetarian",
@@ -2129,11 +2129,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 142,
         "protein_g": 4.5,
         "carbs_g": 17.0,
         "fat_g": 6.5,
-        "fiber_g": 5.0
+        "fiber_g": 5.0,
+        "calories": 142
       },
       "tags": [
         "vegetarian",
@@ -2148,11 +2148,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 178,
         "protein_g": 5.5,
         "carbs_g": 30.0,
         "fat_g": 4.5,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 178
       },
       "tags": [
         "vegetarian",
@@ -2166,11 +2166,11 @@
       "cuisine": "indian",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 130,
         "protein_g": 4.5,
         "carbs_g": 22.0,
         "fat_g": 3.0,
-        "fiber_g": 2.5
+        "fiber_g": 2.5,
+        "calories": 130
       },
       "tags": [
         "vegetarian",
@@ -2185,11 +2185,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 215,
         "protein_g": 2.5,
         "carbs_g": 42.5,
         "fat_g": 5.0,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 215
       },
       "tags": [
         "vegetarian",
@@ -2204,11 +2204,11 @@
       "cuisine": "indian",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 160,
         "protein_g": 3.5,
         "carbs_g": 28.5,
         "fat_g": 4.0,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 160
       },
       "tags": [
         "vegetarian",
@@ -2223,11 +2223,11 @@
       "cuisine": "indian",
       "serving_g": 280,
       "per_100g": {
-        "calories_g": 101,
         "protein_g": 3.2,
         "carbs_g": 15.5,
         "fat_g": 3.2,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 101
       },
       "tags": [
         "vegetarian",
@@ -2242,11 +2242,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 175,
         "protein_g": 22.0,
         "carbs_g": 4.0,
         "fat_g": 8.0,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 175
       },
       "tags": [
         "non-vegetarian",
@@ -2261,11 +2261,11 @@
       "cuisine": "global",
       "serving_g": 50,
       "per_100g": {
-        "calories_g": 155,
         "protein_g": 13.0,
         "carbs_g": 1.1,
         "fat_g": 10.6,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 155
       },
       "tags": [
         "non-vegetarian",
@@ -2280,11 +2280,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 52,
         "protein_g": 10.9,
         "carbs_g": 0.7,
         "fat_g": 0.2,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 52
       },
       "tags": [
         "non-vegetarian",
@@ -2300,11 +2300,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 165,
         "protein_g": 31.0,
         "carbs_g": 0.0,
         "fat_g": 3.6,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 165
       },
       "tags": [
         "non-vegetarian",
@@ -2320,11 +2320,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 184,
         "protein_g": 26.0,
         "carbs_g": 0.0,
         "fat_g": 8.5,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 184
       },
       "tags": [
         "non-vegetarian",
@@ -2339,11 +2339,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 360,
         "protein_g": 90.0,
         "carbs_g": 2.0,
         "fat_g": 1.0,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 360
       },
       "tags": [
         "vegetarian",
@@ -2358,11 +2358,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 380,
         "protein_g": 75.0,
         "carbs_g": 6.5,
         "fat_g": 5.5,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 380
       },
       "tags": [
         "non-vegetarian",
@@ -2377,11 +2377,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 365,
         "protein_g": 80.0,
         "carbs_g": 5.0,
         "fat_g": 2.0,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 365
       },
       "tags": [
         "non-vegetarian",
@@ -2396,11 +2396,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 375,
         "protein_g": 80.0,
         "carbs_g": 5.0,
         "fat_g": 5.0,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 375
       },
       "tags": [
         "vegetarian",
@@ -2416,11 +2416,11 @@
       "cuisine": "global",
       "serving_g": 32,
       "per_100g": {
-        "calories_g": 588,
         "protein_g": 25.1,
         "carbs_g": 20.0,
         "fat_g": 50.4,
-        "fiber_g": 6.0
+        "fiber_g": 6.0,
+        "calories": 588
       },
       "tags": [
         "vegetarian",
@@ -2436,11 +2436,11 @@
       "cuisine": "global",
       "serving_g": 32,
       "per_100g": {
-        "calories_g": 614,
         "protein_g": 21.0,
         "carbs_g": 19.0,
         "fat_g": 55.5,
-        "fiber_g": 10.5
+        "fiber_g": 10.5,
+        "calories": 614
       },
       "tags": [
         "vegetarian",
@@ -2456,11 +2456,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 73,
         "protein_g": 9.0,
         "carbs_g": 4.0,
         "fat_g": 0.7,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 73
       },
       "tags": [
         "vegetarian",
@@ -2476,11 +2476,11 @@
       "cuisine": "global",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 72,
         "protein_g": 12.5,
         "carbs_g": 2.5,
         "fat_g": 1.0,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 72
       },
       "tags": [
         "vegetarian",
@@ -2496,11 +2496,11 @@
       "cuisine": "global",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 109,
         "protein_g": 25.5,
         "carbs_g": 0.0,
         "fat_g": 1.0,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 109
       },
       "tags": [
         "non-vegetarian",
@@ -2516,11 +2516,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 206,
         "protein_g": 28.0,
         "carbs_g": 0.0,
         "fat_g": 10.0,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 206
       },
       "tags": [
         "non-vegetarian",
@@ -2535,11 +2535,11 @@
       "cuisine": "global",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 76,
         "protein_g": 8.0,
         "carbs_g": 1.9,
         "fat_g": 4.8,
-        "fiber_g": 0.3
+        "fiber_g": 0.3,
+        "calories": 76
       },
       "tags": [
         "vegetarian",
@@ -2555,11 +2555,11 @@
       "cuisine": "global",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 116,
         "protein_g": 9.0,
         "carbs_g": 20.0,
         "fat_g": 0.4,
-        "fiber_g": 7.9
+        "fiber_g": 7.9,
+        "calories": 116
       },
       "tags": [
         "vegetarian",
@@ -2575,11 +2575,11 @@
       "cuisine": "global",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 132,
         "protein_g": 8.9,
         "carbs_g": 23.7,
         "fat_g": 0.5,
-        "fiber_g": 8.7
+        "fiber_g": 8.7,
+        "calories": 132
       },
       "tags": [
         "vegetarian",
@@ -2595,11 +2595,11 @@
       "cuisine": "global",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 164,
         "protein_g": 8.9,
         "carbs_g": 27.4,
         "fat_g": 2.6,
-        "fiber_g": 7.6
+        "fiber_g": 7.6,
+        "calories": 164
       },
       "tags": [
         "vegetarian",
@@ -2615,11 +2615,11 @@
       "cuisine": "global",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 121,
         "protein_g": 11.9,
         "carbs_g": 8.9,
         "fat_g": 5.2,
-        "fiber_g": 5.2
+        "fiber_g": 5.2,
+        "calories": 121
       },
       "tags": [
         "vegetarian",
@@ -2635,11 +2635,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 579,
         "protein_g": 21.2,
         "carbs_g": 21.6,
         "fat_g": 49.9,
-        "fiber_g": 12.5
+        "fiber_g": 12.5,
+        "calories": 579
       },
       "tags": [
         "vegetarian",
@@ -2655,11 +2655,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 654,
         "protein_g": 15.2,
         "carbs_g": 13.7,
         "fat_g": 65.2,
-        "fiber_g": 6.7
+        "fiber_g": 6.7,
+        "calories": 654
       },
       "tags": [
         "vegetarian",
@@ -2674,11 +2674,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 584,
         "protein_g": 20.8,
         "carbs_g": 20.0,
         "fat_g": 51.5,
-        "fiber_g": 8.6
+        "fiber_g": 8.6,
+        "calories": 584
       },
       "tags": [
         "vegetarian",
@@ -2694,11 +2694,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 553,
         "protein_g": 31.6,
         "carbs_g": 8.7,
         "fat_g": 48.8,
-        "fiber_g": 4.0
+        "fiber_g": 4.0,
+        "calories": 553
       },
       "tags": [
         "vegetarian",
@@ -2714,11 +2714,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 486,
         "protein_g": 16.5,
         "carbs_g": 42.1,
         "fat_g": 30.7,
-        "fiber_g": 34.4
+        "fiber_g": 34.4,
+        "calories": 486
       },
       "tags": [
         "vegetarian",
@@ -2735,11 +2735,11 @@
       "cuisine": "global",
       "serving_g": 15,
       "per_100g": {
-        "calories_g": 534,
         "protein_g": 18.3,
         "carbs_g": 28.9,
         "fat_g": 42.2,
-        "fiber_g": 27.3
+        "fiber_g": 27.3,
+        "calories": 534
       },
       "tags": [
         "vegetarian",
@@ -2755,11 +2755,11 @@
       "cuisine": "global",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 120,
         "protein_g": 4.4,
         "carbs_g": 21.3,
         "fat_g": 1.9,
-        "fiber_g": 2.8
+        "fiber_g": 2.8,
+        "calories": 120
       },
       "tags": [
         "vegetarian",
@@ -2775,11 +2775,11 @@
       "cuisine": "global",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 195,
         "protein_g": 19.0,
         "carbs_g": 9.4,
         "fat_g": 11.4,
-        "fiber_g": 6.4
+        "fiber_g": 6.4,
+        "calories": 195
       },
       "tags": [
         "vegetarian",
@@ -2795,11 +2795,11 @@
       "cuisine": "global",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 42,
         "protein_g": 3.4,
         "carbs_g": 5.0,
         "fat_g": 1.0,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 42
       },
       "tags": [
         "vegetarian",
@@ -2814,11 +2814,11 @@
       "cuisine": "global",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 61,
         "protein_g": 3.2,
         "carbs_g": 4.8,
         "fat_g": 3.5,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 61
       },
       "tags": [
         "vegetarian",
@@ -2832,11 +2832,11 @@
       "cuisine": "global",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 35,
         "protein_g": 3.4,
         "carbs_g": 5.0,
         "fat_g": 0.1,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 35
       },
       "tags": [
         "vegetarian",
@@ -2851,11 +2851,11 @@
       "cuisine": "global",
       "serving_g": 120,
       "per_100g": {
-        "calories_g": 89,
         "protein_g": 1.1,
         "carbs_g": 22.8,
         "fat_g": 0.3,
-        "fiber_g": 2.6
+        "fiber_g": 2.6,
+        "calories": 89
       },
       "tags": [
         "vegetarian",
@@ -2870,11 +2870,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 52,
         "protein_g": 0.3,
         "carbs_g": 13.8,
         "fat_g": 0.2,
-        "fiber_g": 2.4
+        "fiber_g": 2.4,
+        "calories": 52
       },
       "tags": [
         "vegetarian",
@@ -2889,11 +2889,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 60,
         "protein_g": 0.8,
         "carbs_g": 15.0,
         "fat_g": 0.4,
-        "fiber_g": 1.6
+        "fiber_g": 1.6,
+        "calories": 60
       },
       "tags": [
         "vegetarian",
@@ -2908,11 +2908,11 @@
       "cuisine": "global",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 43,
         "protein_g": 0.5,
         "carbs_g": 11.0,
         "fat_g": 0.3,
-        "fiber_g": 1.7
+        "fiber_g": 1.7,
+        "calories": 43
       },
       "tags": [
         "vegetarian",
@@ -2927,11 +2927,11 @@
       "cuisine": "global",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 68,
         "protein_g": 2.6,
         "carbs_g": 14.3,
         "fat_g": 1.0,
-        "fiber_g": 5.4
+        "fiber_g": 5.4,
+        "calories": 68
       },
       "tags": [
         "vegetarian",
@@ -2947,11 +2947,11 @@
       "cuisine": "global",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 30,
         "protein_g": 0.6,
         "carbs_g": 7.6,
         "fat_g": 0.2,
-        "fiber_g": 0.4
+        "fiber_g": 0.4,
+        "calories": 30
       },
       "tags": [
         "vegetarian",
@@ -2967,11 +2967,11 @@
       "cuisine": "global",
       "serving_g": 180,
       "per_100g": {
-        "calories_g": 47,
         "protein_g": 0.9,
         "carbs_g": 11.8,
         "fat_g": 0.1,
-        "fiber_g": 2.4
+        "fiber_g": 2.4,
+        "calories": 47
       },
       "tags": [
         "vegetarian",
@@ -2986,11 +2986,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 83,
         "protein_g": 1.7,
         "carbs_g": 18.7,
         "fat_g": 1.2,
-        "fiber_g": 4.0
+        "fiber_g": 4.0,
+        "calories": 83
       },
       "tags": [
         "vegetarian",
@@ -3005,11 +3005,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 67,
         "protein_g": 0.6,
         "carbs_g": 17.2,
         "fat_g": 0.4,
-        "fiber_g": 0.9
+        "fiber_g": 0.9,
+        "calories": 67
       },
       "tags": [
         "vegetarian",
@@ -3024,11 +3024,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 32,
         "protein_g": 0.7,
         "carbs_g": 7.7,
         "fat_g": 0.3,
-        "fiber_g": 2.0
+        "fiber_g": 2.0,
+        "calories": 32
       },
       "tags": [
         "vegetarian",
@@ -3043,11 +3043,11 @@
       "cuisine": "global",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 57,
         "protein_g": 0.7,
         "carbs_g": 14.5,
         "fat_g": 0.3,
-        "fiber_g": 2.4
+        "fiber_g": 2.4,
+        "calories": 57
       },
       "tags": [
         "vegetarian",
@@ -3062,11 +3062,11 @@
       "cuisine": "global",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 50,
         "protein_g": 0.5,
         "carbs_g": 13.1,
         "fat_g": 0.1,
-        "fiber_g": 1.4
+        "fiber_g": 1.4,
+        "calories": 50
       },
       "tags": [
         "vegetarian",
@@ -3081,11 +3081,11 @@
       "cuisine": "global",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 61,
         "protein_g": 1.1,
         "carbs_g": 14.7,
         "fat_g": 0.5,
-        "fiber_g": 3.0
+        "fiber_g": 3.0,
+        "calories": 61
       },
       "tags": [
         "vegetarian",
@@ -3100,11 +3100,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 277,
         "protein_g": 1.8,
         "carbs_g": 75.0,
         "fat_g": 0.2,
-        "fiber_g": 6.7
+        "fiber_g": 6.7,
+        "calories": 277
       },
       "tags": [
         "vegetarian",
@@ -3119,11 +3119,11 @@
       "cuisine": "indian",
       "serving_g": 50,
       "per_100g": {
-        "calories_g": 44,
         "protein_g": 0.9,
         "carbs_g": 10.2,
         "fat_g": 0.6,
-        "fiber_g": 3.4
+        "fiber_g": 3.4,
+        "calories": 44
       },
       "tags": [
         "vegetarian",
@@ -3138,11 +3138,11 @@
       "cuisine": "indian",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 83,
         "protein_g": 0.4,
         "carbs_g": 19.9,
         "fat_g": 1.1,
-        "fiber_g": 5.3
+        "fiber_g": 5.3,
+        "calories": 83
       },
       "tags": [
         "vegetarian",
@@ -3157,11 +3157,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 95,
         "protein_g": 1.7,
         "carbs_g": 23.3,
         "fat_g": 0.6,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 95
       },
       "tags": [
         "vegetarian",
@@ -3176,11 +3176,11 @@
       "cuisine": "indian",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 19,
         "protein_g": 0.7,
         "carbs_g": 3.7,
         "fat_g": 0.2,
-        "fiber_g": 1.1
+        "fiber_g": 1.1,
+        "calories": 19
       },
       "tags": [
         "vegetarian",
@@ -3196,11 +3196,11 @@
       "cuisine": "global",
       "serving_g": 240,
       "per_100g": {
-        "calories_g": 2,
         "protein_g": 0.3,
         "carbs_g": 0.0,
         "fat_g": 0.0,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 2
       },
       "tags": [
         "vegetarian",
@@ -3216,11 +3216,11 @@
       "cuisine": "global",
       "serving_g": 240,
       "per_100g": {
-        "calories_g": 1,
         "protein_g": 0.2,
         "carbs_g": 0.2,
         "fat_g": 0.0,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 1
       },
       "tags": [
         "vegetarian",
@@ -3236,11 +3236,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 52,
         "protein_g": 1.5,
         "carbs_g": 7.8,
         "fat_g": 1.8,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 52
       },
       "tags": [
         "vegetarian",
@@ -3254,11 +3254,11 @@
       "cuisine": "indian",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 64,
         "protein_g": 3.2,
         "carbs_g": 6.5,
         "fat_g": 2.8,
-        "fiber_g": 0.2
+        "fiber_g": 0.2,
+        "calories": 64
       },
       "tags": [
         "vegetarian",
@@ -3272,11 +3272,11 @@
       "cuisine": "global",
       "serving_g": 350,
       "per_100g": {
-        "calories_g": 90,
         "protein_g": 10.5,
         "carbs_g": 8.5,
         "fat_g": 1.5,
-        "fiber_g": 0.0
+        "fiber_g": 0.0,
+        "calories": 90
       },
       "tags": [
         "vegetarian",
@@ -3291,11 +3291,11 @@
       "cuisine": "global",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 45,
         "protein_g": 0.7,
         "carbs_g": 10.4,
         "fat_g": 0.2,
-        "fiber_g": 0.2
+        "fiber_g": 0.2,
+        "calories": 45
       },
       "tags": [
         "vegetarian",
@@ -3310,11 +3310,11 @@
       "cuisine": "global",
       "serving_g": 350,
       "per_100g": {
-        "calories_g": 95,
         "protein_g": 3.0,
         "carbs_g": 17.5,
         "fat_g": 1.8,
-        "fiber_g": 0.8
+        "fiber_g": 0.8,
+        "calories": 95
       },
       "tags": [
         "vegetarian",
@@ -3328,11 +3328,11 @@
       "cuisine": "global",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 158,
         "protein_g": 5.8,
         "carbs_g": 30.9,
         "fat_g": 0.9,
-        "fiber_g": 1.8
+        "fiber_g": 1.8,
+        "calories": 158
       },
       "tags": [
         "vegetarian",
@@ -3346,11 +3346,11 @@
       "cuisine": "global",
       "serving_g": 60,
       "per_100g": {
-        "calories_g": 247,
         "protein_g": 9.0,
         "carbs_g": 46.0,
         "fat_g": 3.4,
-        "fiber_g": 6.8
+        "fiber_g": 6.8,
+        "calories": 247
       },
       "tags": [
         "vegetarian",
@@ -3365,11 +3365,11 @@
       "cuisine": "global",
       "serving_g": 60,
       "per_100g": {
-        "calories_g": 265,
         "protein_g": 9.0,
         "carbs_g": 50.6,
         "fat_g": 3.2,
-        "fiber_g": 2.3
+        "fiber_g": 2.3,
+        "calories": 265
       },
       "tags": [
         "vegetarian",
@@ -3383,11 +3383,11 @@
       "cuisine": "global",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 68,
         "protein_g": 2.4,
         "carbs_g": 12.0,
         "fat_g": 1.4,
-        "fiber_g": 1.7
+        "fiber_g": 1.7,
+        "calories": 68
       },
       "tags": [
         "vegetarian",
@@ -3402,11 +3402,11 @@
       "cuisine": "global",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 88,
         "protein_g": 3.8,
         "carbs_g": 14.0,
         "fat_g": 2.0,
-        "fiber_g": 1.8
+        "fiber_g": 1.8,
+        "calories": 88
       },
       "tags": [
         "vegetarian",
@@ -3420,11 +3420,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 86,
         "protein_g": 1.6,
         "carbs_g": 20.1,
         "fat_g": 0.1,
-        "fiber_g": 3.0
+        "fiber_g": 3.0,
+        "calories": 86
       },
       "tags": [
         "vegetarian",
@@ -3439,11 +3439,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 87,
         "protein_g": 1.9,
         "carbs_g": 20.1,
         "fat_g": 0.1,
-        "fiber_g": 1.8
+        "fiber_g": 1.8,
+        "calories": 87
       },
       "tags": [
         "vegetarian",
@@ -3458,11 +3458,11 @@
       "cuisine": "global",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 111,
         "protein_g": 2.6,
         "carbs_g": 23.0,
         "fat_g": 0.9,
-        "fiber_g": 1.8
+        "fiber_g": 1.8,
+        "calories": 111
       },
       "tags": [
         "vegetarian",
@@ -3478,11 +3478,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 96,
         "protein_g": 3.4,
         "carbs_g": 21.0,
         "fat_g": 1.5,
-        "fiber_g": 2.4
+        "fiber_g": 2.4,
+        "calories": 96
       },
       "tags": [
         "vegetarian",
@@ -3497,11 +3497,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 35,
         "protein_g": 2.4,
         "carbs_g": 7.2,
         "fat_g": 0.4,
-        "fiber_g": 2.6
+        "fiber_g": 2.6,
+        "calories": 35
       },
       "tags": [
         "vegetarian",
@@ -3517,11 +3517,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 29,
         "protein_g": 2.9,
         "carbs_g": 3.6,
         "fat_g": 0.4,
-        "fiber_g": 2.4
+        "fiber_g": 2.4,
+        "calories": 29
       },
       "tags": [
         "vegetarian",
@@ -3537,11 +3537,11 @@
       "cuisine": "global",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 160,
         "protein_g": 2.0,
         "carbs_g": 8.5,
         "fat_g": 14.7,
-        "fiber_g": 6.7
+        "fiber_g": 6.7,
+        "calories": 160
       },
       "tags": [
         "vegetarian",
@@ -3557,11 +3557,11 @@
       "cuisine": "global",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 80,
         "protein_g": 2.5,
         "carbs_g": 6.0,
         "fat_g": 5.5,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 80
       },
       "tags": [
         "vegetarian",
@@ -3575,11 +3575,11 @@
       "cuisine": "indian",
       "serving_g": 40,
       "per_100g": {
-        "calories_g": 455,
         "protein_g": 12.0,
         "carbs_g": 60.0,
         "fat_g": 20.0,
-        "fiber_g": 3.5
+        "fiber_g": 3.5,
+        "calories": 455
       },
       "tags": [
         "vegetarian",
@@ -3594,11 +3594,11 @@
       "cuisine": "global",
       "serving_g": 60,
       "per_100g": {
-        "calories_g": 380,
         "protein_g": 30.0,
         "carbs_g": 40.0,
         "fat_g": 10.0,
-        "fiber_g": 5.0
+        "fiber_g": 5.0,
+        "calories": 380
       },
       "tags": [
         "non-vegetarian",
@@ -3612,11 +3612,11 @@
       "cuisine": "global",
       "serving_g": 100,
       "per_100g": {
-        "calories_g": 28,
         "protein_g": 3.1,
         "carbs_g": 3.3,
         "fat_g": 0.3,
-        "fiber_g": 1.0
+        "fiber_g": 1.0,
+        "calories": 28
       },
       "tags": [
         "vegetarian",
@@ -3632,11 +3632,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 607,
         "protein_g": 15.0,
         "carbs_g": 21.5,
         "fat_g": 54.0,
-        "fiber_g": 6.5
+        "fiber_g": 6.5,
+        "calories": 607
       },
       "tags": [
         "vegetarian",
@@ -3651,11 +3651,11 @@
       "cuisine": "indian",
       "serving_g": 40,
       "per_100g": {
-        "calories_g": 519,
         "protein_g": 2.3,
         "carbs_g": 60.0,
         "fat_g": 29.6,
-        "fiber_g": 5.3
+        "fiber_g": 5.3,
+        "calories": 519
       },
       "tags": [
         "vegetarian",
@@ -3670,11 +3670,11 @@
       "cuisine": "indian",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 390,
         "protein_g": 20.0,
         "carbs_g": 55.0,
         "fat_g": 9.0,
-        "fiber_g": 12.0
+        "fiber_g": 12.0,
+        "calories": 390
       },
       "tags": [
         "vegetarian",
@@ -3690,11 +3690,11 @@
       "cuisine": "indian",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 545,
         "protein_g": 15.0,
         "carbs_g": 50.0,
         "fat_g": 31.5,
-        "fiber_g": 4.0
+        "fiber_g": 4.0,
+        "calories": 545
       },
       "tags": [
         "vegetarian",
@@ -3709,11 +3709,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 387,
         "protein_g": 8.0,
         "carbs_g": 81.5,
         "fat_g": 2.8,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 387
       },
       "tags": [
         "vegetarian",
@@ -3728,11 +3728,11 @@
       "cuisine": "global",
       "serving_g": 30,
       "per_100g": {
-        "calories_g": 598,
         "protein_g": 7.8,
         "carbs_g": 45.9,
         "fat_g": 42.6,
-        "fiber_g": 10.9
+        "fiber_g": 10.9,
+        "calories": 598
       },
       "tags": [
         "vegetarian",
@@ -3747,11 +3747,11 @@
       "cuisine": "global",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 28,
         "protein_g": 1.5,
         "carbs_g": 5.5,
         "fat_g": 0.5,
-        "fiber_g": 1.5
+        "fiber_g": 1.5,
+        "calories": 28
       },
       "tags": [
         "vegetarian",
@@ -3767,11 +3767,11 @@
       "cuisine": "global",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 160,
         "protein_g": 4.5,
         "carbs_g": 23.5,
         "fat_g": 5.5,
-        "fiber_g": 0.8
+        "fiber_g": 0.8,
+        "calories": 160
       },
       "tags": [
         "non-vegetarian",
@@ -3785,11 +3785,11 @@
       "cuisine": "global",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 98,
         "protein_g": 3.0,
         "carbs_g": 18.5,
         "fat_g": 1.8,
-        "fiber_g": 2.2
+        "fiber_g": 2.2,
+        "calories": 98
       },
       "tags": [
         "vegetarian",
@@ -3803,11 +3803,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 90,
         "protein_g": 6.5,
         "carbs_g": 14.0,
         "fat_g": 0.8,
-        "fiber_g": 4.5
+        "fiber_g": 4.5,
+        "calories": 90
       },
       "tags": [
         "vegetarian",
@@ -3823,11 +3823,11 @@
       "cuisine": "indian",
       "serving_g": 200,
       "per_100g": {
-        "calories_g": 200,
         "protein_g": 14.8,
         "carbs_g": 6.0,
         "fat_g": 13.5,
-        "fiber_g": 1.2
+        "fiber_g": 1.2,
+        "calories": 200
       },
       "tags": [
         "non-vegetarian",
@@ -3842,11 +3842,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 125,
         "protein_g": 22.0,
         "carbs_g": 3.0,
         "fat_g": 3.0,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 125
       },
       "tags": [
         "non-vegetarian",
@@ -3862,11 +3862,11 @@
       "cuisine": "indian",
       "serving_g": 40,
       "per_100g": {
-        "calories_g": 374,
         "protein_g": 18.0,
         "carbs_g": 68.0,
         "fat_g": 4.5,
-        "fiber_g": 14.0
+        "fiber_g": 14.0,
+        "calories": 374
       },
       "tags": [
         "vegetarian",
@@ -3882,11 +3882,11 @@
       "cuisine": "indian",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 115,
         "protein_g": 3.8,
         "carbs_g": 18.0,
         "fat_g": 3.0,
-        "fiber_g": 2.5
+        "fiber_g": 2.5,
+        "calories": 115
       },
       "tags": [
         "vegetarian",
@@ -3900,11 +3900,11 @@
       "cuisine": "global",
       "serving_g": 150,
       "per_100g": {
-        "calories_g": 210,
         "protein_g": 14.5,
         "carbs_g": 25.0,
         "fat_g": 5.5,
-        "fiber_g": 2.8
+        "fiber_g": 2.8,
+        "calories": 210
       },
       "tags": [
         "non-vegetarian",
@@ -3918,11 +3918,11 @@
       "cuisine": "global",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 33,
         "protein_g": 3.3,
         "carbs_g": 1.8,
         "fat_g": 1.8,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 33
       },
       "tags": [
         "vegetarian",
@@ -3938,11 +3938,11 @@
       "cuisine": "global",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 25,
         "protein_g": 0.5,
         "carbs_g": 6.0,
         "fat_g": 0.1,
-        "fiber_g": 0.1
+        "fiber_g": 0.1,
+        "calories": 25
       },
       "tags": [
         "vegetarian",
@@ -3958,11 +3958,11 @@
       "cuisine": "indian",
       "serving_g": 300,
       "per_100g": {
-        "calories_g": 88,
         "protein_g": 2.8,
         "carbs_g": 16.0,
         "fat_g": 2.0,
-        "fiber_g": 0.5
+        "fiber_g": 0.5,
+        "calories": 88
       },
       "tags": [
         "vegetarian",
@@ -3976,11 +3976,11 @@
       "cuisine": "indian",
       "serving_g": 250,
       "per_100g": {
-        "calories_g": 230,
         "protein_g": 2.3,
         "carbs_g": 5.5,
         "fat_g": 23.0,
-        "fiber_g": 2.2
+        "fiber_g": 2.2,
+        "calories": 230
       },
       "tags": [
         "vegetarian",
