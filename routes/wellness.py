@@ -140,7 +140,8 @@ async def log_wellness_checkin(athlete_id: str, data: WellnessCheckin):
     if "wellness_log" not in athlete:
         athlete["wellness_log"] = {}
 
-    date_key = data.date.isoformat() if data.date else datetime.now(timezone.utc).date().isoformat()
+    now = datetime.now(timezone.utc)
+    date_key = data.date.isoformat() if data.date else now.date().isoformat()
     entry = {
         "sleep_hours": data.sleep_hours,
         "water_glasses": data.water_glasses,
@@ -148,7 +149,7 @@ async def log_wellness_checkin(athlete_id: str, data: WellnessCheckin):
         "energy": data.energy,
         "stress": data.stress,
         "soreness": data.soreness,
-        "logged_at": datetime.now(timezone.utc).isoformat(),
+        "logged_at": now.isoformat(),
     }
 
     athlete["wellness_log"][date_key] = entry
@@ -158,6 +159,8 @@ async def log_wellness_checkin(athlete_id: str, data: WellnessCheckin):
     wellness_score = sum(breakdown.values())
 
     log.info("wellness checkin logged athlete=%s date=%s score=%d", athlete_id, date_key, wellness_score)
+
+    progress_cache.delete(f"wellness:{athlete_id}")
 
     return {
         "athlete_id": athlete_id,

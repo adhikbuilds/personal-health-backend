@@ -93,3 +93,18 @@ def test_get_score_after_checkin(client):
     assert body["recovery_ready"] is True
     assert "breakdown" in body
     assert "recommendation" in body
+
+
+def test_cache_invalidated_after_checkin(client):
+    """POST must invalidate the cache so GET immediately reflects the new data."""
+    aid = _seed_athlete(client)
+
+    # Seed an initial check-in, which also populates the cache via GET
+    client.post(f"/athlete/{aid}/wellness/checkin", json=WORST_INPUTS)
+    first_get = client.get(f"/athlete/{aid}/wellness/score")
+    assert first_get.json()["wellness_score"] <= 10
+
+    # Log a better check-in — cache must be busted so GET returns fresh data
+    client.post(f"/athlete/{aid}/wellness/checkin", json=BEST_INPUTS)
+    second_get = client.get(f"/athlete/{aid}/wellness/score")
+    assert second_get.json()["wellness_score"] == 100
