@@ -17,10 +17,10 @@ from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconn
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
+import database
 from database import (
     _POSE_ANALYZERS,
     _RATE_LIMITS,
-    ANALYSIS_QUEUE,
     ATHLETE_DB,
     DATASET_PATH,
     FRAME_BUFFER,
@@ -116,7 +116,7 @@ def _resolve_sport_model_path(sport: str) -> Optional[str]:
 async def analysis_worker():
     while True:
         try:
-            item = await ANALYSIS_QUEUE.get()
+            item = await database.ANALYSIS_QUEUE.get()
             session_id, image_b64, sport, frame_dict = item
             try:
                 from services.pose_analyzer import PoseAnalyzer
@@ -201,7 +201,7 @@ async def analysis_worker():
             except Exception as e:
                 print(f"[WORKER ERROR] {e}")
             finally:
-                ANALYSIS_QUEUE.task_done()
+                database.ANALYSIS_QUEUE.task_done()
         except asyncio.CancelledError:
             break
         except Exception as e:
@@ -329,9 +329,9 @@ async def add_frame(session_id: str, frame: FrameData):
     frame_dict["pose_detected"] = None
     FRAME_BUFFER[session_id].append(frame_dict)
     SESSION_DB[session_id]["frame_count"] += 1
-    if image_b64 and ANALYSIS_QUEUE is not None:
+    if image_b64 and database.ANALYSIS_QUEUE is not None:
         try:
-            ANALYSIS_QUEUE.put_nowait((session_id, image_b64, sport, frame_dict))
+            database.ANALYSIS_QUEUE.put_nowait((session_id, image_b64, sport, frame_dict))
         except asyncio.QueueFull:
             print(f"[WARN] Analysis queue full, dropping frame for {session_id[:8]}")
     latest = RESULT_STORE.get(session_id, {})
