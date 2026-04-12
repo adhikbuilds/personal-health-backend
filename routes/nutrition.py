@@ -10,7 +10,7 @@ GET  /athlete/{id}/meals  → read meals for a date grouped by slot (WN-03)
 Storage shape (db/nutrition.json):
 {
   "athlete_id": {
-    "goals": { ... },        ← WN-06 (Navin)
+    "goals": { ... },        <- WN-06 (Navin)
     "logs": {
       "date": {
         "slot": {
@@ -23,7 +23,7 @@ Storage shape (db/nutrition.json):
                     "carbs_g": 0, "fat_g": 0, "fiber_g": 0}
         }
       }
-    }                        ← WN-03 (Khadija) + WN-05 (Soumya)
+    }                        <- WN-03 (Khadija) + WN-05 (Soumya)
   }
 }
 """

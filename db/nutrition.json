@@ -1,1 +1,149 @@
-{}
+{
+  "athlete_01": {
+    "logs": {
+      "2026-04-07": {
+        "breakfast": {
+          "meal_id": "0c1debc6-3af9-4635-9bd4-73cf8f69f769",
+          "time": "08:30",
+          "items": [
+            {
+              "food_id": "f_001",
+              "food_name": "Oats",
+              "qty_g": 200.0,
+              "macros": {
+                "calories": 778.0,
+                "protein_g": 33.8,
+                "carbs_g": 132.6,
+                "fat_g": 13.8,
+                "fiber_g": 21.2
+              }
+            }
+          ],
+          "total": {
+            "calories": 778.0,
+            "protein_g": 33.8,
+            "carbs_g": 132.6,
+            "fat_g": 13.8,
+            "fiber_g": 21.2
+          }
+        },
+        "lunch": {
+          "meal_id": "a36563a3-ece1-4146-8f0d-1bdfe8df0676",
+          "time": null,
+          "items": [
+            {
+              "food_id": "f_003",
+              "food_name": "Chicken Breast",
+              "qty_g": 150.0,
+              "macros": {
+                "calories": 247.5,
+                "protein_g": 46.5,
+                "carbs_g": 0.0,
+                "fat_g": 5.4,
+                "fiber_g": 0.0
+              }
+            },
+            {
+              "food_id": "f_004",
+              "food_name": "Brown Rice",
+              "qty_g": 200.0,
+              "macros": {
+                "calories": 432.0,
+                "protein_g": 9.0,
+                "carbs_g": 90.0,
+                "fat_g": 3.6,
+                "fiber_g": 7.0
+              }
+            }
+          ],
+          "total": {
+            "calories": 679.5,
+            "protein_g": 55.5,
+            "carbs_g": 90.0,
+            "fat_g": 9.0,
+            "fiber_g": 7.0
+          }
+        }
+      },
+      "2026-04-10": {
+        "dinner": {
+          "meal_id": "47296578-b3f0-43a2-a7b0-63850f082601",
+          "time": null,
+          "items": [
+            {
+              "food_id": "f_006",
+              "food_name": "Paneer",
+              "qty_g": 100.0,
+              "macros": {
+                "calories": 265.0,
+                "protein_g": 18.3,
+                "carbs_g": 1.2,
+                "fat_g": 20.8,
+                "fiber_g": 0.0
+              }
+            }
+          ],
+          "total": {
+            "calories": 265.0,
+            "protein_g": 18.3,
+            "carbs_g": 1.2,
+            "fat_g": 20.8,
+            "fiber_g": 0.0
+          }
+        }
+      },
+      "2026-04-09": {
+        "breakfast": {
+          "meal_id": "edc27fe9-bdd0-4c16-b16a-ef5777a9636b",
+          "time": null,
+          "items": [
+            {
+              "food_id": "f_001",
+              "food_name": "Oats",
+              "qty_g": 100.0,
+              "macros": {
+                "calories": 389.0,
+                "protein_g": 16.9,
+                "carbs_g": 66.3,
+                "fat_g": 6.9,
+                "fiber_g": 10.6
+              }
+            }
+          ],
+          "total": {
+            "calories": 389.0,
+            "protein_g": 16.9,
+            "carbs_g": 66.3,
+            "fat_g": 6.9,
+            "fiber_g": 10.6
+          }
+        },
+        "lunch": {
+          "meal_id": "7d4d82aa-50c7-4e50-be47-871687ee0206",
+          "time": null,
+          "items": [
+            {
+              "food_id": "f_003",
+              "food_name": "Chicken Breast",
+              "qty_g": 100.0,
+              "macros": {
+                "calories": 165.0,
+                "protein_g": 31.0,
+                "carbs_g": 0.0,
+                "fat_g": 3.6,
+                "fiber_g": 0.0
+              }
+            }
+          ],
+          "total": {
+            "calories": 165.0,
+            "protein_g": 31.0,
+            "carbs_g": 0.0,
+            "fat_g": 3.6,
+            "fiber_g": 0.0
+          }
+        }
+      }
+    }
+  }
+}
