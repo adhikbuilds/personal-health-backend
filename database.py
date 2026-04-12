@@ -50,7 +50,19 @@ def _load_db():
                 ATHLETE_DB.update(json.load(f))
         except Exception as e:
             print(f"[DB WARN] Could not load athletes: {e}")
-    # Seed athletes and sessions if DB is sparse
+    # Load foods database
+        foods_file = DB_PATH / "foods.json"
+        if foods_file.exists():
+            try:
+                with open(foods_file, encoding="utf-8") as f:
+                    raw = json.load(f)
+                    for food in raw.get("foods", []):
+                        FOOD_DB[food["food_id"]] = food
+                print(f"[DB] {len(FOOD_DB)} foods loaded")
+            except Exception as e:
+                print(f"[DB WARN] Could not load foods: {e}")
+
+        # Seed athletes and sessions if DB is sparse
     if len(ATHLETE_DB) < 10:
         try:
             import sys
