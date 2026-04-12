@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Query
 
@@ -13,8 +13,10 @@ async def list_foods(
     cuisine: str | None = Query(None),
     tag: str | None = Query(None),
     q: str | None = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
 ):
-    results = list(FOOD_DB.values())   
+    results = list(FOOD_DB.values())
     if category:
         results = [f for f in results if f["category"] == category]
     if cuisine:
@@ -24,11 +26,13 @@ async def list_foods(
     if q:
         q_lower = q.lower()
         results = [f for f in results if q_lower in f["name"].lower()]
-    return {"count": len(results), "foods": results}
+    total = len(results)
+    results = results[offset: offset + limit]
+    return {"count": total, "limit": limit, "offset": offset, "foods": results}
 
 
 @router.get("/{food_id}")
-def get_food(food_id: str):
+async def get_food(food_id: str):
     food = FOOD_DB.get(food_id)
     if not food:
         raise HTTPException(404, detail=f"Food '{food_id}' not found")
