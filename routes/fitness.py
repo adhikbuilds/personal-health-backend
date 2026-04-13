@@ -568,21 +568,57 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
                     import base64 as _b64
                     from io import BytesIO as _BytesIO
 
+                    import cv2 as _cv2
                     import numpy as _np
                     from PIL import Image as _Image
 
                     _img_bytes = _b64.b64decode(data["image_b64"])
                     _img = _Image.open(_BytesIO(_img_bytes)).convert("RGB")
-                    # Crop to center 40% — front camera face is typically centered
-                    # This removes background that corrupts the RGB signal
-                    w, h = _img.size
-                    cx, cy = w // 2, h // 2
-                    cw, ch = int(w * 0.2), int(h * 0.2)
-                    face_crop = _img.crop((cx - cw, cy - ch, cx + cw, cy + ch))
-                    _arr = _np.array(face_crop.resize((8, 8)), dtype=_np.float32)
-                    r, g, b = float(_arr[:, :, 0].mean()), float(_arr[:, :, 1].mean()), float(_arr[:, :, 2].mean())
+                    _img_np = _np.array(_img)
+
+                    # Use MediaPipe FaceDetector for proper face ROI
+                    face_found = False
+                    try:
+                        import mediapipe as _mp
+                        from mediapipe.tasks.python import BaseOptions as _BO
+                        from mediapipe.tasks.python.vision import FaceDetector as _FD, FaceDetectorOptions as _FDO
+
+                        if not hasattr(rppg_live_stream, '_face_det'):
+                            from pathlib import Path
+                            _model = Path(__file__).parent.parent / "models" / "face_detector.tflite"
+                            rppg_live_stream._face_det = _FD.create_from_options(
+                                _FDO(base_options=_BO(model_asset_path=str(_model)))
+                            )
+                        mp_img = _mp.Image(image_format=_mp.ImageFormat.SRGB, data=_img_np)
+                        det = rppg_live_stream._face_det.detect(mp_img)
+                        if det.detections:
+                            bb = det.detections[0].bounding_box
+                            x, y, w, h = bb.origin_x, bb.origin_y, bb.width, bb.height
+                            # Crop to forehead/cheek region (top 60% of face, center 60%)
+                            fx = max(0, x + int(w * 0.2))
+                            fy = max(0, y + int(h * 0.1))
+                            fw = int(w * 0.6)
+                            fh = int(h * 0.5)
+                            face_roi = _img_np[fy:fy+fh, fx:fx+fw]
+                            if face_roi.size > 0:
+                                r = float(face_roi[:, :, 0].mean())
+                                g = float(face_roi[:, :, 1].mean())
+                                b = float(face_roi[:, :, 2].mean())
+                                face_found = True
+                    except Exception:
+                        pass
+
+                    # Fallback: center crop if face detection fails
+                    if not face_found:
+                        h, w = _img_np.shape[:2]
+                        cy, cx = h // 2, w // 2
+                        ch, cw = h // 5, w // 5
+                        crop = _img_np[cy-ch:cy+ch, cx-cw:cx+cw]
+                        r = float(crop[:, :, 0].mean())
+                        g = float(crop[:, :, 1].mean())
+                        b = float(crop[:, :, 2].mean())
                 except Exception as _e:
-                    print(f"[RPPG] image_b64 decode error: {_e}")
+                    print(f"[RPPG] decode error: {_e}")
                     continue
             else:
                 r, g, b = data.get("r", 0.0), data.get("g", 0.0), data.get("b", 0.0)
