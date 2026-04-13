@@ -94,9 +94,9 @@ class RPPGProcessor:
         result = proc.compute()  # call any time
     """
 
-    WINDOW_SEC = 10.0  # sliding window length (seconds)
-    MIN_FRAMES = 20  # 20 frames sufficient for FFT
-    TARGET_FPS = 30.0  # WebSockets unlock 30fps
+    WINDOW_SEC = 8.0  # sliding window length (seconds)
+    MIN_FRAMES = 12  # lowered — phone captures at ~5fps, so 12 frames = ~2.5s warmup
+    TARGET_FPS = 30.0
     BPM_LOW = 40
     BPM_HIGH = 180
 
