@@ -136,6 +136,15 @@ def _distance(p1: Landmark, p2: Landmark) -> float:
 # ─── Form Scoring Rules ──────────────────────────────────────────────────────
 
 SPORT_IDEAL_ANGLES = {
+    "general": {
+        # Freeform training — wide acceptable ranges, focus on symmetry + posture
+        "knee_angle": (60, 170),
+        "hip_angle": (60, 170),
+        "trunk_lean": (0, 30),
+        "shoulder_angle": (20, 170),
+        "elbow_angle": (30, 170),
+        "symmetry": 0.85,
+    },
     "vertical_jump": {
         # Countermovement Jump — descent phase ideal
         "knee_angle": (80, 110),  # deep squat at bottom
