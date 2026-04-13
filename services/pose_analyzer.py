@@ -532,7 +532,7 @@ class PoseAnalyzer:
     BiomechanicalFrame with all derived metrics.
     """
 
-    MIN_VISIBILITY = 0.5  # ignore keypoints below this confidence
+    MIN_VISIBILITY = 0.3  # lowered from 0.5 — phone camera poses often have partial occlusion
 
     # Smoothing buffer for temporal consistency
     SMOOTH_WINDOW = 5
@@ -557,7 +557,10 @@ class PoseAnalyzer:
 
     def _to_landmark(self, lm) -> Landmark:
         """Convert MediaPipe NormalizedLandmark to our Landmark type."""
-        return Landmark(x=lm.x, y=lm.y, z=lm.z, visibility=lm.visibility)
+        return Landmark(
+            x=lm.x, y=lm.y, z=lm.z,
+            visibility=getattr(lm, "visibility", getattr(lm, "presence", 0.9)),
+        )
 
     def _is_visible(self, *landmarks: Landmark) -> bool:
         return all(l.visibility >= self.MIN_VISIBILITY for l in landmarks)
@@ -601,7 +604,11 @@ class PoseAnalyzer:
         l_an, r_an = lms[27], lms[28]
         l_foot, r_foot = lms[31], lms[32]
 
-        frame.visibility_ok = self._is_visible(l_hip, r_hip, l_kn, r_kn)
+        # Check visibility — require at least one hip + one knee visible
+        # (real phone camera often has partial occlusion on one side)
+        hip_ok = l_hip.visibility >= self.MIN_VISIBILITY or r_hip.visibility >= self.MIN_VISIBILITY
+        knee_ok = l_kn.visibility >= self.MIN_VISIBILITY or r_kn.visibility >= self.MIN_VISIBILITY
+        frame.visibility_ok = hip_ok and knee_ok
         if not frame.visibility_ok:
             return frame
 

@@ -126,8 +126,6 @@ async def analysis_worker():
                     _ath_id = SESSION_DB.get(session_id, {}).get("athlete_id")
                     _height = float(ATHLETE_DB.get(_ath_id, {}).get("height_cm", 170))
                     analyzer = PoseAnalyzer(sport=sport, body_height_cm=_height)
-                    # PF-10: attach sport-specific model path (fallback to generic)
-                    analyzer.model_path = _resolve_sport_model_path(sport)
                     _POSE_ANALYZERS[session_id] = analyzer
                 analyzer = _POSE_ANALYZERS[session_id]
                 result = analyzer.analyze_base64_image(image_b64, sport)
