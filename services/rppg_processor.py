@@ -210,19 +210,22 @@ class RPPGProcessor:
                     "status": "invalid",
                 }
 
-        # PF-09: Artifact detection — hold previous BPM if change > 40 BPM between readings
+        # PF-09: Artifact detection — reject wild jumps
         artifact_flag = False
-        if self.last_bpm > 0 and abs(bpm_raw - self.last_bpm) > 40:
-            bpm_raw = self.last_bpm  # Hold previous reading
+        if self.last_bpm > 0 and abs(bpm_raw - self.last_bpm) > 25:
+            bpm_raw = self.last_bpm  # Hold previous — don't trust wild jumps
             artifact_flag = True
 
-        # 3. Temporal Smoothing (Exponential Moving Average)
+        # Clamp to physiological range
+        bpm_raw = max(self.BPM_LOW, min(self.BPM_HIGH, bpm_raw))
+
+        # Heavy temporal smoothing — rPPG from phone camera is noisy
+        # 0.85/0.15 means it takes ~5 readings to converge to a new value
         if self.last_bpm > 0:
-            # Reject massive artifact spikes (>20 bpm change in a fraction of a sec)
-            if abs(bpm_raw - self.last_bpm) > 20:
-                bpm = self.last_bpm * 0.90 + bpm_raw * 0.10
+            if abs(bpm_raw - self.last_bpm) > 15:
+                bpm = self.last_bpm * 0.92 + bpm_raw * 0.08  # very slow for big jumps
             else:
-                bpm = self.last_bpm * 0.70 + bpm_raw * 0.30  # Smooth transition
+                bpm = self.last_bpm * 0.85 + bpm_raw * 0.15  # slow convergence
         else:
             bpm = bpm_raw
 

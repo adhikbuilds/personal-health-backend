@@ -572,8 +572,14 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
                     from PIL import Image as _Image
 
                     _img_bytes = _b64.b64decode(data["image_b64"])
-                    _img = _Image.open(_BytesIO(_img_bytes)).convert("RGB").resize((16, 16))
-                    _arr = _np.array(_img, dtype=_np.float32)
+                    _img = _Image.open(_BytesIO(_img_bytes)).convert("RGB")
+                    # Crop to center 40% — front camera face is typically centered
+                    # This removes background that corrupts the RGB signal
+                    w, h = _img.size
+                    cx, cy = w // 2, h // 2
+                    cw, ch = int(w * 0.2), int(h * 0.2)
+                    face_crop = _img.crop((cx - cw, cy - ch, cx + cw, cy + ch))
+                    _arr = _np.array(face_crop.resize((8, 8)), dtype=_np.float32)
                     r, g, b = float(_arr[:, :, 0].mean()), float(_arr[:, :, 1].mean()), float(_arr[:, :, 2].mean())
                 except Exception as _e:
                     print(f"[RPPG] image_b64 decode error: {_e}")
