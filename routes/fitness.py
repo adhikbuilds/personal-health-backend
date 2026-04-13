@@ -568,63 +568,82 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
                     import base64 as _b64
                     from io import BytesIO as _BytesIO
 
-                    import cv2 as _cv2
                     import numpy as _np
                     from PIL import Image as _Image
 
                     _img_bytes = _b64.b64decode(data["image_b64"])
                     _img = _Image.open(_BytesIO(_img_bytes)).convert("RGB")
                     _img_np = _np.array(_img)
+                    ih, iw = _img_np.shape[:2]
 
-                    # Use MediaPipe FaceDetector for proper face ROI
-                    face_found = False
-                    try:
-                        import mediapipe as _mp
-                        from mediapipe.tasks.python import BaseOptions as _BO
-                        from mediapipe.tasks.python.vision import FaceDetector as _FD, FaceDetectorOptions as _FDO
-
-                        if not hasattr(rppg_live_stream, '_face_det'):
+                    # Face detection: run every 10th frame, cache bbox
+                    if not hasattr(proc, '_face_bbox'):
+                        proc._face_bbox = None
+                        proc._face_det_counter = 0
+                        # Init face detector once
+                        try:
+                            import mediapipe as _mp
+                            from mediapipe.tasks.python import BaseOptions as _BO
+                            from mediapipe.tasks.python.vision import FaceDetector as _FD, FaceDetectorOptions as _FDO
                             from pathlib import Path
                             _model = Path(__file__).parent.parent / "models" / "face_detector.tflite"
-                            rppg_live_stream._face_det = _FD.create_from_options(
-                                _FDO(base_options=_BO(model_asset_path=str(_model)))
-                            )
-                        mp_img = _mp.Image(image_format=_mp.ImageFormat.SRGB, data=_img_np)
-                        det = rppg_live_stream._face_det.detect(mp_img)
-                        if det.detections:
-                            bb = det.detections[0].bounding_box
-                            x, y, w, h = bb.origin_x, bb.origin_y, bb.width, bb.height
-                            # Crop to forehead/cheek region (top 60% of face, center 60%)
-                            fx = max(0, x + int(w * 0.2))
-                            fy = max(0, y + int(h * 0.1))
-                            fw = int(w * 0.6)
-                            fh = int(h * 0.5)
-                            face_roi = _img_np[fy:fy+fh, fx:fx+fw]
-                            if face_roi.size > 0:
-                                r = float(face_roi[:, :, 0].mean())
-                                g = float(face_roi[:, :, 1].mean())
-                                b = float(face_roi[:, :, 2].mean())
-                                face_found = True
-                    except Exception:
-                        pass
+                            if _model.exists():
+                                proc._face_det = _FD.create_from_options(
+                                    _FDO(base_options=_BO(model_asset_path=str(_model)))
+                                )
+                            else:
+                                proc._face_det = None
+                        except Exception:
+                            proc._face_det = None
 
-                    # Fallback: center crop if face detection fails
-                    if not face_found:
-                        h, w = _img_np.shape[:2]
-                        cy, cx = h // 2, w // 2
-                        ch, cw = h // 5, w // 5
-                        crop = _img_np[cy-ch:cy+ch, cx-cw:cx+cw]
-                        r = float(crop[:, :, 0].mean())
-                        g = float(crop[:, :, 1].mean())
-                        b = float(crop[:, :, 2].mean())
+                    # Run face detection every 10 frames (expensive), cache result
+                    proc._face_det_counter = getattr(proc, '_face_det_counter', 0) + 1
+                    if proc._face_det and (proc._face_bbox is None or proc._face_det_counter % 10 == 0):
+                        try:
+                            import mediapipe as _mp
+                            mp_img = _mp.Image(image_format=_mp.ImageFormat.SRGB, data=_img_np)
+                            det = proc._face_det.detect(mp_img)
+                            if det.detections:
+                                bb = det.detections[0].bounding_box
+                                proc._face_bbox = (bb.origin_x, bb.origin_y, bb.width, bb.height)
+                            else:
+                                proc._face_bbox = None
+                        except Exception:
+                            pass
+
+                    # Extract RGB from face ROI (or center fallback)
+                    if proc._face_bbox:
+                        bx, by, bw, bh = proc._face_bbox
+                        # Forehead/cheek region: top 50%, center 60%
+                        fx = max(0, bx + int(bw * 0.2))
+                        fy = max(0, by + int(bh * 0.1))
+                        fw = min(iw - fx, int(bw * 0.6))
+                        fh = min(ih - fy, int(bh * 0.5))
+                        roi = _img_np[fy:fy+fh, fx:fx+fw] if fw > 0 and fh > 0 else None
+                    else:
+                        roi = None
+
+                    if roi is not None and roi.size > 0:
+                        r, g, b = float(roi[:,:,0].mean()), float(roi[:,:,1].mean()), float(roi[:,:,2].mean())
+                    else:
+                        # No face — center crop fallback
+                        cy, cx = ih // 2, iw // 2
+                        ch, cw = ih // 5, iw // 5
+                        crop = _img_np[max(0,cy-ch):cy+ch, max(0,cx-cw):cx+cw]
+                        r, g, b = float(crop[:,:,0].mean()), float(crop[:,:,1].mean()), float(crop[:,:,2].mean())
+
+                    # Send face status back to client
+                    result_extra = {"face_detected": proc._face_bbox is not None}
                 except Exception as _e:
-                    print(f"[RPPG] decode error: {_e}")
+                    print(f"[RPPG] error: {_e}")
                     continue
             else:
                 r, g, b = data.get("r", 0.0), data.get("g", 0.0), data.get("b", 0.0)
+                result_extra = {}
             t = data.get("ts", time.time())
             proc.add_rgb(r, g, b, t)
             result = proc.compute()
+            result.update(result_extra)
             await websocket.send_json(result)
     except WebSocketDisconnect:
         print(f"[WS-RPPG] Client disconnected: {session_id[:8]}")
