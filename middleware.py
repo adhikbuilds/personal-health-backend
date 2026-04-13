@@ -78,6 +78,11 @@ _RATE_LIMIT_EXEMPT = {"/livez", "/readyz", "/metrics", "/", "/health", "/banner"
 
 class RequestLifecycleMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Callable):
+        # Skip middleware entirely for WebSocket upgrades — BaseHTTPMiddleware
+        # is known to break WebSocket connections in Starlette
+        if request.scope.get("type") == "websocket" or request.headers.get("upgrade", "").lower() == "websocket":
+            return await call_next(request)
+
         # 1. request id
         rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex
         token = request_id_var.set(rid)
