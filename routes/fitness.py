@@ -473,14 +473,12 @@ async def end_session(session_id: str):
             "quality_distribution": quality_counts,
             "xp_earned": _compute_xp(scores, jump_heights),
         }
-    # Smart coaching analysis on session end
+    # Enrich summary with coaching + data quality stats
     try:
-        from services.smart_coach import analyze_session_patterns
-        sport = SESSION_DB[session_id].get("sport", "vertical_jump")
-        session_analysis = analyze_session_patterns(frames, sport)
-        summary["coaching"] = session_analysis
-    except Exception as coach_err:
-        summary["coaching"] = {"patterns": [], "summary": f"Analysis unavailable: {coach_err}"}
+        from services.data_pipeline import enrich_session_summary
+        summary = enrich_session_summary(session_id, summary)
+    except Exception as enrich_err:
+        summary["coaching"] = {"patterns": [], "summary": f"Analysis unavailable: {enrich_err}"}
 
     SESSION_DB[session_id]["status"] = "completed"
     SESSION_DB[session_id]["ended_at"] = datetime.now(timezone.utc).isoformat()
