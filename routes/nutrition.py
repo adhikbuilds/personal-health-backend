@@ -45,6 +45,8 @@ async def get_food(food_id: str):
 
 nutrition_router = APIRouter(tags=["Nutrition"])
 
+
+# TODO: Move to shared module after PR #6 merges
 def get_default_goals(sport: str):
     if sport in ["vertical_jump", "sprint", "javelin"]:
         return {
@@ -85,6 +87,7 @@ async def get_nutrition_summary(
     athlete_id: str,
     on_date: date | None = Query(default=None),
 ):
+
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")
 
@@ -134,10 +137,10 @@ async def get_nutrition_summary(
             "carbs_g": carb,
             "fat_g": fat_g,
             "fiber_g": fib,
-
         }
 
     meals_logged = len(day_log)
+
 
     raw_goals = athlete_data.get("goals", {})
 
@@ -147,6 +150,7 @@ async def get_nutrition_summary(
 
     athlete_goals = {
         "calories": raw_goals.get("daily_calories", 0),
+
         "protein_g": raw_goals.get("protein_g", 0),
         "carbs_g": raw_goals.get("carbs_g", 0),
         "fat_g": raw_goals.get("fat_g", 0),
@@ -184,5 +188,6 @@ async def get_nutrition_summary(
         "goals": athlete_goals,
         "pct_of_goal": pct_of_goal,
     }
+
 
 
