@@ -51,18 +51,7 @@ def _load_db():
                 ATHLETE_DB.update(json.load(f))
         except Exception as e:
             print(f"[DB WARN] Could not load athletes: {e}")
-            # Load foods database (WN-01)
-    foods_file = DB_PATH / "foods.json"
-    if foods_file.exists():
-        try:
-            with open(foods_file, encoding="utf-8") as f:
-                raw = json.load(f)
-                for food in raw.get("foods", []):
-                    FOOD_DB[food["food_id"]] = food
-            print(f"[DB] {len(FOOD_DB)} foods loaded")
-        except Exception as e:
-            print(f"[DB WARN] Could not load foods: {e}")
-            # Load foods database
+    # Load foods database
         foods_file = DB_PATH / "foods.json"
         if foods_file.exists():
             try:
@@ -73,10 +62,8 @@ def _load_db():
                 print(f"[DB] {len(FOOD_DB)} foods loaded")
             except Exception as e:
                 print(f"[DB WARN] Could not load foods: {e}")
-                foods_file = DB_PATH / "foods.json"
 
-    # Seed athletes and sessions if DB is sparse
-
+        # Seed athletes and sessions if DB is sparse
     if len(ATHLETE_DB) < 10:
         try:
             import sys
@@ -150,6 +137,38 @@ def _load_db():
                     },
                 }
             )
+    # PF-12: Reload persisted frames for any still-active sessions so a restart
+    # doesn't lose in-progress data. Frames for completed sessions stay on disk
+    # until the 24h cleanup cron deletes them.
+    frames_dir = DB_PATH / "frames"
+    if frames_dir.exists():
+        reloaded_sessions = 0
+        reloaded_frames = 0
+        for fp in frames_dir.glob("*.jsonl"):
+            sid = fp.stem
+            session = SESSION_DB.get(sid)
+            if not session or session.get("status") != "active":
+                continue
+            try:
+                recovered = []
+                with open(fp, encoding="utf-8") as handle:
+                    for line in handle:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            recovered.append(json.loads(line))
+                        except json.JSONDecodeError:
+                            continue
+                if recovered:
+                    FRAME_BUFFER[sid] = recovered
+                    reloaded_sessions += 1
+                    reloaded_frames += len(recovered)
+            except Exception as e:
+                print(f"[PF-12 WARN] Could not reload frames for {sid[:8]}: {e}")
+        if reloaded_sessions:
+            print(f"[PF-12] Reloaded {reloaded_frames} frames across {reloaded_sessions} active sessions")
+
     # Load follow relationships
     follows_file = DB_PATH / "follows.json"
     if follows_file.exists():
