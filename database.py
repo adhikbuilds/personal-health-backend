@@ -21,12 +21,14 @@ DATASET_PATH = Path(os.path.dirname(os.path.abspath(__file__))) / "dataset"
 
 SESSION_DB: dict[str, dict] = {}
 ATHLETE_DB: dict[str, dict] = {}
+FOOD_DB: dict[str, dict] = {}
 FRAME_BUFFER: dict[str, list[dict]] = defaultdict(list)
 WS_CONNECTIONS: dict[str, list] = defaultdict(list)
 ANALYSIS_QUEUE: asyncio.Queue | None = None
 RESULT_STORE: dict[str, dict] = {}
 _POSE_ANALYZERS: dict[str, object] = {}
 RPPG_STORE: dict[str, object] = {}
+FOOD_DB: dict[str, dict] = {}
 _FOLLOWS: dict[str, set] = defaultdict(set)
 _RATE_LIMITS: dict[str, float] = {}  # PF-04: session_id → last frame timestamp
 
@@ -49,7 +51,32 @@ def _load_db():
                 ATHLETE_DB.update(json.load(f))
         except Exception as e:
             print(f"[DB WARN] Could not load athletes: {e}")
+            # Load foods database (WN-01)
+    foods_file = DB_PATH / "foods.json"
+    if foods_file.exists():
+        try:
+            with open(foods_file, encoding="utf-8") as f:
+                raw = json.load(f)
+                for food in raw.get("foods", []):
+                    FOOD_DB[food["food_id"]] = food
+            print(f"[DB] {len(FOOD_DB)} foods loaded")
+        except Exception as e:
+            print(f"[DB WARN] Could not load foods: {e}")
+            # Load foods database
+        foods_file = DB_PATH / "foods.json"
+        if foods_file.exists():
+            try:
+                with open(foods_file, encoding="utf-8") as f:
+                    raw = json.load(f)
+                    for food in raw.get("foods", []):
+                        FOOD_DB[food["food_id"]] = food
+                print(f"[DB] {len(FOOD_DB)} foods loaded")
+            except Exception as e:
+                print(f"[DB WARN] Could not load foods: {e}")
+                foods_file = DB_PATH / "foods.json"
+
     # Seed athletes and sessions if DB is sparse
+
     if len(ATHLETE_DB) < 10:
         try:
             import sys
