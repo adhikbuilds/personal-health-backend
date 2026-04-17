@@ -45,6 +45,7 @@ if FASTAPI_AVAILABLE:
     from routes.health import router as health_router
     from routes.huddle import list_router as huddle_list_router
     from routes.huddle import router as huddle_router
+    from routes.intelligence_report import router as intelligence_report_router
     from routes.load import router as load_router
     from routes.nutrition_ai import router as nutrition_ai_router
     from routes.plan import router as plan_router
@@ -134,6 +135,7 @@ if FASTAPI_AVAILABLE:
     app.include_router(nutrition_ai_router)
     app.include_router(realtime_router)
     app.include_router(workouts_router)
+    app.include_router(intelligence_report_router)
 
     # ─── OpenAPI: advertise bearer scheme ───────────────────────────────────
     def _custom_openapi():
