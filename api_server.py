@@ -66,6 +66,7 @@ if FASTAPI_AVAILABLE:
         database.ANALYSIS_QUEUE = asyncio.Queue(maxsize=200)
         task = asyncio.create_task(analysis_worker())
         cleanup_task = asyncio.create_task(session_cleanup_worker())
+        save_task = asyncio.create_task(database.periodic_save_worker(60))
         log.info(
             "api startup",
             extra={
@@ -79,10 +80,11 @@ if FASTAPI_AVAILABLE:
         # Shutdown — drain workers, then save
         task.cancel()
         cleanup_task.cancel()
+        save_task.cancel()
         import contextlib
 
         with contextlib.suppress(Exception):
-            await asyncio.gather(task, cleanup_task, return_exceptions=True)
+            await asyncio.gather(task, cleanup_task, save_task, return_exceptions=True)
         _save_db()
         log.info("api shutdown — db saved")
 

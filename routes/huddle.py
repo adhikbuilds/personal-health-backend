@@ -4,9 +4,12 @@ from __future__ import annotations
 Huddle Mode — REST endpoints for group training sessions.
 """
 
+import asyncio
+import json
+from collections import defaultdict
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
 from database import ATHLETE_DB
@@ -18,8 +21,12 @@ from services.huddle import (
     end_huddle,
     get_huddle_live,
     join_huddle,
+    leave_huddle,
     start_huddle,
 )
+
+# Per-huddle WS listeners (dashboards, observer phones)
+_HUDDLE_WATCHERS: dict[str, list[WebSocket]] = defaultdict(list)
 
 logger = get_logger("routes.huddle")
 
@@ -70,6 +77,20 @@ async def api_join_huddle(huddle_id: str, req: JoinHuddleRequest):
         raise HTTPException(404, str(exc)) from None
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from None
+    await _notify_watchers(huddle_id, "athlete_joined", {"athlete_id": req.athlete_id})
+    return {"ok": True, **result}
+
+
+@router.post("/{huddle_id}/leave")
+async def api_leave_huddle(huddle_id: str, req: JoinHuddleRequest):
+    """Leave a huddle."""
+    try:
+        result = leave_huddle(huddle_id, req.athlete_id)
+    except KeyError as exc:
+        raise HTTPException(404, str(exc)) from None
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from None
+    await _notify_watchers(huddle_id, "athlete_left", {"athlete_id": req.athlete_id})
     return {"ok": True, **result}
 
 
@@ -82,6 +103,7 @@ async def api_start_huddle(huddle_id: str):
         raise HTTPException(404, str(exc)) from None
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from None
+    await _notify_watchers(huddle_id, "huddle_started", {})
     return {"ok": True, "huddle": huddle.__dict__}
 
 
@@ -94,6 +116,7 @@ async def api_end_huddle(huddle_id: str):
         raise HTTPException(404, str(exc)) from None
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from None
+    await _notify_watchers(huddle_id, "huddle_ended", {"leaderboard": huddle.leaderboard})
     return {"ok": True, "huddle": huddle.__dict__}
 
 
@@ -133,6 +156,59 @@ async def api_list_huddles(status: Optional[str] = Query(None)):
         results = [h for h in results if h.get("status") == status]
     results.sort(key=lambda h: h.get("created_at", ""), reverse=True)
     return {"huddles": results, "total": len(results)}
+
+
+# ─── Live leaderboard WebSocket ─────────────────────────────────────────────
+
+
+async def _notify_watchers(huddle_id: str, event: str, payload: dict) -> None:
+    """Push a structured event to all dashboard/phone watchers of this huddle."""
+    dead = []
+    try:
+        live = get_huddle_live(huddle_id)
+    except KeyError:
+        live = None
+    msg = json.dumps({"event": event, "payload": payload, "live": live}, default=str)
+    for ws in list(_HUDDLE_WATCHERS.get(huddle_id, [])):
+        try:
+            await ws.send_text(msg)
+        except Exception:
+            dead.append(ws)
+    for ws in dead:
+        conns = _HUDDLE_WATCHERS.get(huddle_id, [])
+        if ws in conns:
+            conns.remove(ws)
+
+
+@router.websocket("/{huddle_id}/watch")
+async def api_watch_huddle(websocket: WebSocket, huddle_id: str):
+    """WebSocket stream of leaderboard updates. Sends snapshot every 5s plus on events."""
+    try:
+        _get_huddle(huddle_id)
+    except KeyError:
+        await websocket.close(code=4404)
+        return
+    await websocket.accept()
+    _HUDDLE_WATCHERS[huddle_id].append(websocket)
+    logger.info("huddle watcher connected", extra={"huddle_id": huddle_id})
+    try:
+        # Immediate snapshot
+        try:
+            await websocket.send_json({"event": "snapshot", "live": get_huddle_live(huddle_id)})
+        except Exception:
+            pass
+        while True:
+            await asyncio.sleep(5)
+            try:
+                await websocket.send_json({"event": "tick", "live": get_huddle_live(huddle_id)})
+            except Exception:
+                break
+    except WebSocketDisconnect:
+        pass
+    finally:
+        conns = _HUDDLE_WATCHERS.get(huddle_id, [])
+        if websocket in conns:
+            conns.remove(websocket)
 
 
 list_router = _list_router

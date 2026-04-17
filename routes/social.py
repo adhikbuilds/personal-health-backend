@@ -5,15 +5,185 @@ Social domain — Feed, Creators, Follow, Leaderboard, Classes, Playfields, Map
 """
 
 import math
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from database import _FOLLOWS, ATHLETE_DB, _save_db
+from database import _FOLLOWS, ATHLETE_DB, SESSION_DB, _save_db
+from logging_setup import get_logger
 
 router = APIRouter()
+log = get_logger("routes.social")
+
+
+# ─── Feed aggregation helpers ───────────────────────────────────────────────
+
+
+_AVATAR_PALETTE = [
+    "#06b6d4", "#ec4899", "#f97316", "#22c55e",
+    "#8b5cf6", "#eab308", "#14b8a6", "#ef4444",
+]
+
+
+def _avatar_color(key: str) -> str:
+    return _AVATAR_PALETTE[sum(ord(c) for c in key) % len(_AVATAR_PALETTE)]
+
+
+def _initials(name: str) -> str:
+    parts = [p for p in (name or "").split() if p]
+    if not parts:
+        return "??"
+    return (parts[0][0] + (parts[-1][0] if len(parts) > 1 else parts[0][-1])).upper()
+
+
+def _time_ago(iso_str: str) -> str:
+    if not iso_str:
+        return "now"
+    try:
+        ts = datetime.fromisoformat(str(iso_str).replace("Z", "+00:00"))
+    except Exception:
+        return "now"
+    now = datetime.now(timezone.utc)
+    diff = now - ts
+    seconds = diff.total_seconds()
+    if seconds < 60:
+        return "just now"
+    if seconds < 3600:
+        return f"{int(seconds // 60)}m"
+    if seconds < 86400:
+        return f"{int(seconds // 3600)}h"
+    if seconds < 86400 * 7:
+        return f"{int(seconds // 86400)}d"
+    return f"{int(seconds // (86400 * 7))}w"
+
+
+def _build_session_post(session: dict, athlete: dict, viewer_follows: set) -> dict | None:
+    """Turn a completed session into a feed post. Returns None for sessions without summaries."""
+    summary = session.get("summary") or {}
+    score = summary.get("avg_form_score", 0)
+    if not session.get("session_id") or score <= 0:
+        return None
+
+    peak = summary.get("peak_form_score", 0)
+    reps = summary.get("total_frames", 0)
+    sport_label = (session.get("sport") or "training").replace("_", " ").title()
+
+    quality_counts = summary.get("quality_distribution") or {}
+    elite = quality_counts.get("elite", 0)
+
+    if elite >= 3:
+        headline = f"{elite} elite-tier reps in {sport_label} — peak form {peak:.0f}/100"
+    elif peak >= 85:
+        headline = f"Peak form score {peak:.0f}/100 in {sport_label} today"
+    elif score >= 70:
+        headline = f"Solid {sport_label} session: avg {score:.0f}/100 across {reps} frames"
+    else:
+        headline = f"Logged a {sport_label} session: {reps} frames, avg {score:.0f}/100"
+
+    jump = summary.get("peak_jump_height_cm", 0)
+    if jump >= 40:
+        headline += f" · {jump:.1f} cm jump"
+
+    athlete_id = athlete.get("id") or session.get("athlete_id", "")
+    name = athlete.get("name") or athlete_id
+    return {
+        "id": f"sess_{session['session_id'][:10]}",
+        "kind": "session",
+        "author": name,
+        "author_id": athlete_id,
+        "handle": f"@{athlete_id}",
+        "initials": _initials(name),
+        "avatarColor": _avatar_color(athlete_id),
+        "sport": sport_label,
+        "content": headline,
+        "likes": int(summary.get("xp_earned", 0) // 2),
+        "comments": 0,
+        "timeAgo": _time_ago(session.get("ended_at") or session.get("started_at", "")),
+        "timestamp": session.get("ended_at") or session.get("started_at", ""),
+        "isFollowing": athlete_id in viewer_follows,
+        "session_id": session.get("session_id"),
+        "metrics": {
+            "avg_form_score": score,
+            "peak_form_score": peak,
+            "peak_jump_height_cm": jump,
+            "xp_earned": summary.get("xp_earned", 0),
+            "total_frames": reps,
+        },
+    }
+
+
+def _build_milestone_post(athlete: dict, viewer_follows: set) -> dict | None:
+    """Rare milestone posts — level-ups, rank-3s, huge BPI."""
+    name = athlete.get("name") or athlete.get("id", "")
+    rank = athlete.get("rank")
+    bpi = athlete.get("bpi", 0)
+    if not rank or rank > 3 or bpi <= 0:
+        return None
+    suffix = {1: "#1", 2: "#2", 3: "#3"}.get(rank, f"#{rank}")
+    return {
+        "id": f"milestone_{athlete.get('id')}",
+        "kind": "milestone",
+        "author": name,
+        "author_id": athlete.get("id"),
+        "handle": f"@{athlete.get('id')}",
+        "initials": _initials(name),
+        "avatarColor": _avatar_color(athlete.get("id", "")),
+        "sport": (athlete.get("sport") or "").replace("_", " ").title(),
+        "content": f"{suffix} on the national leaderboard · BPI {bpi:,}",
+        "likes": int(bpi // 100),
+        "comments": 0,
+        "timeAgo": "today",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "isFollowing": athlete.get("id") in viewer_follows,
+    }
+
+
+def _aggregate_feed(viewer_id: str, tab: str, limit: int) -> list[dict]:
+    viewer_follows = set(_FOLLOWS.get(viewer_id, set()))
+
+    # Build posts from the most recent completed sessions
+    completed = [s for s in SESSION_DB.values() if s.get("status") == "completed"]
+    completed.sort(key=lambda s: s.get("ended_at") or s.get("started_at") or "", reverse=True)
+
+    posts: list[dict] = []
+    seen_athletes: set[str] = set()
+    for s in completed[: limit * 3]:  # oversample then dedupe
+        aid = s.get("athlete_id")
+        if not aid:
+            continue
+        # Only one post per athlete per feed fetch — latest session wins
+        if aid in seen_athletes:
+            continue
+        athlete = ATHLETE_DB.get(aid)
+        if not athlete:
+            continue
+        post = _build_session_post(s, athlete, viewer_follows)
+        if post is None:
+            continue
+        posts.append(post)
+        seen_athletes.add(aid)
+        if len(posts) >= limit:
+            break
+
+    # Sprinkle in milestone posts for top-ranked athletes (dedupe by author_id)
+    posted_authors = {p.get("author_id") for p in posts}
+    for athlete in ATHLETE_DB.values():
+        if athlete.get("id") in posted_authors:
+            continue
+        ms = _build_milestone_post(athlete, viewer_follows)
+        if ms:
+            posts.append(ms)
+
+    # Sort by timestamp desc (milestones bubble according to "today")
+    posts.sort(key=lambda p: p.get("timestamp") or "", reverse=True)
+
+    if tab == "following":
+        posts = [p for p in posts if p.get("isFollowing")]
+
+    return posts[:limit]
 
 
 # ─── Leaderboard ────────────────────────────────────────────────────────────
@@ -33,76 +203,25 @@ async def get_leaderboard(sport: Optional[str] = None, limit: int = Query(defaul
 
 
 @router.get("/feed", tags=["Social"])
-async def get_feed(athlete_id: str = "", tab: str = "for_you", page: int = 1):
-    posts = [
-        {
-            "id": "p1",
-            "author": "Rishi Arora",
-            "handle": "@RishiArora",
-            "initials": "RA",
-            "avatarColor": "#06b6d4",
-            "sport": "Athletics",
-            "content": "Just hit a new PB in the 400m! Hard work finally paying off",
-            "likes": 142,
-            "comments": 18,
-            "timeAgo": "2h",
-            "isFollowing": False,
-        },
-        {
-            "id": "p2",
-            "author": "Aditi Dixit",
-            "handle": "@AditiDixit",
-            "initials": "AD",
-            "avatarColor": "#ec4899",
-            "sport": "Yoga",
-            "content": "Morning session complete. Pranayama + 45 min flow.",
-            "likes": 287,
-            "comments": 34,
-            "timeAgo": "4h",
-            "isFollowing": True,
-        },
-        {
-            "id": "p3",
-            "author": "Moh. Usman",
-            "handle": "@MohUsman",
-            "initials": "MU",
-            "avatarColor": "#f97316",
-            "sport": "Kabaddi",
-            "content": "District championships next week! Training twice a day.",
-            "likes": 98,
-            "comments": 22,
-            "timeAgo": "6h",
-            "isFollowing": False,
-        },
-        {
-            "id": "p4",
-            "author": "Fit India Icons",
-            "handle": "@FitIndiaIcons",
-            "initials": "FI",
-            "avatarColor": "#22c55e",
-            "sport": "National Program",
-            "content": "Congratulations to all athletes who completed the FitIndiaSchoolWeek! 10,000+ schools participated.",
-            "likes": 1450,
-            "comments": 203,
-            "timeAgo": "1d",
-            "isFollowing": True,
-        },
-    ]
-    if tab == "following":
-        followed_ids = _FOLLOWS.get(athlete_id, set())
-        _creator_handles = {
-            c["id"]: c["handle"]
-            for c in [
-                {"id": "c1", "handle": "@FitIndiaIcons"},
-                {"id": "c2", "handle": "@FitChampions"},
-                {"id": "c3", "handle": "@FitAmbassadors"},
-                {"id": "c4", "handle": "@RishiArora"},
-                {"id": "c5", "handle": "@AditiDixit"},
-            ]
-        }
-        followed_handles = {_creator_handles[cid] for cid in followed_ids if cid in _creator_handles}
-        posts = [p for p in posts if p.get("isFollowing") or p.get("handle") in followed_handles]
-    return {"posts": posts, "page": page, "total": len(posts)}
+async def get_feed(
+    athlete_id: str = "",
+    tab: str = "for_you",
+    page: int = 1,
+    limit: int = Query(default=20, le=50),
+):
+    """Aggregated social feed.
+
+    'for_you' — recent session highlights across all athletes plus top-rank milestones.
+    'following' — only posts from athletes the viewer follows.
+    """
+    posts = _aggregate_feed(viewer_id=athlete_id, tab=tab, limit=limit)
+    return {
+        "posts": posts,
+        "page": page,
+        "total": len(posts),
+        "tab": tab,
+        "viewer_id": athlete_id,
+    }
 
 
 @router.get("/creators/trending", tags=["Social"])
