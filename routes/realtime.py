@@ -11,6 +11,7 @@ Stores sampled frames for the training data flywheel.
 Broadcasts to dashboard WebSocket listeners.
 """
 
+import contextlib
 import json
 import time
 
@@ -80,10 +81,8 @@ async def realtime_landmarks(websocket: WebSocket, session_id: str):
                     default=str,
                 )
                 for ws in list(WS_CONNECTIONS.get(session_id, [])):
-                    try:
+                    with contextlib.suppress(Exception):
                         await ws.send_text(text)
-                    except Exception:
-                        pass
 
             # Respond to client
             response = {
