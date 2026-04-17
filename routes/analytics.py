@@ -222,17 +222,21 @@ async def advanced_metrics(athlete_id: str, days: int = Query(default=60, ge=7, 
         raise HTTPException(404, "athlete not found")
 
     athlete_sessions = [s for s in session_repo.list(athlete_id=athlete_id, status="completed")]
-    # Keep only sessions within the window
+    # Keep only sessions within the window. Normalise parsed timestamps to
+    # tz-aware so tz-mixed session data (some legacy sessions stored naive
+    # ISO) can still be compared against `now`.
     cutoff_days = days
     now = datetime.now(timezone.utc)
     recent: list[dict] = []
     for s in athlete_sessions:
-        ts = None
         try:
-            ts = datetime.fromisoformat(str(s.get("ended_at") or s.get("started_at") or "").replace("Z", "+00:00"))
+            raw = str(s.get("ended_at") or s.get("started_at") or "").replace("Z", "+00:00")
+            ts = datetime.fromisoformat(raw)
         except Exception:
             continue
-        if ts and (now - ts).days <= cutoff_days:
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        if (now - ts).days <= cutoff_days:
             recent.append(s)
 
     # Collect frames across recent sessions for asymmetry

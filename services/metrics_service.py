@@ -153,7 +153,12 @@ def acute_chronic_ratio(sessions: list[dict]) -> dict[str, float]:
     chronic_sum = 0.0
     acute_days = chronic_days = 0
     for iso, load in daily_load(sessions).items():
-        ts = datetime.fromisoformat(iso).replace(tzinfo=timezone.utc)
+        try:
+            ts = datetime.fromisoformat(iso)
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+        except Exception:
+            continue
         delta = (now - ts).days
         if delta <= 7:
             acute_sum += load

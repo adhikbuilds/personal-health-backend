@@ -1,0 +1,30 @@
+{
+  "huddle_6b8d588538": {
+    "huddle_id": "huddle_6b8d588538",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-17T06:23:17.191401+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_908574a105": {
+    "huddle_id": "huddle_908574a105",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-17T06:24:15.299646+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  }
+}
