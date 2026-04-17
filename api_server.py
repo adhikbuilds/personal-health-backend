@@ -111,6 +111,7 @@ if FASTAPI_AVAILABLE:
     app.include_router(analytics_router)
     app.include_router(coach_router)
     from routes.nutrition import router as nutrition_router
+
     app.include_router(nutrition_router)
 
     # ─── OpenAPI: advertise bearer scheme ───────────────────────────────────

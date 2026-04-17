@@ -51,7 +51,7 @@ def _load_db():
                 ATHLETE_DB.update(json.load(f))
         except Exception as e:
             print(f"[DB WARN] Could not load athletes: {e}")
-    # Load foods database
+        # Load foods database
         foods_file = DB_PATH / "foods.json"
         if foods_file.exists():
             try:
