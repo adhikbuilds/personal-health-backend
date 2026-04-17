@@ -46,6 +46,8 @@ def _time_ago(iso_str: str) -> str:
         ts = datetime.fromisoformat(str(iso_str).replace("Z", "+00:00"))
     except Exception:
         return "now"
+    if ts.tzinfo is None:
+        ts = ts.replace(tzinfo=timezone.utc)
     now = datetime.now(timezone.utc)
     diff = now - ts
     seconds = diff.total_seconds()
