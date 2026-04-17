@@ -26,7 +26,7 @@ from pathlib import Path
 SEED = 99
 random.seed(SEED)
 
-DB_PATH = Path(__file__).parent / "db"
+DB_PATH = Path(__file__).resolve().parent.parent / "db"
 DB_PATH.mkdir(parents=True, exist_ok=True)
 
 # Form score starting ranges by tier (athletes improve each session by small delta)
