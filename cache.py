@@ -40,6 +40,10 @@ class TTLCache:
             while len(self._data) > self.maxsize:
                 self._data.popitem(last=False)
 
+    def delete(self, key: str) -> None:
+        with self._lock:
+            self._data.pop(key, None)
+
     def clear(self) -> None:
         with self._lock:
             self._data.clear()
