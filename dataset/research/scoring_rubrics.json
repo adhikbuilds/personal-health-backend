@@ -1,0 +1,1035 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "created": "2026-04-06",
+    "description": "Validated movement quality scoring rubrics for 8 sports movements. Thresholds derived from peer-reviewed biomechanics literature and established assessment protocols.",
+    "quality_tiers": {
+      "elite": "90-100 form_score: Competition-grade form, all criteria met",
+      "good": "75-89 form_score: Minor deviations, one criterion slightly off",
+      "average": "50-74 form_score: Multiple deviations, functional but not optimal",
+      "poor": "0-49 form_score: Major form breakdowns, injury risk present"
+    },
+    "sources_overview": [
+      "Cook G, et al. Functional Movement Screen (FMS) scoring criteria, 2006/2010",
+      "NSCA Essentials of Strength Training and Conditioning, 4th ed., 2016",
+      "Escamilla RF, et al. Biomechanics of the squat exercise, Med Sci Sports Exerc, 2001",
+      "Myer GD, et al. The back squat: a proposed assessment of functional deficits, SJMSS, 2014",
+      "Comfort P, et al. Standardization and methodological considerations for CMJ, Sports Med, 2019",
+      "Cogley RM, et al. Push-up variations EMG analysis, J Strength Cond Res, 2005",
+      "Youdas JW, et al. Push-up kinematics, J Strength Cond Res, 2010",
+      "Ronai P & Scibek E. Pull-up technique analysis, ACSM Health Fitness J, 2014",
+      "Suchomel TJ, et al. Weightlifting technique assessment, Sports Med, 2015",
+      "Ho KW, et al. Snatch kinematics, J Strength Cond Res, 2014",
+      "Bezodis IN, et al. Sprint biomechanics review, Sports Med, 2019",
+      "Bartlett RM. Javelin throw biomechanics, J Sports Sci, 1996",
+      "Stretch RA, et al. Cricket batting kinematics, J Sports Sci, 1998",
+      "Stuelcken MC, et al. Cricket batting biomechanics, Sports Biomech, 2005",
+      "ACE Personal Trainer Manual, 6th ed., 2020",
+      "Kritz M, et al. Movement competency screen, J Strength Cond Res, 2015"
+    ]
+  },
+
+  "vertical_jump": {
+    "scoring_dimensions": [
+      {
+        "name": "countermovement_depth",
+        "weight": 0.20,
+        "description": "Knee flexion angle at lowest point of countermovement. Optimal loading position maximizes stretch-shortening cycle.",
+        "thresholds": {
+          "elite": "Knee flexion 80-100 deg, hip flexion 60-80 deg, smooth deceleration-to-acceleration transition",
+          "good": "Knee flexion 70-110 deg, hip flexion 50-90 deg, slight hesitation at bottom",
+          "average": "Knee flexion 60-120 deg OR <70 deg (shallow), inconsistent depth between trials",
+          "poor": "Knee flexion <50 deg (very shallow) or >130 deg (excessive), minimal countermovement use"
+        },
+        "angle_ranges": {
+          "elite": { "knee_flexion_min": 80, "knee_flexion_max": 100 },
+          "good": { "knee_flexion_min": 70, "knee_flexion_max": 110 },
+          "average": { "knee_flexion_min": 60, "knee_flexion_max": 120 },
+          "poor": { "knee_flexion_min": 0, "knee_flexion_max": 180 }
+        }
+      },
+      {
+        "name": "trunk_alignment",
+        "weight": 0.15,
+        "description": "Trunk inclination during countermovement and takeoff. Forward lean should be controlled and proportional.",
+        "thresholds": {
+          "elite": "Trunk forward lean 20-35 deg from vertical, maintained throughout, spine neutral",
+          "good": "Trunk forward lean 15-45 deg, slight rounding at bottom, recovers at takeoff",
+          "average": "Trunk forward lean >45 deg or <15 deg, some thoracic flexion",
+          "poor": "Excessive forward lean >60 deg, significant spinal flexion, lateral deviation"
+        }
+      },
+      {
+        "name": "knee_valgus_control",
+        "weight": 0.20,
+        "description": "Frontal plane knee alignment during takeoff and landing. Knee tracking over 2nd-3rd toe.",
+        "thresholds": {
+          "elite": "Knee-over-toe alignment within 5 deg of neutral, bilateral symmetry <3 deg difference",
+          "good": "Knee-over-toe alignment within 10 deg, bilateral symmetry <5 deg difference",
+          "average": "Mild valgus 10-15 deg, visible but controlled medial knee displacement",
+          "poor": "Valgus >15 deg, dynamic valgus collapse, significant bilateral asymmetry >10 deg"
+        },
+        "angle_ranges": {
+          "elite": { "max_valgus_deg": 5 },
+          "good": { "max_valgus_deg": 10 },
+          "average": { "max_valgus_deg": 15 },
+          "poor": { "max_valgus_deg": 999 }
+        }
+      },
+      {
+        "name": "arm_swing_coordination",
+        "weight": 0.15,
+        "description": "Bilateral arm swing timing and amplitude. Arms should drive upward synchronously at takeoff.",
+        "thresholds": {
+          "elite": "Full bilateral arm swing, shoulder flexion reaches >150 deg at takeoff, synchronized with triple extension",
+          "good": "Bilateral arm swing, shoulder flexion 120-150 deg, slight timing offset",
+          "average": "Reduced arm swing amplitude <120 deg, asymmetric swing, late timing",
+          "poor": "Minimal arm swing, arms stay at sides or move asynchronously, no contribution to jump"
+        }
+      },
+      {
+        "name": "triple_extension",
+        "weight": 0.15,
+        "description": "Simultaneous full extension of ankle, knee, and hip at takeoff. Key driver of jump height.",
+        "thresholds": {
+          "elite": "Full plantar flexion (ankle >140 deg), knee extension >170 deg, hip extension >170 deg at takeoff",
+          "good": "Near-full extension: ankle >130 deg, knee >160 deg, hip >160 deg",
+          "average": "Incomplete extension: one joint fails to reach threshold, knee or hip <155 deg",
+          "poor": "Significant flexion remaining at takeoff: knee <150 deg or hip <150 deg, no visible plantar flexion"
+        }
+      },
+      {
+        "name": "landing_mechanics",
+        "weight": 0.15,
+        "description": "Quality of landing: absorption strategy, knee alignment, and noise level.",
+        "thresholds": {
+          "elite": "Toe-to-heel landing, knee flexion >90 deg on absorption, silent/soft, no valgus, stable hold",
+          "good": "Toe-to-heel landing, knee flexion 70-90 deg, minor sound, controlled",
+          "average": "Flat-foot landing, knee flexion 50-70 deg, audible impact, slight valgus",
+          "poor": "Heel-strike landing, stiff legs (<50 deg flexion), loud impact, valgus collapse, loss of balance"
+        }
+      }
+    ],
+    "common_faults": [
+      "Shallow countermovement (insufficient knee/hip flexion)",
+      "Dynamic knee valgus during takeoff or landing",
+      "Insufficient arm swing or asynchronous arm action",
+      "Incomplete triple extension at takeoff",
+      "Excessive forward trunk lean causing horizontal displacement",
+      "Stiff landing with minimal knee/hip absorption",
+      "Bilateral asymmetry in force production",
+      "Loss of balance on landing"
+    ],
+    "feedback_tags": {
+      "poor": [
+        "Significant knee valgus detected -- strengthen hip abductors/external rotators",
+        "Very shallow countermovement -- practice depth loading at controlled speed",
+        "Landing is stiff and high-impact -- practice soft toe-to-heel landings",
+        "Minimal arm swing -- coordinate arm drive with leg extension"
+      ],
+      "average": [
+        "Countermovement depth slightly off optimal range -- aim for 90 deg knee flexion",
+        "Mild knee valgus present -- focus on tracking knees over toes",
+        "Arm swing timing is late -- initiate upswing earlier in concentric phase",
+        "Landing could be softer -- increase knee flexion on contact"
+      ],
+      "good": [
+        "Good overall jump mechanics -- minor timing refinement needed",
+        "Slight bilateral asymmetry in extension -- equalize push-off force",
+        "Landing is controlled but could absorb more through hips"
+      ],
+      "elite": [
+        "Excellent countermovement depth and timing",
+        "Full triple extension with coordinated arm drive",
+        "Textbook landing mechanics -- soft, stable, symmetric"
+      ]
+    },
+    "form_score_formula": "form_score = sum(dimension_weight * dimension_score) where dimension_score = 100 - penalty. Penalty based on angular deviation from elite range midpoint: 0-5 deg deviation = 0-10 penalty, 5-15 deg = 10-30, 15-30 deg = 30-60, >30 deg = 60-100.",
+    "sources": [
+      "Comfort P, et al. Standardization and methodological considerations for the countermovement jump, Sports Med, 2019",
+      "Myer GD, et al. Assessment of lower limb alignment during the CMJ, J Sports Sci, 2011",
+      "Lees A, et al. The biomechanics of jumping, J Sports Sci, 2004",
+      "FMS deep squat and hurdle step criteria (Cook et al., 2006)"
+    ]
+  },
+
+  "squat": {
+    "scoring_dimensions": [
+      {
+        "name": "depth",
+        "weight": 0.20,
+        "description": "Hip crease position relative to knee. Gold standard is hip crease below top of patella for full squat.",
+        "thresholds": {
+          "elite": "Hip crease clearly below knee (thigh past parallel), knee flexion 110-130 deg, full depth with control",
+          "good": "Thigh parallel to floor (knee flexion 90-110 deg), hip crease at or slightly below knee level",
+          "average": "Partial squat, knee flexion 70-90 deg, above parallel",
+          "poor": "Quarter squat or less, knee flexion <70 deg, minimal hip displacement"
+        },
+        "angle_ranges": {
+          "elite": { "knee_flexion_min": 110, "knee_flexion_max": 130 },
+          "good": { "knee_flexion_min": 90, "knee_flexion_max": 110 },
+          "average": { "knee_flexion_min": 70, "knee_flexion_max": 90 },
+          "poor": { "knee_flexion_min": 0, "knee_flexion_max": 70 }
+        }
+      },
+      {
+        "name": "knee_tracking",
+        "weight": 0.20,
+        "description": "Frontal plane knee position. Knees should track over 2nd-3rd toe without collapsing inward.",
+        "thresholds": {
+          "elite": "Knees track over 2nd-3rd toe throughout, valgus <5 deg, bilateral symmetry",
+          "good": "Knees track over toes, mild valgus <10 deg only at deepest point, quickly corrected",
+          "average": "Intermittent valgus 10-15 deg, knees drift medially during ascent",
+          "poor": "Consistent valgus >15 deg, knees collapse inward, cannot maintain alignment"
+        },
+        "angle_ranges": {
+          "elite": { "max_valgus_deg": 5 },
+          "good": { "max_valgus_deg": 10 },
+          "average": { "max_valgus_deg": 15 },
+          "poor": { "max_valgus_deg": 999 }
+        }
+      },
+      {
+        "name": "trunk_position",
+        "weight": 0.20,
+        "description": "Trunk inclination relative to tibia. Excessive forward lean indicates poor thoracic mobility or weak extensors.",
+        "thresholds": {
+          "elite": "Trunk angle within 10 deg of tibia angle (parallel shins-torso), neutral spine throughout",
+          "good": "Trunk forward lean 5-15 deg more than tibia, neutral spine maintained",
+          "average": "Trunk forward lean 15-30 deg more than tibia, some thoracic rounding at depth",
+          "poor": "Trunk forward lean >30 deg beyond tibia, significant thoracic/lumbar flexion (butt wink)"
+        }
+      },
+      {
+        "name": "lumbar_spine_control",
+        "weight": 0.15,
+        "description": "Maintenance of neutral lumbar lordosis throughout movement. Excessive flexion ('butt wink') indicates risk.",
+        "thresholds": {
+          "elite": "Neutral lordosis maintained throughout full ROM, no visible flexion/extension change",
+          "good": "Neutral lordosis maintained to parallel, <10 deg flexion change at maximum depth",
+          "average": "Visible lumbar flexion 10-20 deg at depth, inconsistent control",
+          "poor": "Significant lumbar flexion >20 deg ('butt wink'), pain or compensatory movement"
+        }
+      },
+      {
+        "name": "heel_position",
+        "weight": 0.10,
+        "description": "Feet remain flat on ground. Heel rise indicates limited ankle dorsiflexion.",
+        "thresholds": {
+          "elite": "Heels flat throughout, ankle dorsiflexion >35 deg achieved",
+          "good": "Heels flat to parallel, minimal rise (<1 cm) at max depth only",
+          "average": "Heel rise >1 cm during descent, weight shifts forward",
+          "poor": "Significant heel rise throughout, comes onto toes, loses balance"
+        }
+      },
+      {
+        "name": "tempo_control",
+        "weight": 0.15,
+        "description": "Eccentric control and concentric drive. Movement should be controlled, not ballistic or collapsing.",
+        "thresholds": {
+          "elite": "Controlled 2-3 sec eccentric, brief pause at bottom, explosive concentric, no sticking point",
+          "good": "Controlled 2 sec eccentric, smooth reversal, slight deceleration at sticking point",
+          "average": "Fast uncontrolled eccentric (<1.5 sec), bounce at bottom, stalling in ascent",
+          "poor": "Dive-bomb eccentric, collapse at bottom, cannot reverse without momentum, ratcheting ascent"
+        }
+      }
+    ],
+    "common_faults": [
+      "Knee valgus collapse ('knees caving')",
+      "Excessive forward lean / chest drop",
+      "Lumbar flexion at depth ('butt wink')",
+      "Heel rise due to poor ankle dorsiflexion",
+      "Insufficient depth (above parallel)",
+      "Lateral weight shift / hip shift",
+      "Hyperextension at lockout",
+      "Loss of bracing / core instability"
+    ],
+    "feedback_tags": {
+      "poor": [
+        "Significant knee valgus -- perform banded squats to activate glute medius",
+        "Major lumbar flexion at depth -- reduce depth until mobility improves",
+        "Heels rising off floor -- stretch calves and use heel elevation temporarily",
+        "Cannot reach parallel -- work on hip and ankle mobility"
+      ],
+      "average": [
+        "Depth is slightly above parallel -- work on hip flexor and ankle mobility",
+        "Some forward lean -- strengthen upper back and practice goblet squats",
+        "Minor butt wink at bottom -- reduce depth by 5-10 deg until mobility improves",
+        "Eccentric phase too fast -- practice tempo squats (3 sec down)"
+      ],
+      "good": [
+        "Good depth and alignment -- minor trunk lean correction needed",
+        "Slight valgus at max depth -- cue 'spread the floor' with feet",
+        "Strong overall pattern -- refine tempo for better control"
+      ],
+      "elite": [
+        "Full depth with neutral spine -- excellent mobility and control",
+        "Perfect knee tracking and bilateral symmetry",
+        "Exemplary squat pattern suitable for progressive loading"
+      ]
+    },
+    "form_score_formula": "form_score = sum(dimension_weight * dimension_score). dimension_score = max(0, 100 - angular_deviation_penalty - fault_penalty). angular_deviation_penalty: per degree outside elite range, deduct 2 points (linear). fault_penalty: knee_valgus >15 deg = -20, butt_wink >20 deg = -15, heel_rise = -10.",
+    "sources": [
+      "Escamilla RF. Knee biomechanics of the dynamic squat exercise, Med Sci Sports Exerc, 2001",
+      "Myer GD, et al. The back squat: proposed assessment of functional deficits, Strength Cond J, 2014",
+      "Kritz M, et al. Movement competency screen, J Strength Cond Res, 2015",
+      "NSCA Essentials of Strength Training and Conditioning, 4th ed., Ch 15, 2016",
+      "Cook G, et al. FMS deep squat scoring criteria, 2006/2010",
+      "Schoenfeld BJ. Squat kinematics and kinetics, J Strength Cond Res, 2010"
+    ]
+  },
+
+  "push_up": {
+    "scoring_dimensions": [
+      {
+        "name": "elbow_angle_at_bottom",
+        "weight": 0.20,
+        "description": "Elbow flexion at the lowest point. Full ROM push-up requires chest near floor.",
+        "thresholds": {
+          "elite": "Elbow flexion to 90 deg or below (upper arm parallel or below parallel), chest within 5 cm of floor",
+          "good": "Elbow flexion 80-100 deg, chest within 10 cm of floor",
+          "average": "Elbow flexion 60-80 deg, partial ROM, chest >10 cm from floor",
+          "poor": "Elbow flexion <60 deg, very shallow movement, minimal displacement"
+        },
+        "angle_ranges": {
+          "elite": { "elbow_flexion_min": 90, "elbow_flexion_max": 120 },
+          "good": { "elbow_flexion_min": 80, "elbow_flexion_max": 100 },
+          "average": { "elbow_flexion_min": 60, "elbow_flexion_max": 80 },
+          "poor": { "elbow_flexion_min": 0, "elbow_flexion_max": 60 }
+        }
+      },
+      {
+        "name": "body_alignment",
+        "weight": 0.25,
+        "description": "Straight line from ankle through hip to shoulder. Core must remain rigid throughout.",
+        "thresholds": {
+          "elite": "Ear-shoulder-hip-knee-ankle in line throughout, hip sag/pike <5 deg deviation",
+          "good": "Near-straight line, hip sag or pike <10 deg at any point",
+          "average": "Visible hip sag 10-20 deg or hip pike 10-20 deg, inconsistent",
+          "poor": "Major hip sag >20 deg ('banana back') or pike >20 deg, low back hyperextension"
+        }
+      },
+      {
+        "name": "elbow_flare_angle",
+        "weight": 0.20,
+        "description": "Angle between upper arm and torso in transverse plane. Excessive flare stresses shoulder.",
+        "thresholds": {
+          "elite": "Upper arm 30-45 deg from torso (arrow position), scapulae retracted at bottom",
+          "good": "Upper arm 20-55 deg from torso, slight inconsistency between sides",
+          "average": "Upper arm 55-70 deg from torso ('T position'), increased shoulder stress",
+          "poor": "Upper arm >70 deg from torso (full T or beyond), shoulder impingement risk"
+        },
+        "angle_ranges": {
+          "elite": { "elbow_flare_min": 30, "elbow_flare_max": 45 },
+          "good": { "elbow_flare_min": 20, "elbow_flare_max": 55 },
+          "average": { "elbow_flare_min": 55, "elbow_flare_max": 70 },
+          "poor": { "elbow_flare_min": 70, "elbow_flare_max": 90 }
+        }
+      },
+      {
+        "name": "scapular_control",
+        "weight": 0.15,
+        "description": "Scapular movement quality: retraction at bottom, protraction at top. Winging indicates serratus weakness.",
+        "thresholds": {
+          "elite": "Full scapular retraction at bottom, protraction at top (plus push), no winging",
+          "good": "Adequate retraction/protraction, minimal winging, consistent pattern",
+          "average": "Incomplete scapular ROM, mild winging visible, inconsistent movement",
+          "poor": "Significant scapular winging, no retraction/protraction, shoulder elevation (shrugging)"
+        }
+      },
+      {
+        "name": "head_neck_position",
+        "weight": 0.10,
+        "description": "Cervical spine alignment. Head should remain neutral relative to thoracic spine.",
+        "thresholds": {
+          "elite": "Neutral cervical spine, gaze 30-60 cm ahead of hands, no chin jutting",
+          "good": "Near-neutral, slight forward gaze, chin stays tucked",
+          "average": "Head drops or extends, chin juts forward, gaze too far ahead or at floor",
+          "poor": "Severe cervical hyperextension or flexion, head leads movement"
+        }
+      },
+      {
+        "name": "tempo_consistency",
+        "weight": 0.10,
+        "description": "Consistent cadence and controlled movement. Fatigue shows as form degradation.",
+        "thresholds": {
+          "elite": "1-2 sec eccentric, 1 sec concentric, consistent across all reps, full lockout",
+          "good": "Mostly consistent tempo, slight acceleration in later reps, full lockout",
+          "average": "Inconsistent tempo, rushing reps, incomplete lockout in some reps",
+          "poor": "Uncontrolled descent, bouncing off floor, no lockout, reps deteriorate rapidly"
+        }
+      }
+    ],
+    "common_faults": [
+      "Hip sag (anterior pelvic tilt, weak core)",
+      "Hip pike (compensation for weak pushing muscles)",
+      "Excessive elbow flare (>60 deg, shoulder stress)",
+      "Incomplete ROM (not reaching 90 deg elbow flexion)",
+      "Head dropping or jutting forward",
+      "Scapular winging (serratus anterior weakness)",
+      "Asymmetric push / lateral trunk shift",
+      "No full lockout at top"
+    ],
+    "feedback_tags": {
+      "poor": [
+        "Major hip sag detected -- strengthen core with planks before push-ups",
+        "Very shallow range of motion -- use incline push-ups to build strength through full ROM",
+        "Elbows flaring to 90 deg -- tuck elbows to 45 deg to protect shoulders",
+        "Scapular winging present -- strengthen serratus anterior with wall slides"
+      ],
+      "average": [
+        "Some hip sag in later reps -- focus on bracing core before each rep",
+        "ROM slightly short of full depth -- lower chest closer to floor",
+        "Elbow flare angle too wide -- cue 'arrow not T' for arm position",
+        "Tempo inconsistent -- use a metronome for pacing"
+      ],
+      "good": [
+        "Good body alignment and depth -- minor elbow flare adjustment needed",
+        "Strong form overall -- add scapular protraction ('push plus') at top",
+        "Consistent reps with good control"
+      ],
+      "elite": [
+        "Full ROM with perfect alignment maintained",
+        "Optimal elbow position protecting shoulders",
+        "Excellent scapular mechanics and core stability"
+      ]
+    },
+    "form_score_formula": "form_score = sum(dimension_weight * dimension_score). dimension_score = 100 - (deviation_deg / tolerance_deg) * max_penalty. tolerance_deg varies by dimension. Major faults (hip_sag >20 deg, elbow_flare >70 deg) apply additional -15 penalty each.",
+    "sources": [
+      "Cogley RM, et al. Comparison of muscle activation using various hand positions during the push-up exercise, J Strength Cond Res, 2005",
+      "Youdas JW, et al. Surface EMG activation patterns and elbow joint motion during push-up, J Strength Cond Res, 2010",
+      "Suprak DN, et al. The effect of position on scapular kinematics during the push-up plus, J Biomech, 2013",
+      "ACE Personal Trainer Manual, 6th ed., 2020",
+      "NSCA Exercise Technique Guidelines, 2016"
+    ]
+  },
+
+  "pull_up": {
+    "scoring_dimensions": [
+      {
+        "name": "range_of_motion",
+        "weight": 0.25,
+        "description": "Full ROM from dead hang (full elbow extension) to chin over bar. Incomplete ROM is the most common fault.",
+        "thresholds": {
+          "elite": "Full dead hang start (elbow extension >170 deg), chin clears bar by >5 cm, controlled return to full extension",
+          "good": "Near-full hang (elbow >160 deg), chin reaches bar level, controlled return",
+          "average": "Partial hang (elbow 140-160 deg), chin does not reach bar, incomplete descent",
+          "poor": "Very partial ROM (elbow <140 deg start), significant ROM cutting top and bottom"
+        },
+        "angle_ranges": {
+          "elite": { "start_elbow_extension_min": 170 },
+          "good": { "start_elbow_extension_min": 160 },
+          "average": { "start_elbow_extension_min": 140 },
+          "poor": { "start_elbow_extension_min": 0 }
+        }
+      },
+      {
+        "name": "scapular_engagement",
+        "weight": 0.20,
+        "description": "Initiation with scapular depression/retraction before elbow flexion. Shows lat activation vs. arm-dominant pull.",
+        "thresholds": {
+          "elite": "Clear scapular depression/retraction initiates pull, shoulders away from ears, lats visibly engaged",
+          "good": "Scapular engagement present but not pronounced, some shoulder elevation at start",
+          "average": "Minimal scapular engagement, pull initiated primarily by arms, shoulders shrug",
+          "poor": "No scapular engagement, full shoulder shrug throughout, arms-only pulling"
+        }
+      },
+      {
+        "name": "body_sway_control",
+        "weight": 0.20,
+        "description": "Minimal kipping, swinging, or lower body momentum. Strict pull-up requires controlled body position.",
+        "thresholds": {
+          "elite": "No visible swing, legs still or slightly forward, body moves vertically with <5 deg deviation",
+          "good": "Minimal swing <10 deg arc, slight leg movement, predominantly vertical path",
+          "average": "Moderate swing 10-20 deg arc, some kipping motion, legs swinging",
+          "poor": "Excessive kipping/swinging >20 deg arc, using momentum to clear bar"
+        }
+      },
+      {
+        "name": "grip_and_elbow_path",
+        "weight": 0.15,
+        "description": "Elbow path and grip position. Elbows should drive down toward hips, not flare laterally.",
+        "thresholds": {
+          "elite": "Elbows drive down and slightly back, grip shoulder-width, pronated grip consistent",
+          "good": "Elbows mostly track downward, minor flare at top, grip consistent",
+          "average": "Elbows flare outward, inconsistent path, grip width varies",
+          "poor": "Elbows flare significantly, chicken-wing pattern, grip slipping"
+        }
+      },
+      {
+        "name": "eccentric_control",
+        "weight": 0.10,
+        "description": "Controlled lowering phase. Dropping from top indicates insufficient strength for full control.",
+        "thresholds": {
+          "elite": "2-3 sec controlled eccentric, smooth descent, full extension reached",
+          "good": "1.5-2 sec eccentric, controlled but slightly faster, full extension",
+          "average": "1-1.5 sec eccentric, partially controlled, may not reach full extension",
+          "poor": "<1 sec drop, no eccentric control, free-fall descent"
+        }
+      },
+      {
+        "name": "cervical_and_trunk_position",
+        "weight": 0.10,
+        "description": "Neck and trunk alignment. Chin-poking and excessive extension are compensations.",
+        "thresholds": {
+          "elite": "Neutral cervical spine, slight thoracic extension, no chin jutting to clear bar",
+          "good": "Mild chin forward at top to clear bar, trunk stable",
+          "average": "Noticeable chin jut, excessive thoracic extension/arching",
+          "poor": "Severe cervical hyperextension, excessive low back arching, head leads movement"
+        }
+      }
+    ],
+    "common_faults": [
+      "Incomplete ROM (not starting from dead hang or chin not reaching bar)",
+      "Kipping or excessive body swing",
+      "No scapular engagement (arms-only pull)",
+      "Dropping on eccentric (no lowering control)",
+      "Chin jutting forward to 'reach' the bar",
+      "Elbow flare (lateral elbow path)",
+      "Excessive lumbar hyperextension",
+      "Asymmetric pull (one arm dominant)"
+    ],
+    "feedback_tags": {
+      "poor": [
+        "Significant kipping/swinging -- use band-assisted strict pull-ups",
+        "Range of motion severely limited -- practice eccentric-only (slow negatives)",
+        "No scapular engagement -- practice scapular pull-ups as primer",
+        "Cannot control lowering -- build eccentric strength with 5-sec negatives"
+      ],
+      "average": [
+        "Chin not clearing bar consistently -- reduce band assistance gradually",
+        "Some body swing -- squeeze glutes and brace core to stabilize",
+        "Start from fuller hang -- pause at bottom for 1 sec each rep",
+        "Eccentric too fast -- slow descent to 2 sec minimum"
+      ],
+      "good": [
+        "Good ROM and control -- focus on scapular depression initiation",
+        "Minor swing at top -- maintain tighter core throughout",
+        "Strong pull pattern -- refine elbow path for lat emphasis"
+      ],
+      "elite": [
+        "Full ROM with excellent scapular mechanics",
+        "Perfect body control -- no swing, smooth vertical path",
+        "Outstanding eccentric control and strength balance"
+      ]
+    },
+    "form_score_formula": "form_score = sum(dimension_weight * dimension_score). dimension_score = 100 for meeting elite criteria, -3 per degree of kip/swing, -2 per degree of ROM shortfall from full range. Kipping >20 deg caps score at 40. Incomplete ROM (no chin over bar) caps score at 70.",
+    "sources": [
+      "Ronai P & Scibek E. The pull-up, Strength Cond J, 2014",
+      "Youdas JW, et al. Surface EMG of latissimus dorsi and biceps during pull-up variations, J Strength Cond Res, 2010",
+      "Snarr RL & Esco MR. Electromyographical comparison of plank variations, J Strength Cond Res, 2014",
+      "NSCA Essentials of Strength Training, pull-up technique guidelines, 2016"
+    ]
+  },
+
+  "snatch": {
+    "scoring_dimensions": [
+      {
+        "name": "first_pull_position",
+        "weight": 0.15,
+        "description": "Bar path and body position from floor to knee. Back angle maintained, bar stays close.",
+        "thresholds": {
+          "elite": "Back angle constant (within 5 deg), bar within 3 cm of shins, knees clear bar path, shoulders over/slightly ahead of bar",
+          "good": "Back angle maintained within 10 deg, bar within 5 cm of shins, shoulders over bar",
+          "average": "Back angle changes 10-20 deg (hips rise fast), bar drifts 5-10 cm from body",
+          "poor": "Hips shoot up >20 deg change ('stripper pull'), bar drifts >10 cm, shoulders behind bar"
+        }
+      },
+      {
+        "name": "second_pull_explosion",
+        "weight": 0.20,
+        "description": "Triple extension at power position (bar at hip crease) with vertical bar acceleration. The primary force phase.",
+        "thresholds": {
+          "elite": "Full triple extension (hip >170 deg, knee >165 deg, ankle plantar flexion), bar-body contact at hip crease, vertical bar path",
+          "good": "Near-full extension, bar contacts hip, slight forward bar displacement <5 cm",
+          "average": "Incomplete hip extension (<160 deg), bar contact inconsistent, forward bar chase >5 cm",
+          "poor": "No full extension, arm pull dominates, bar loops forward >10 cm, 'muscle snatch' pattern"
+        }
+      },
+      {
+        "name": "third_pull_turnover",
+        "weight": 0.20,
+        "description": "Speed and position of pulling under the bar. Active pull-under vs. passive dropping.",
+        "thresholds": {
+          "elite": "Fast aggressive pull-under, elbows rotate high-to-locked in <0.3 sec, active push against bar",
+          "good": "Adequate turnover speed, elbows lock out overhead, slight press-out <15 deg",
+          "average": "Slow turnover, press-out 15-30 deg required, hesitation at catch",
+          "poor": "Very slow or no pull-under, major press-out >30 deg, power snatch height catch only"
+        }
+      },
+      {
+        "name": "overhead_catch_stability",
+        "weight": 0.20,
+        "description": "Receiving position quality. Bar over base of support, full depth, stable hold.",
+        "thresholds": {
+          "elite": "Bar directly over midfoot in sagittal plane, full overhead squat depth (hip below knee), stable 2-sec hold, arms locked",
+          "good": "Bar near midfoot (within 5 cm), squat to parallel, stable hold, arms locked",
+          "average": "Bar forward or behind midfoot >5 cm, above parallel catch, wobbly hold, some press-out",
+          "poor": "Bar significantly displaced, cannot stabilize overhead, steps forward/back to save, major balance loss"
+        }
+      },
+      {
+        "name": "bar_path_efficiency",
+        "weight": 0.15,
+        "description": "Overall bar trajectory. Ideal is slight S-curve close to body. Looping indicates technical error.",
+        "thresholds": {
+          "elite": "Slight S-curve, bar displacement <5 cm from vertical line through start, smooth acceleration profile",
+          "good": "Moderate S-curve, displacement 5-8 cm, consistent between reps",
+          "average": "Noticeable loop, displacement 8-15 cm, bar swings away from body",
+          "poor": "Large loop >15 cm, bar crashes overhead, inconsistent path between reps"
+        }
+      },
+      {
+        "name": "timing_rhythm",
+        "weight": 0.10,
+        "description": "Continuous fluid movement with proper phase transitions. No pausing or jerking between phases.",
+        "thresholds": {
+          "elite": "Seamless phase transitions, clear acceleration through second pull, rhythmic and repeatable",
+          "good": "Good rhythm with minor hesitation at transition point, mostly fluid",
+          "average": "Noticeable pause at knee or mid-thigh, segmented movement, inconsistent timing",
+          "poor": "Jerky, stop-and-go movement, no clear acceleration pattern, each rep different"
+        }
+      }
+    ],
+    "common_faults": [
+      "Early arm bend before full extension (arm pull snatch)",
+      "Hips rising faster than shoulders in first pull (stripper pull)",
+      "Bar looping forward away from body",
+      "No hip contact / missing second pull power position",
+      "Slow or absent third pull (passive drop under)",
+      "Press-out overhead (elbows not locked)",
+      "Catching forward on toes or stepping forward",
+      "Wrist/shoulder instability in overhead position",
+      "Star-fishing (legs splay wide on catch)"
+    ],
+    "feedback_tags": {
+      "poor": [
+        "Arms bending too early -- keep arms straight until full hip extension",
+        "Hips shooting up first -- strengthen back and practice maintaining back angle",
+        "Bar looping far forward -- keep bar close with lats, practice high pulls",
+        "Cannot stabilize overhead -- build overhead squat and snatch balance progressions"
+      ],
+      "average": [
+        "Second pull not fully extending -- cue 'jump and shrug' at hip contact",
+        "Slow turnover -- practice tall snatches and snatch balances",
+        "Bar drifting forward -- focus on sweeping bar into hip crease",
+        "Catch position too high -- practice overhead squats for depth"
+      ],
+      "good": [
+        "Good overall lift -- refine bar path to stay closer to body",
+        "Minor press-out overhead -- strengthen lockout with snatch push press",
+        "Solid positions -- work on speed under the bar"
+      ],
+      "elite": [
+        "Excellent bar path efficiency and timing",
+        "Full extension with fast aggressive turnover",
+        "Stable deep overhead catch -- competition-ready technique"
+      ]
+    },
+    "form_score_formula": "form_score = sum(dimension_weight * dimension_score). Key penalties: early_arm_bend = -15, bar_loop >15cm = -20, press_out >30deg = -15, no_hip_contact = -20, catch_instability (steps) = -10. Each penalty is binary (present/absent) or proportional to severity.",
+    "sources": [
+      "Suchomel TJ, et al. The importance of muscular strength in athletic performance, Sports Med, 2016",
+      "Ho KW, et al. Kinematic analysis of the snatch in elite weightlifters, J Strength Cond Res, 2014",
+      "Gourgoulis V, et al. Snatch bar kinematics in elite weightlifters, J Sports Sci, 2009",
+      "Garhammer J. Biomechanical analysis of Olympic weightlifting, Med Sci Sports Exerc, 1985",
+      "Kipp K, et al. Mechanical demands of the snatch and clean, Sports Biomech, 2012",
+      "IWF Technical Officials Judging Criteria (press-out, incomplete extension)"
+    ]
+  },
+
+  "sprint": {
+    "scoring_dimensions": [
+      {
+        "name": "acceleration_posture",
+        "weight": 0.15,
+        "description": "Body lean during initial acceleration phase (0-30m). Requires forward lean with progressive rise.",
+        "thresholds": {
+          "elite": "45-55 deg forward lean at start, progressive rise to upright by 25-30m, straight line head-to-ankle",
+          "good": "40-60 deg at start, upright by 30-35m, mostly linear body position",
+          "average": "Upright too early (<20m) or too much lean (>60 deg), body position inconsistent",
+          "poor": "Near-vertical at start or excessive lean >65 deg, no progressive transition"
+        }
+      },
+      {
+        "name": "knee_drive_height",
+        "weight": 0.20,
+        "description": "Maximum thigh angle during swing phase at top speed. Reflects hip flexor power and sprint mechanics.",
+        "thresholds": {
+          "elite": "Thigh reaches parallel or above (hip flexion >90 deg), knee drive height at hip level",
+          "good": "Thigh within 10 deg of parallel (hip flexion 80-90 deg)",
+          "average": "Thigh 20-30 deg below parallel (hip flexion 60-80 deg), low knee drive",
+          "poor": "Minimal knee lift, thigh well below parallel (hip flexion <60 deg), shuffling pattern"
+        },
+        "angle_ranges": {
+          "elite": { "hip_flexion_min": 90 },
+          "good": { "hip_flexion_min": 80, "hip_flexion_max": 90 },
+          "average": { "hip_flexion_min": 60, "hip_flexion_max": 80 },
+          "poor": { "hip_flexion_min": 0, "hip_flexion_max": 60 }
+        }
+      },
+      {
+        "name": "foot_strike_position",
+        "weight": 0.20,
+        "description": "Ground contact position relative to center of mass. Overstriding increases braking forces.",
+        "thresholds": {
+          "elite": "Foot contacts ground directly under or slightly behind COM, dorsiflexed ankle, forefoot strike",
+          "good": "Foot contacts within 5 cm ahead of COM, forefoot/midfoot strike",
+          "average": "Foot contacts 5-15 cm ahead of COM, midfoot to mild heel strike, visible braking",
+          "poor": "Overstriding >15 cm ahead of COM, heel strike, significant braking force visible"
+        }
+      },
+      {
+        "name": "arm_action",
+        "weight": 0.15,
+        "description": "Arm swing mechanics. Elbows at ~90 deg, driving from shoulder, hands relaxed, cheek-to-hip range.",
+        "thresholds": {
+          "elite": "Elbow angle 85-95 deg, hands reach cheek height and hip pocket, relaxed hands, no cross-body rotation",
+          "good": "Elbow angle 80-100 deg, slightly reduced range, minimal cross-body movement",
+          "average": "Elbow angle variable, arms cross midline, hands tense/fisted, reduced drive",
+          "poor": "Arms flailing, excessive cross-body rotation, elbows straightening, hands clenched"
+        }
+      },
+      {
+        "name": "hip_extension_at_toe_off",
+        "weight": 0.15,
+        "description": "Full hip extension during push-off. Incomplete extension reduces stride power.",
+        "thresholds": {
+          "elite": "Hip extension >200 deg (past neutral, 20+ deg behind vertical), full ankle plantar flexion at toe-off",
+          "good": "Hip extension 190-200 deg, near-full ankle push-off",
+          "average": "Hip extension 180-190 deg (near neutral), incomplete push-off",
+          "poor": "Hip extension <180 deg (never reaches full extension), abbreviated push-off"
+        }
+      },
+      {
+        "name": "pelvic_stability",
+        "weight": 0.15,
+        "description": "Frontal and transverse plane pelvic control. Excessive drop or rotation wastes energy.",
+        "thresholds": {
+          "elite": "Pelvic drop <5 deg, transverse rotation <10 deg, stable pelvis throughout stride",
+          "good": "Pelvic drop 5-8 deg, rotation 10-15 deg, mostly stable",
+          "average": "Pelvic drop 8-12 deg, rotation 15-25 deg, visible hip sway",
+          "poor": "Pelvic drop >12 deg (Trendelenburg), rotation >25 deg, waddling gait pattern"
+        }
+      }
+    ],
+    "common_faults": [
+      "Overstriding (foot landing ahead of COM)",
+      "Insufficient knee drive (low knee lift)",
+      "Excessive trunk rotation/lateral sway",
+      "Arms crossing midline",
+      "Heel striking during max velocity phase",
+      "Upright too early in acceleration phase",
+      "Incomplete hip extension at push-off",
+      "Head movement (bobbing up and down)",
+      "Tense upper body (clenched fists, raised shoulders)"
+    ],
+    "feedback_tags": {
+      "poor": [
+        "Severe overstriding detected -- shorten stride length, focus on turnover rate",
+        "Very low knee drive -- practice A-skips and high-knee drills",
+        "Arms crossing body significantly -- practice arm action drills in mirror",
+        "Heel striking -- drill forefoot contacts with wall drives"
+      ],
+      "average": [
+        "Moderate overstriding -- cue 'pull the ground under you'",
+        "Knee drive below parallel -- add hip flexor strength work and A-skips",
+        "Some cross-body arm action -- run with hands open and relaxed",
+        "Rising too early in acceleration -- hold lean longer, push for 20m"
+      ],
+      "good": [
+        "Good foot strike positioning -- refine dorsiflexion timing",
+        "Solid knee drive -- push for slightly higher thigh position",
+        "Minor pelvic rotation -- strengthen lateral core stability"
+      ],
+      "elite": [
+        "Excellent foot strike under COM with full dorsiflexion",
+        "Powerful knee drive at or above parallel",
+        "Textbook acceleration-to-upright transition"
+      ]
+    },
+    "form_score_formula": "form_score = sum(dimension_weight * dimension_score). overstriding_penalty = distance_ahead_of_COM_cm * 2 (capped at 30). knee_drive_penalty = max(0, (90 - hip_flexion_deg)) * 1.5. heel_strike_penalty = 15 (binary). cross_body_arms = 10.",
+    "sources": [
+      "Bezodis IN, et al. Sprint running biomechanics, Sports Med, 2019",
+      "Mann R & Herman J. Kinematic analysis of sprint running, Med Sci Sports, 1985",
+      "Clark KP & Weyand PG. Sprint running mechanics, J Exp Biol, 2014",
+      "Haugen T, et al. Sprint running mechanics in elite athletes, Int J Sports Physiol Perform, 2019",
+      "Nagahara R, et al. Kinematics of transition during sprint acceleration, J Sports Sci, 2014",
+      "NSCA Sprint technique evaluation guidelines, 2016"
+    ]
+  },
+
+  "javelin": {
+    "scoring_dimensions": [
+      {
+        "name": "approach_run_rhythm",
+        "weight": 0.10,
+        "description": "Progressive acceleration over approach run with controlled crossover steps. Final steps establish rhythm.",
+        "thresholds": {
+          "elite": "Smooth acceleration, consistent stride length, seamless transition into crossover steps, optimal velocity at plant",
+          "good": "Good acceleration, minor rhythm disruption at crossover transition",
+          "average": "Inconsistent stride length, noticeable deceleration entering crossover steps",
+          "poor": "Irregular approach, major deceleration, stuttering steps, poor rhythm"
+        }
+      },
+      {
+        "name": "withdrawal_and_carry",
+        "weight": 0.15,
+        "description": "Javelin withdrawal timing and arm position during crossover steps. Javelin should be drawn back early and aligned with shoulder.",
+        "thresholds": {
+          "elite": "Early withdrawal (2-3 steps before plant), javelin aligned with throwing shoulder, palm up, elbow at shoulder height",
+          "good": "Timely withdrawal, javelin near alignment, elbow slightly low or high",
+          "average": "Late withdrawal (1 step before plant), javelin off-axis, elbow drops below shoulder",
+          "poor": "No clear withdrawal phase, javelin poorly positioned, wrapping behind body"
+        }
+      },
+      {
+        "name": "block_leg_brace",
+        "weight": 0.20,
+        "description": "Front (block) leg action at delivery. Firm block converts horizontal to vertical/rotational energy.",
+        "thresholds": {
+          "elite": "Block leg plants ahead of COM at 155-170 deg knee extension, firm brace with <10 deg collapse, COM vaults over",
+          "good": "Block leg at 145-155 deg, minor collapse 10-15 deg, adequate energy transfer",
+          "average": "Block leg at 130-145 deg, collapses 15-25 deg, soft block, energy leaks",
+          "poor": "Block leg <130 deg (bent), collapses >25 deg, no blocking action, 'throwing off bent leg'"
+        },
+        "angle_ranges": {
+          "elite": { "block_knee_extension_min": 155, "block_knee_extension_max": 170 },
+          "good": { "block_knee_extension_min": 145, "block_knee_extension_max": 155 },
+          "average": { "block_knee_extension_min": 130, "block_knee_extension_max": 145 },
+          "poor": { "block_knee_extension_min": 0, "block_knee_extension_max": 130 }
+        }
+      },
+      {
+        "name": "hip_shoulder_separation",
+        "weight": 0.20,
+        "description": "Rotational separation between hip and shoulder axes at plant. Key driver of elastic energy storage.",
+        "thresholds": {
+          "elite": "Hip-shoulder separation 40-55 deg at front foot plant, hips lead rotation, sequential unwinding",
+          "good": "Separation 30-40 deg, hips lead but less stored elastic energy",
+          "average": "Separation 15-30 deg, hips and shoulders rotate together (block rotation)",
+          "poor": "Separation <15 deg or shoulders lead hips, no separation, 'arm throw'"
+        },
+        "angle_ranges": {
+          "elite": { "separation_min": 40, "separation_max": 55 },
+          "good": { "separation_min": 30, "separation_max": 40 },
+          "average": { "separation_min": 15, "separation_max": 30 },
+          "poor": { "separation_min": 0, "separation_max": 15 }
+        }
+      },
+      {
+        "name": "release_angle_and_point",
+        "weight": 0.20,
+        "description": "Javelin release angle and release point relative to shoulder. Optimal release ~33-36 deg for elite.",
+        "thresholds": {
+          "elite": "Release angle 33-36 deg, release point over front foot at maximum shoulder height, javelin axis aligned with trajectory",
+          "good": "Release angle 30-38 deg, release point slightly early or late, minor axis deviation",
+          "average": "Release angle 25-30 or 38-45 deg, release point well behind or over front foot, javelin wobble",
+          "poor": "Release angle <25 or >45 deg, very early/late release, javelin unstable, significant wobble"
+        },
+        "angle_ranges": {
+          "elite": { "release_angle_min": 33, "release_angle_max": 36 },
+          "good": { "release_angle_min": 30, "release_angle_max": 38 },
+          "average": { "release_angle_min": 25, "release_angle_max": 45 },
+          "poor": { "release_angle_min": 0, "release_angle_max": 90 }
+        }
+      },
+      {
+        "name": "follow_through_recovery",
+        "weight": 0.15,
+        "description": "Deceleration after release without fouling. Controlled forward momentum dissipation.",
+        "thresholds": {
+          "elite": "Aggressive follow-through with reverse (rear leg swaps forward), stops well before line, balanced",
+          "good": "Follow-through with reverse, stops before line, minor balance adjustment",
+          "average": "Abbreviated follow-through, stumbles forward, near the line",
+          "poor": "No follow-through (decelerating before release), or foul past line, falls forward"
+        }
+      }
+    ],
+    "common_faults": [
+      "Arm-only throw (no hip-shoulder separation)",
+      "Soft block leg (bending front knee on delivery)",
+      "Late javelin withdrawal (rushed transition)",
+      "Release angle too flat or too steep",
+      "Javelin not aligned with throwing direction (cross-body)",
+      "Decelerating on approach (slowing before plant)",
+      "Elbow dropping below shoulder at release",
+      "No follow-through / stopping before release"
+    ],
+    "feedback_tags": {
+      "poor": [
+        "Throwing with arm only -- practice standing throws focusing on hip rotation",
+        "Block leg collapsing -- strengthen front leg with single-leg exercises",
+        "Release angle far from optimal -- practice release point with towel drills",
+        "No javelin withdrawal -- practice crossover steps with withdrawal separately"
+      ],
+      "average": [
+        "Hip-shoulder separation insufficient -- practice rotational medicine ball throws",
+        "Block leg too soft -- cue 'brace hard on front leg'",
+        "Release angle slightly off -- adjust aim point upward/downward",
+        "Approach rhythm breaking down -- simplify to 3-step approach first"
+      ],
+      "good": [
+        "Good hip-shoulder separation -- refine timing for more elastic energy",
+        "Solid block leg -- push for firmer brace to maximize transfer",
+        "Strong throw pattern -- fine-tune release angle to 33-36 deg window"
+      ],
+      "elite": [
+        "Excellent kinetic chain sequencing from ground up",
+        "Optimal release angle and point with full hip-shoulder separation",
+        "Competition-ready technique with controlled follow-through"
+      ]
+    },
+    "form_score_formula": "form_score = sum(dimension_weight * dimension_score). Key penalties: no_hip_shoulder_separation = -25, soft_block (collapse >25deg) = -20, release_angle deviation from 34.5 midpoint: per deg = -2.5. Arm-only throw (separation <15 deg) caps score at 35.",
+    "sources": [
+      "Bartlett RM. The biomechanics of the javelin throw: a review, J Sports Sci, 1996",
+      "Mero A, et al. Biomechanics of javelin throwing, Sports Med, 1994",
+      "Liu H, et al. Kinematic analysis of elite javelin throwers, J Sports Sci Med, 2010",
+      "Whiting WC, et al. Javelin release parameters, J Applied Biomech, 1991",
+      "Campos J, et al. Kinematic analysis of the javelin throw at the IAAF World Championships, New Studies Athletics, 2004"
+    ]
+  },
+
+  "cricket_bat": {
+    "scoring_dimensions": [
+      {
+        "name": "backlift",
+        "weight": 0.15,
+        "description": "Bat position and path during backswing. High backlift with face pointing toward slips (traditional) or straighter path.",
+        "thresholds": {
+          "elite": "Bat raised to stump height or above, face angled toward point/slips, hands near back shoulder, smooth continuous lift",
+          "good": "Bat raised to hip-stump height, face near correct angle, hands at shoulder, mostly smooth",
+          "average": "Low backlift (bat below hip), face angle incorrect (closed/open), hands low",
+          "poor": "Minimal or no backlift, bat stays near pad, no loading of swing, or excessive bat wrap behind body"
+        }
+      },
+      {
+        "name": "head_and_eye_position",
+        "weight": 0.20,
+        "description": "Head position relative to front knee at contact. Still head enables visual tracking of ball.",
+        "thresholds": {
+          "elite": "Head still and level, eyes level, head over front knee at contact (front foot shots), weight transfers smoothly",
+          "good": "Head mostly still, slight movement, eyes level, head near front knee",
+          "average": "Head moves laterally or up/down, eyes tilting, head behind front knee",
+          "poor": "Significant head movement, falling away from ball, eyes off level, no weight transfer"
+        }
+      },
+      {
+        "name": "front_foot_stride",
+        "weight": 0.15,
+        "description": "Front foot movement toward pitch of ball. Stride length and direction indicate intent and balance.",
+        "thresholds": {
+          "elite": "Stride to pitch of ball, front foot lands in line with ball, knee flexion 130-150 deg at contact, balanced",
+          "good": "Good stride length, foot lands near line of ball, knee slightly stiff or over-bent",
+          "average": "Short stride or off-line, foot not reaching pitch, planting too early or late",
+          "poor": "No stride (stuck in crease), lunging, falling over, foot nowhere near ball line"
+        }
+      },
+      {
+        "name": "bat_swing_plane",
+        "weight": 0.20,
+        "description": "Downswing path of bat. Should come down straight toward ball then follow through. Cross-bat vs straight bat.",
+        "thresholds": {
+          "elite": "Straight bat coming from close to body, bat face presented full to ball, wrists firm through contact zone, bat comes down from high to low on line of ball",
+          "good": "Mostly straight bat, minor deviation from ideal plane, bat face slightly open/closed at contact",
+          "average": "Bat deviating from straight plane, playing across the line, bat face angled at contact",
+          "poor": "Cross-bat to straight delivery, bat face completely open/closed, playing around front pad"
+        }
+      },
+      {
+        "name": "contact_point_timing",
+        "weight": 0.15,
+        "description": "Where ball is contacted relative to body. Under eyes is ideal for defense, slightly in front for drives.",
+        "thresholds": {
+          "elite": "Contact under eyes (defense) or 30-50 cm in front of pad (drives), correct for shot type, middle of bat",
+          "good": "Contact near optimal zone, within 10 cm of ideal, slight mistiming occasionally",
+          "average": "Contact too early (reaching) or too late (cramped), 10-20 cm from ideal zone",
+          "poor": "Severely early or late, >20 cm from optimal contact zone, edging or missing frequently"
+        }
+      },
+      {
+        "name": "follow_through_and_balance",
+        "weight": 0.15,
+        "description": "Completion of stroke and post-shot balance. Full follow-through with maintained balance indicates controlled shot.",
+        "thresholds": {
+          "elite": "Full follow-through with high elbow finish, weight balanced, could hold finish position, head still",
+          "good": "Good follow-through, minor balance adjustment after shot, head mostly still",
+          "average": "Abbreviated follow-through, off-balance, falling to one side, head moves",
+          "poor": "No follow-through, completely off balance, falling away, cannot recover for next ball"
+        }
+      }
+    ],
+    "common_faults": [
+      "Playing across the line (cross-bat to straight deliveries)",
+      "Head falling over to off side (losing sight of ball)",
+      "No front foot stride (batting from crease, flat-footed)",
+      "Bat face not presented to ball (angled face at contact)",
+      "Low backlift reducing bat speed",
+      "Playing too early or too late (timing)",
+      "Bottom hand dominant (closing face, reduced control)",
+      "Falling away to leg side",
+      "Hard hands (no give, edges carry to slips)",
+      "Front foot not to pitch of ball"
+    ],
+    "feedback_tags": {
+      "poor": [
+        "Playing across the line consistently -- practice straight bat drills with guide rope",
+        "Head falling away from ball -- do bobble feed drills focusing on watching ball to bat",
+        "No front foot movement -- practice stride drills with target mat",
+        "Bat face not presenting to ball -- do shadow batting focusing on wrist position"
+      ],
+      "average": [
+        "Backlift too low -- raise hands higher in stance for better bat speed",
+        "Stride not reaching pitch of ball -- practice getting front foot further forward",
+        "Timing slightly off -- use bowling machine at consistent speed to groove timing",
+        "Bottom hand too dominant -- practice top-hand-only batting drills"
+      ],
+      "good": [
+        "Good overall technique -- refine bat face presentation at contact",
+        "Solid head position -- keep weight transfer slightly more forward",
+        "Strong batting foundation -- focus on follow-through completion"
+      ],
+      "elite": [
+        "Textbook head position and weight transfer",
+        "Excellent bat swing plane and timing",
+        "Full controlled follow-through with perfect balance"
+      ]
+    },
+    "form_score_formula": "form_score = sum(dimension_weight * dimension_score). Key penalties: cross_bat_to_straight = -25, head_falling_away = -20, no_stride = -15, bat_face_angle deviation >15 deg = -10. Playing across the line on defensive shots caps score at 40.",
+    "sources": [
+      "Stretch RA, et al. A biomechanical analysis of the batting backlift, J Sports Sci, 1998",
+      "Stuelcken MC, et al. The biomechanics of batting in cricket, Sports Biomech, 2005",
+      "Taliep MS, et al. Bat-ball contact conditions for skilled cricket batting, J Sports Sci, 2007",
+      "Cork A, et al. Kinematic analysis of cricket batting, J Sports Sci, 2010",
+      "Abernethy B & Russell DG. Expert-novice differences in cricket batting, J Sport Psychol, 1984",
+      "ECB Coaching Manual: Technical Assessment of Batting, England and Wales Cricket Board",
+      "Woolmer B, et al. Bob Woolmer's Art and Science of Cricket, 2008"
+    ]
+  },
+
+  "score_computation": {
+    "description": "Universal scoring algorithm applicable across all movements",
+    "algorithm": {
+      "step_1": "For each scoring dimension, determine raw dimension score (0-100) based on which threshold tier the observed values fall into: elite range = 85-100, good range = 65-84, average range = 35-64, poor range = 0-34",
+      "step_2": "Within each tier, interpolate linearly based on proximity to next tier boundary. E.g., top of 'good' range scores 84, bottom scores 65",
+      "step_3": "Apply dimension weights: weighted_score = sum(dimension_weight_i * dimension_score_i)",
+      "step_4": "Apply fault penalties: for each detected major fault, subtract fixed penalty from total (sport-specific penalties listed per movement)",
+      "step_5": "Apply hard caps: certain severe faults cap maximum achievable score (e.g., kipping >20 deg on pull-up caps at 40)",
+      "step_6": "Clamp final score to 0-100 range",
+      "step_7": "Assign quality tier label: 90-100 = elite, 75-89 = good, 50-74 = average, 0-49 = poor"
+    },
+    "angle_deviation_penalty_schedule": {
+      "description": "Default penalty schedule for angular deviations from elite midpoint, used when sport-specific formula not defined",
+      "0_to_5_deg": "0-5 point penalty (negligible deviation)",
+      "5_to_15_deg": "5-20 point penalty (minor deviation)",
+      "15_to_30_deg": "20-45 point penalty (moderate deviation)",
+      "over_30_deg": "45-100 point penalty (major deviation)"
+    },
+    "bilateral_asymmetry_penalty": {
+      "description": "Additional penalty for left-right differences in bilateral movements (squat, push-up, vertical jump)",
+      "under_5_deg": "No penalty",
+      "5_to_10_deg": "-5 points",
+      "10_to_20_deg": "-10 points",
+      "over_20_deg": "-20 points"
+    }
+  }
+}

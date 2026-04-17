@@ -1,0 +1,1411 @@
+{
+  "_metadata": {
+    "description": "Literature-grounded joint angle reference values for 8 sports movements, organized by quality tier",
+    "version": "1.0.0",
+    "created": "2026-04-06",
+    "angle_units": "degrees",
+    "convention": "Anatomical angles: 180 = full extension, smaller = more flexion. Trunk lean: 0 = vertical, positive = forward lean. Ankle dorsiflexion: angle between shank and foot, smaller = more dorsiflexion.",
+    "tier_definitions": {
+      "elite": "Within 1 SD of literature ideal, high symmetry (LSI > 0.95)",
+      "good": "Within 1-2 SD, moderate symmetry (LSI 0.85-0.95)",
+      "average": "Within 2-3 SD, some asymmetry (LSI 0.70-0.85)",
+      "poor": "Beyond 3 SD, significant asymmetry (LSI < 0.70)"
+    },
+    "sources_summary": [
+      "Bobbert & van Ingen Schenau (1988) J Biomech",
+      "Lees et al. (2004) J Sports Sci",
+      "Moran & Wallace (2007) Sports Biomech",
+      "Escamilla et al. (2001) Med Sci Sports Exerc",
+      "Fry et al. (2003) J Strength Cond Res",
+      "Schoenfeld (2010) J Strength Cond Res",
+      "Cogley et al. (2005) J Strength Cond Res",
+      "Suprak et al. (2011) Int J Sports Phys Ther",
+      "Youdas et al. (2010) J Strength Cond Res",
+      "Snarr & Esco (2014) J Phys Act Res",
+      "Gourgoulis et al. (2000) J Sports Sci",
+      "Isaka et al. (1996) J Applied Biomech",
+      "Garhammer (1985) Med Sci Sports Exerc",
+      "Mann & Herman (1985) Int J Sport Biomech",
+      "Novacheck (1998) Gait Posture",
+      "Bezodis et al. (2008) J Sports Sci",
+      "Best et al. (1993) J Sports Sci",
+      "Mero et al. (1994) J Applied Biomech",
+      "Liu et al. (2010) J Sports Sci Med",
+      "Stretch et al. (1998) J Sports Sci",
+      "Stuelcken et al. (2005) Sports Biomech",
+      "Taliep et al. (2007) J Sci Med Sport",
+      "Impellizzeri et al. (2007) Am J Sports Med",
+      "Schmitt et al. (2012) Int J Sports Phys Ther",
+      "Bissas & Havenetidis (2008) J Sports Med Phys Fitness",
+      "Cormie et al. (2009) Med Sci Sports Exerc",
+      "Comfort et al. (2012) J Strength Cond Res"
+    ]
+  },
+
+  "vertical_jump": {
+    "phases": {
+      "setup": {
+        "elite": {
+          "hip_angle": {"mean": 170, "sd": 5},
+          "knee_angle": {"mean": 170, "sd": 5},
+          "shoulder_angle": {"mean": 10, "sd": 5},
+          "elbow_angle": {"mean": 160, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 90, "sd": 4},
+          "trunk_lean": {"mean": 5, "sd": 3}
+        },
+        "good": {
+          "hip_angle": {"mean": 168, "sd": 8},
+          "knee_angle": {"mean": 168, "sd": 8},
+          "shoulder_angle": {"mean": 12, "sd": 8},
+          "elbow_angle": {"mean": 158, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 92, "sd": 6},
+          "trunk_lean": {"mean": 7, "sd": 5}
+        },
+        "average": {
+          "hip_angle": {"mean": 165, "sd": 12},
+          "knee_angle": {"mean": 165, "sd": 12},
+          "shoulder_angle": {"mean": 15, "sd": 12},
+          "elbow_angle": {"mean": 155, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 95, "sd": 8},
+          "trunk_lean": {"mean": 10, "sd": 7}
+        },
+        "poor": {
+          "hip_angle": {"mean": 160, "sd": 18},
+          "knee_angle": {"mean": 160, "sd": 18},
+          "shoulder_angle": {"mean": 20, "sd": 18},
+          "elbow_angle": {"mean": 150, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 98, "sd": 12},
+          "trunk_lean": {"mean": 15, "sd": 10}
+        }
+      },
+      "descent": {
+        "elite": {
+          "hip_angle": {"mean": 110, "sd": 8},
+          "knee_angle": {"mean": 95, "sd": 7},
+          "shoulder_angle": {"mean": 160, "sd": 8},
+          "elbow_angle": {"mean": 155, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 70, "sd": 5},
+          "trunk_lean": {"mean": 30, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 105, "sd": 12},
+          "knee_angle": {"mean": 90, "sd": 10},
+          "shoulder_angle": {"mean": 155, "sd": 12},
+          "elbow_angle": {"mean": 150, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 72, "sd": 7},
+          "trunk_lean": {"mean": 33, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 100, "sd": 16},
+          "knee_angle": {"mean": 85, "sd": 14},
+          "shoulder_angle": {"mean": 148, "sd": 16},
+          "elbow_angle": {"mean": 145, "sd": 18},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 10},
+          "trunk_lean": {"mean": 38, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 92, "sd": 22},
+          "knee_angle": {"mean": 78, "sd": 20},
+          "shoulder_angle": {"mean": 140, "sd": 22},
+          "elbow_angle": {"mean": 138, "sd": 24},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 14},
+          "trunk_lean": {"mean": 45, "sd": 15}
+        }
+      },
+      "takeoff": {
+        "elite": {
+          "hip_angle": {"mean": 175, "sd": 5},
+          "knee_angle": {"mean": 170, "sd": 5},
+          "shoulder_angle": {"mean": 170, "sd": 6},
+          "elbow_angle": {"mean": 165, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 130, "sd": 6},
+          "trunk_lean": {"mean": 8, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 170, "sd": 8},
+          "knee_angle": {"mean": 165, "sd": 8},
+          "shoulder_angle": {"mean": 165, "sd": 10},
+          "elbow_angle": {"mean": 160, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 125, "sd": 8},
+          "trunk_lean": {"mean": 12, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 163, "sd": 12},
+          "knee_angle": {"mean": 158, "sd": 12},
+          "shoulder_angle": {"mean": 158, "sd": 14},
+          "elbow_angle": {"mean": 153, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 118, "sd": 11},
+          "trunk_lean": {"mean": 18, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 155, "sd": 18},
+          "knee_angle": {"mean": 148, "sd": 18},
+          "shoulder_angle": {"mean": 148, "sd": 20},
+          "elbow_angle": {"mean": 145, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 110, "sd": 15},
+          "trunk_lean": {"mean": 25, "sd": 13}
+        }
+      },
+      "flight": {
+        "elite": {
+          "hip_angle": {"mean": 168, "sd": 6},
+          "knee_angle": {"mean": 165, "sd": 6},
+          "shoulder_angle": {"mean": 175, "sd": 5},
+          "elbow_angle": {"mean": 170, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 120, "sd": 8},
+          "trunk_lean": {"mean": 5, "sd": 3}
+        },
+        "good": {
+          "hip_angle": {"mean": 165, "sd": 10},
+          "knee_angle": {"mean": 160, "sd": 10},
+          "shoulder_angle": {"mean": 172, "sd": 8},
+          "elbow_angle": {"mean": 167, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 118, "sd": 10},
+          "trunk_lean": {"mean": 8, "sd": 5}
+        },
+        "average": {
+          "hip_angle": {"mean": 160, "sd": 14},
+          "knee_angle": {"mean": 155, "sd": 14},
+          "shoulder_angle": {"mean": 168, "sd": 12},
+          "elbow_angle": {"mean": 162, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 115, "sd": 13},
+          "trunk_lean": {"mean": 12, "sd": 8}
+        },
+        "poor": {
+          "hip_angle": {"mean": 152, "sd": 20},
+          "knee_angle": {"mean": 148, "sd": 20},
+          "shoulder_angle": {"mean": 162, "sd": 18},
+          "elbow_angle": {"mean": 155, "sd": 20},
+          "ankle_dorsiflexion": {"mean": 110, "sd": 16},
+          "trunk_lean": {"mean": 18, "sd": 12}
+        }
+      },
+      "landing": {
+        "elite": {
+          "hip_angle": {"mean": 115, "sd": 8},
+          "knee_angle": {"mean": 100, "sd": 8},
+          "shoulder_angle": {"mean": 40, "sd": 10},
+          "elbow_angle": {"mean": 140, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 5},
+          "trunk_lean": {"mean": 25, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 110, "sd": 12},
+          "knee_angle": {"mean": 95, "sd": 12},
+          "shoulder_angle": {"mean": 45, "sd": 14},
+          "elbow_angle": {"mean": 135, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 72, "sd": 7},
+          "trunk_lean": {"mean": 28, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 102, "sd": 16},
+          "knee_angle": {"mean": 88, "sd": 16},
+          "shoulder_angle": {"mean": 52, "sd": 18},
+          "elbow_angle": {"mean": 128, "sd": 20},
+          "ankle_dorsiflexion": {"mean": 68, "sd": 10},
+          "trunk_lean": {"mean": 33, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 92, "sd": 22},
+          "knee_angle": {"mean": 75, "sd": 22},
+          "shoulder_angle": {"mean": 60, "sd": 24},
+          "elbow_angle": {"mean": 118, "sd": 26},
+          "ankle_dorsiflexion": {"mean": 62, "sd": 14},
+          "trunk_lean": {"mean": 40, "sd": 15}
+        }
+      }
+    },
+    "symmetry": {
+      "elite": {"lsi_min": 0.95, "lsi_max": 1.0},
+      "good": {"lsi_min": 0.85, "lsi_max": 0.95},
+      "average": {"lsi_min": 0.70, "lsi_max": 0.85},
+      "poor": {"lsi_min": 0.40, "lsi_max": 0.70}
+    },
+    "sources": [
+      "Bobbert & van Ingen Schenau (1988) J Biomech 21(3):249-262",
+      "Lees et al. (2004) J Sports Sci 22(9):829-839",
+      "Moran & Wallace (2007) Sports Biomech 6(2):246-260",
+      "Cormie et al. (2009) Med Sci Sports Exerc 41(1):87-95",
+      "Bissas & Havenetidis (2008) J Sports Med Phys Fitness 48(1):31-36"
+    ]
+  },
+
+  "squat": {
+    "phases": {
+      "setup": {
+        "elite": {
+          "hip_angle": {"mean": 175, "sd": 4},
+          "knee_angle": {"mean": 178, "sd": 3},
+          "shoulder_angle": {"mean": 85, "sd": 6},
+          "elbow_angle": {"mean": 95, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 88, "sd": 4},
+          "trunk_lean": {"mean": 3, "sd": 2}
+        },
+        "good": {
+          "hip_angle": {"mean": 173, "sd": 6},
+          "knee_angle": {"mean": 176, "sd": 5},
+          "shoulder_angle": {"mean": 82, "sd": 10},
+          "elbow_angle": {"mean": 92, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 90, "sd": 6},
+          "trunk_lean": {"mean": 5, "sd": 4}
+        },
+        "average": {
+          "hip_angle": {"mean": 170, "sd": 9},
+          "knee_angle": {"mean": 174, "sd": 7},
+          "shoulder_angle": {"mean": 78, "sd": 14},
+          "elbow_angle": {"mean": 88, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 92, "sd": 8},
+          "trunk_lean": {"mean": 8, "sd": 6}
+        },
+        "poor": {
+          "hip_angle": {"mean": 165, "sd": 14},
+          "knee_angle": {"mean": 170, "sd": 12},
+          "shoulder_angle": {"mean": 72, "sd": 20},
+          "elbow_angle": {"mean": 82, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 95, "sd": 12},
+          "trunk_lean": {"mean": 12, "sd": 10}
+        }
+      },
+      "descent": {
+        "elite": {
+          "hip_angle": {"mean": 130, "sd": 8},
+          "knee_angle": {"mean": 120, "sd": 8},
+          "shoulder_angle": {"mean": 85, "sd": 6},
+          "elbow_angle": {"mean": 90, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 5},
+          "trunk_lean": {"mean": 30, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 128, "sd": 12},
+          "knee_angle": {"mean": 118, "sd": 12},
+          "shoulder_angle": {"mean": 82, "sd": 10},
+          "elbow_angle": {"mean": 88, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 77, "sd": 7},
+          "trunk_lean": {"mean": 33, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 125, "sd": 16},
+          "knee_angle": {"mean": 115, "sd": 16},
+          "shoulder_angle": {"mean": 78, "sd": 14},
+          "elbow_angle": {"mean": 85, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 10},
+          "trunk_lean": {"mean": 38, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 120, "sd": 22},
+          "knee_angle": {"mean": 110, "sd": 22},
+          "shoulder_angle": {"mean": 72, "sd": 20},
+          "elbow_angle": {"mean": 80, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 84, "sd": 14},
+          "trunk_lean": {"mean": 45, "sd": 15}
+        }
+      },
+      "bottom": {
+        "elite": {
+          "hip_angle": {"mean": 70, "sd": 8},
+          "knee_angle": {"mean": 65, "sd": 7},
+          "shoulder_angle": {"mean": 85, "sd": 6},
+          "elbow_angle": {"mean": 88, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 60, "sd": 5},
+          "trunk_lean": {"mean": 45, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 75, "sd": 12},
+          "knee_angle": {"mean": 70, "sd": 10},
+          "shoulder_angle": {"mean": 82, "sd": 10},
+          "elbow_angle": {"mean": 85, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 63, "sd": 7},
+          "trunk_lean": {"mean": 48, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 82, "sd": 16},
+          "knee_angle": {"mean": 78, "sd": 14},
+          "shoulder_angle": {"mean": 78, "sd": 14},
+          "elbow_angle": {"mean": 80, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 68, "sd": 10},
+          "trunk_lean": {"mean": 53, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 92, "sd": 22},
+          "knee_angle": {"mean": 90, "sd": 20},
+          "shoulder_angle": {"mean": 72, "sd": 20},
+          "elbow_angle": {"mean": 75, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 14},
+          "trunk_lean": {"mean": 60, "sd": 15}
+        }
+      },
+      "ascent": {
+        "elite": {
+          "hip_angle": {"mean": 130, "sd": 8},
+          "knee_angle": {"mean": 125, "sd": 8},
+          "shoulder_angle": {"mean": 85, "sd": 6},
+          "elbow_angle": {"mean": 90, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 72, "sd": 5},
+          "trunk_lean": {"mean": 32, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 128, "sd": 12},
+          "knee_angle": {"mean": 122, "sd": 12},
+          "shoulder_angle": {"mean": 82, "sd": 10},
+          "elbow_angle": {"mean": 88, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 74, "sd": 7},
+          "trunk_lean": {"mean": 35, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 124, "sd": 16},
+          "knee_angle": {"mean": 118, "sd": 16},
+          "shoulder_angle": {"mean": 78, "sd": 14},
+          "elbow_angle": {"mean": 84, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 78, "sd": 10},
+          "trunk_lean": {"mean": 40, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 118, "sd": 22},
+          "knee_angle": {"mean": 112, "sd": 22},
+          "shoulder_angle": {"mean": 72, "sd": 20},
+          "elbow_angle": {"mean": 78, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 83, "sd": 14},
+          "trunk_lean": {"mean": 48, "sd": 15}
+        }
+      }
+    },
+    "symmetry": {
+      "elite": {"lsi_min": 0.95, "lsi_max": 1.0},
+      "good": {"lsi_min": 0.85, "lsi_max": 0.95},
+      "average": {"lsi_min": 0.70, "lsi_max": 0.85},
+      "poor": {"lsi_min": 0.40, "lsi_max": 0.70}
+    },
+    "sources": [
+      "Escamilla et al. (2001) Med Sci Sports Exerc 33(1):127-141",
+      "Fry et al. (2003) J Strength Cond Res 17(4):629-633",
+      "Schoenfeld (2010) J Strength Cond Res 24(12):3497-3506",
+      "Comfort et al. (2012) J Strength Cond Res 26(8):2293-2298",
+      "Hartmann et al. (2013) Sports Med 43(10):993-1008"
+    ]
+  },
+
+  "push_up": {
+    "phases": {
+      "setup": {
+        "elite": {
+          "hip_angle": {"mean": 175, "sd": 4},
+          "knee_angle": {"mean": 178, "sd": 3},
+          "shoulder_angle": {"mean": 90, "sd": 5},
+          "elbow_angle": {"mean": 175, "sd": 4},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 5},
+          "trunk_lean": {"mean": 0, "sd": 2}
+        },
+        "good": {
+          "hip_angle": {"mean": 172, "sd": 6},
+          "knee_angle": {"mean": 176, "sd": 5},
+          "shoulder_angle": {"mean": 88, "sd": 8},
+          "elbow_angle": {"mean": 173, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 77, "sd": 7},
+          "trunk_lean": {"mean": 3, "sd": 4}
+        },
+        "average": {
+          "hip_angle": {"mean": 168, "sd": 10},
+          "knee_angle": {"mean": 173, "sd": 8},
+          "shoulder_angle": {"mean": 85, "sd": 12},
+          "elbow_angle": {"mean": 170, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 10},
+          "trunk_lean": {"mean": 6, "sd": 6}
+        },
+        "poor": {
+          "hip_angle": {"mean": 160, "sd": 16},
+          "knee_angle": {"mean": 168, "sd": 14},
+          "shoulder_angle": {"mean": 80, "sd": 18},
+          "elbow_angle": {"mean": 165, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 84, "sd": 14},
+          "trunk_lean": {"mean": 12, "sd": 10}
+        }
+      },
+      "descent": {
+        "elite": {
+          "hip_angle": {"mean": 175, "sd": 4},
+          "knee_angle": {"mean": 178, "sd": 3},
+          "shoulder_angle": {"mean": 65, "sd": 6},
+          "elbow_angle": {"mean": 130, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 72, "sd": 5},
+          "trunk_lean": {"mean": 15, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 172, "sd": 6},
+          "knee_angle": {"mean": 176, "sd": 5},
+          "shoulder_angle": {"mean": 62, "sd": 10},
+          "elbow_angle": {"mean": 125, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 74, "sd": 7},
+          "trunk_lean": {"mean": 18, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 166, "sd": 10},
+          "knee_angle": {"mean": 173, "sd": 8},
+          "shoulder_angle": {"mean": 58, "sd": 14},
+          "elbow_angle": {"mean": 118, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 78, "sd": 10},
+          "trunk_lean": {"mean": 22, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 155, "sd": 16},
+          "knee_angle": {"mean": 168, "sd": 14},
+          "shoulder_angle": {"mean": 52, "sd": 20},
+          "elbow_angle": {"mean": 110, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 83, "sd": 14},
+          "trunk_lean": {"mean": 28, "sd": 13}
+        }
+      },
+      "bottom": {
+        "elite": {
+          "hip_angle": {"mean": 175, "sd": 4},
+          "knee_angle": {"mean": 178, "sd": 3},
+          "shoulder_angle": {"mean": 45, "sd": 6},
+          "elbow_angle": {"mean": 90, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 70, "sd": 5},
+          "trunk_lean": {"mean": 25, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 172, "sd": 6},
+          "knee_angle": {"mean": 176, "sd": 5},
+          "shoulder_angle": {"mean": 42, "sd": 10},
+          "elbow_angle": {"mean": 85, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 72, "sd": 7},
+          "trunk_lean": {"mean": 28, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 165, "sd": 10},
+          "knee_angle": {"mean": 173, "sd": 8},
+          "shoulder_angle": {"mean": 38, "sd": 14},
+          "elbow_angle": {"mean": 78, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 76, "sd": 10},
+          "trunk_lean": {"mean": 33, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 152, "sd": 16},
+          "knee_angle": {"mean": 168, "sd": 14},
+          "shoulder_angle": {"mean": 32, "sd": 20},
+          "elbow_angle": {"mean": 68, "sd": 20},
+          "ankle_dorsiflexion": {"mean": 82, "sd": 14},
+          "trunk_lean": {"mean": 40, "sd": 13}
+        }
+      },
+      "ascent": {
+        "elite": {
+          "hip_angle": {"mean": 175, "sd": 4},
+          "knee_angle": {"mean": 178, "sd": 3},
+          "shoulder_angle": {"mean": 65, "sd": 6},
+          "elbow_angle": {"mean": 135, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 72, "sd": 5},
+          "trunk_lean": {"mean": 15, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 172, "sd": 6},
+          "knee_angle": {"mean": 176, "sd": 5},
+          "shoulder_angle": {"mean": 62, "sd": 10},
+          "elbow_angle": {"mean": 130, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 74, "sd": 7},
+          "trunk_lean": {"mean": 18, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 165, "sd": 10},
+          "knee_angle": {"mean": 173, "sd": 8},
+          "shoulder_angle": {"mean": 57, "sd": 14},
+          "elbow_angle": {"mean": 122, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 78, "sd": 10},
+          "trunk_lean": {"mean": 23, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 153, "sd": 16},
+          "knee_angle": {"mean": 168, "sd": 14},
+          "shoulder_angle": {"mean": 50, "sd": 20},
+          "elbow_angle": {"mean": 112, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 83, "sd": 14},
+          "trunk_lean": {"mean": 30, "sd": 13}
+        }
+      }
+    },
+    "symmetry": {
+      "elite": {"lsi_min": 0.95, "lsi_max": 1.0},
+      "good": {"lsi_min": 0.85, "lsi_max": 0.95},
+      "average": {"lsi_min": 0.70, "lsi_max": 0.85},
+      "poor": {"lsi_min": 0.40, "lsi_max": 0.70}
+    },
+    "sources": [
+      "Cogley et al. (2005) J Strength Cond Res 19(3):628-633",
+      "Suprak et al. (2011) Int J Sports Phys Ther 6(2):58-68",
+      "Ebben et al. (2011) J Strength Cond Res 25(10):2891-2894",
+      "Gouvali & Boudolos (2005) J Sports Med Phys Fitness 45(4):536-544",
+      "Marcolin et al. (2015) J Electromyogr Kinesiol 25(3):437-442"
+    ]
+  },
+
+  "pull_up": {
+    "phases": {
+      "hang": {
+        "elite": {
+          "hip_angle": {"mean": 178, "sd": 3},
+          "knee_angle": {"mean": 178, "sd": 3},
+          "shoulder_angle": {"mean": 178, "sd": 3},
+          "elbow_angle": {"mean": 175, "sd": 4},
+          "ankle_dorsiflexion": {"mean": 90, "sd": 5},
+          "trunk_lean": {"mean": 2, "sd": 2}
+        },
+        "good": {
+          "hip_angle": {"mean": 175, "sd": 5},
+          "knee_angle": {"mean": 175, "sd": 5},
+          "shoulder_angle": {"mean": 176, "sd": 5},
+          "elbow_angle": {"mean": 172, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 92, "sd": 7},
+          "trunk_lean": {"mean": 5, "sd": 4}
+        },
+        "average": {
+          "hip_angle": {"mean": 170, "sd": 8},
+          "knee_angle": {"mean": 170, "sd": 8},
+          "shoulder_angle": {"mean": 173, "sd": 8},
+          "elbow_angle": {"mean": 168, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 95, "sd": 10},
+          "trunk_lean": {"mean": 8, "sd": 6}
+        },
+        "poor": {
+          "hip_angle": {"mean": 162, "sd": 14},
+          "knee_angle": {"mean": 160, "sd": 14},
+          "shoulder_angle": {"mean": 168, "sd": 14},
+          "elbow_angle": {"mean": 162, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 100, "sd": 14},
+          "trunk_lean": {"mean": 14, "sd": 10}
+        }
+      },
+      "pull": {
+        "elite": {
+          "hip_angle": {"mean": 172, "sd": 5},
+          "knee_angle": {"mean": 175, "sd": 4},
+          "shoulder_angle": {"mean": 120, "sd": 10},
+          "elbow_angle": {"mean": 120, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 88, "sd": 5},
+          "trunk_lean": {"mean": 10, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 168, "sd": 8},
+          "knee_angle": {"mean": 172, "sd": 6},
+          "shoulder_angle": {"mean": 115, "sd": 14},
+          "elbow_angle": {"mean": 115, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 90, "sd": 7},
+          "trunk_lean": {"mean": 14, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 162, "sd": 12},
+          "knee_angle": {"mean": 168, "sd": 10},
+          "shoulder_angle": {"mean": 108, "sd": 18},
+          "elbow_angle": {"mean": 108, "sd": 18},
+          "ankle_dorsiflexion": {"mean": 93, "sd": 10},
+          "trunk_lean": {"mean": 20, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 154, "sd": 18},
+          "knee_angle": {"mean": 160, "sd": 16},
+          "shoulder_angle": {"mean": 98, "sd": 24},
+          "elbow_angle": {"mean": 98, "sd": 24},
+          "ankle_dorsiflexion": {"mean": 98, "sd": 14},
+          "trunk_lean": {"mean": 28, "sd": 13}
+        }
+      },
+      "top": {
+        "elite": {
+          "hip_angle": {"mean": 170, "sd": 5},
+          "knee_angle": {"mean": 175, "sd": 4},
+          "shoulder_angle": {"mean": 50, "sd": 8},
+          "elbow_angle": {"mean": 55, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 88, "sd": 5},
+          "trunk_lean": {"mean": 15, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 166, "sd": 8},
+          "knee_angle": {"mean": 172, "sd": 6},
+          "shoulder_angle": {"mean": 55, "sd": 12},
+          "elbow_angle": {"mean": 60, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 90, "sd": 7},
+          "trunk_lean": {"mean": 18, "sd": 7}
+        },
+        "average": {
+          "hip_angle": {"mean": 160, "sd": 12},
+          "knee_angle": {"mean": 168, "sd": 10},
+          "shoulder_angle": {"mean": 62, "sd": 16},
+          "elbow_angle": {"mean": 70, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 93, "sd": 10},
+          "trunk_lean": {"mean": 24, "sd": 10}
+        },
+        "poor": {
+          "hip_angle": {"mean": 150, "sd": 18},
+          "knee_angle": {"mean": 160, "sd": 16},
+          "shoulder_angle": {"mean": 72, "sd": 22},
+          "elbow_angle": {"mean": 85, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 98, "sd": 14},
+          "trunk_lean": {"mean": 32, "sd": 14}
+        }
+      },
+      "descent": {
+        "elite": {
+          "hip_angle": {"mean": 172, "sd": 5},
+          "knee_angle": {"mean": 175, "sd": 4},
+          "shoulder_angle": {"mean": 120, "sd": 10},
+          "elbow_angle": {"mean": 125, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 88, "sd": 5},
+          "trunk_lean": {"mean": 10, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 168, "sd": 8},
+          "knee_angle": {"mean": 172, "sd": 6},
+          "shoulder_angle": {"mean": 118, "sd": 14},
+          "elbow_angle": {"mean": 122, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 90, "sd": 7},
+          "trunk_lean": {"mean": 14, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 162, "sd": 12},
+          "knee_angle": {"mean": 168, "sd": 10},
+          "shoulder_angle": {"mean": 112, "sd": 18},
+          "elbow_angle": {"mean": 116, "sd": 18},
+          "ankle_dorsiflexion": {"mean": 93, "sd": 10},
+          "trunk_lean": {"mean": 20, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 154, "sd": 18},
+          "knee_angle": {"mean": 160, "sd": 16},
+          "shoulder_angle": {"mean": 104, "sd": 24},
+          "elbow_angle": {"mean": 108, "sd": 24},
+          "ankle_dorsiflexion": {"mean": 98, "sd": 14},
+          "trunk_lean": {"mean": 28, "sd": 13}
+        }
+      }
+    },
+    "symmetry": {
+      "elite": {"lsi_min": 0.95, "lsi_max": 1.0},
+      "good": {"lsi_min": 0.85, "lsi_max": 0.95},
+      "average": {"lsi_min": 0.70, "lsi_max": 0.85},
+      "poor": {"lsi_min": 0.40, "lsi_max": 0.70}
+    },
+    "sources": [
+      "Youdas et al. (2010) J Strength Cond Res 24(12):3404-3414",
+      "Snarr & Esco (2014) J Phys Act Res 2(1):10-14",
+      "Dickie et al. (2017) J Strength Cond Res 31(10):2876-2883",
+      "Ronai & Scibek (2014) ACSM's Health & Fitness J 18(5):14-21"
+    ]
+  },
+
+  "snatch": {
+    "phases": {
+      "setup": {
+        "elite": {
+          "hip_angle": {"mean": 75, "sd": 6},
+          "knee_angle": {"mean": 70, "sd": 6},
+          "shoulder_angle": {"mean": 25, "sd": 5},
+          "elbow_angle": {"mean": 175, "sd": 4},
+          "ankle_dorsiflexion": {"mean": 60, "sd": 5},
+          "trunk_lean": {"mean": 40, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 72, "sd": 10},
+          "knee_angle": {"mean": 67, "sd": 10},
+          "shoulder_angle": {"mean": 28, "sd": 8},
+          "elbow_angle": {"mean": 173, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 62, "sd": 7},
+          "trunk_lean": {"mean": 43, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 68, "sd": 14},
+          "knee_angle": {"mean": 63, "sd": 14},
+          "shoulder_angle": {"mean": 32, "sd": 12},
+          "elbow_angle": {"mean": 170, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 65, "sd": 10},
+          "trunk_lean": {"mean": 48, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 62, "sd": 20},
+          "knee_angle": {"mean": 58, "sd": 20},
+          "shoulder_angle": {"mean": 38, "sd": 18},
+          "elbow_angle": {"mean": 165, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 70, "sd": 14},
+          "trunk_lean": {"mean": 55, "sd": 15}
+        }
+      },
+      "first_pull": {
+        "elite": {
+          "hip_angle": {"mean": 110, "sd": 7},
+          "knee_angle": {"mean": 115, "sd": 7},
+          "shoulder_angle": {"mean": 30, "sd": 6},
+          "elbow_angle": {"mean": 175, "sd": 4},
+          "ankle_dorsiflexion": {"mean": 72, "sd": 5},
+          "trunk_lean": {"mean": 35, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 107, "sd": 10},
+          "knee_angle": {"mean": 112, "sd": 10},
+          "shoulder_angle": {"mean": 33, "sd": 10},
+          "elbow_angle": {"mean": 173, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 74, "sd": 7},
+          "trunk_lean": {"mean": 38, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 103, "sd": 14},
+          "knee_angle": {"mean": 108, "sd": 14},
+          "shoulder_angle": {"mean": 37, "sd": 14},
+          "elbow_angle": {"mean": 170, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 77, "sd": 10},
+          "trunk_lean": {"mean": 42, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 97, "sd": 20},
+          "knee_angle": {"mean": 102, "sd": 20},
+          "shoulder_angle": {"mean": 43, "sd": 20},
+          "elbow_angle": {"mean": 165, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 82, "sd": 14},
+          "trunk_lean": {"mean": 50, "sd": 15}
+        }
+      },
+      "second_pull": {
+        "elite": {
+          "hip_angle": {"mean": 170, "sd": 6},
+          "knee_angle": {"mean": 165, "sd": 6},
+          "shoulder_angle": {"mean": 65, "sd": 8},
+          "elbow_angle": {"mean": 170, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 125, "sd": 6},
+          "trunk_lean": {"mean": 10, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 166, "sd": 10},
+          "knee_angle": {"mean": 161, "sd": 10},
+          "shoulder_angle": {"mean": 60, "sd": 12},
+          "elbow_angle": {"mean": 167, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 122, "sd": 8},
+          "trunk_lean": {"mean": 14, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 160, "sd": 14},
+          "knee_angle": {"mean": 155, "sd": 14},
+          "shoulder_angle": {"mean": 55, "sd": 16},
+          "elbow_angle": {"mean": 162, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 118, "sd": 11},
+          "trunk_lean": {"mean": 20, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 152, "sd": 20},
+          "knee_angle": {"mean": 147, "sd": 20},
+          "shoulder_angle": {"mean": 48, "sd": 22},
+          "elbow_angle": {"mean": 155, "sd": 20},
+          "ankle_dorsiflexion": {"mean": 112, "sd": 15},
+          "trunk_lean": {"mean": 28, "sd": 13}
+        }
+      },
+      "catch": {
+        "elite": {
+          "hip_angle": {"mean": 85, "sd": 7},
+          "knee_angle": {"mean": 80, "sd": 7},
+          "shoulder_angle": {"mean": 175, "sd": 4},
+          "elbow_angle": {"mean": 175, "sd": 4},
+          "ankle_dorsiflexion": {"mean": 62, "sd": 5},
+          "trunk_lean": {"mean": 8, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 82, "sd": 10},
+          "knee_angle": {"mean": 77, "sd": 10},
+          "shoulder_angle": {"mean": 172, "sd": 6},
+          "elbow_angle": {"mean": 172, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 64, "sd": 7},
+          "trunk_lean": {"mean": 11, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 78, "sd": 14},
+          "knee_angle": {"mean": 73, "sd": 14},
+          "shoulder_angle": {"mean": 168, "sd": 10},
+          "elbow_angle": {"mean": 168, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 68, "sd": 10},
+          "trunk_lean": {"mean": 16, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 72, "sd": 20},
+          "knee_angle": {"mean": 66, "sd": 20},
+          "shoulder_angle": {"mean": 162, "sd": 16},
+          "elbow_angle": {"mean": 162, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 74, "sd": 14},
+          "trunk_lean": {"mean": 24, "sd": 13}
+        }
+      },
+      "recovery": {
+        "elite": {
+          "hip_angle": {"mean": 170, "sd": 5},
+          "knee_angle": {"mean": 172, "sd": 5},
+          "shoulder_angle": {"mean": 178, "sd": 3},
+          "elbow_angle": {"mean": 178, "sd": 3},
+          "ankle_dorsiflexion": {"mean": 85, "sd": 5},
+          "trunk_lean": {"mean": 5, "sd": 3}
+        },
+        "good": {
+          "hip_angle": {"mean": 167, "sd": 8},
+          "knee_angle": {"mean": 169, "sd": 8},
+          "shoulder_angle": {"mean": 176, "sd": 5},
+          "elbow_angle": {"mean": 176, "sd": 5},
+          "ankle_dorsiflexion": {"mean": 87, "sd": 7},
+          "trunk_lean": {"mean": 8, "sd": 5}
+        },
+        "average": {
+          "hip_angle": {"mean": 163, "sd": 12},
+          "knee_angle": {"mean": 165, "sd": 12},
+          "shoulder_angle": {"mean": 173, "sd": 8},
+          "elbow_angle": {"mean": 173, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 90, "sd": 10},
+          "trunk_lean": {"mean": 13, "sd": 8}
+        },
+        "poor": {
+          "hip_angle": {"mean": 157, "sd": 18},
+          "knee_angle": {"mean": 158, "sd": 18},
+          "shoulder_angle": {"mean": 168, "sd": 14},
+          "elbow_angle": {"mean": 168, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 95, "sd": 14},
+          "trunk_lean": {"mean": 20, "sd": 13}
+        }
+      }
+    },
+    "symmetry": {
+      "elite": {"lsi_min": 0.95, "lsi_max": 1.0},
+      "good": {"lsi_min": 0.85, "lsi_max": 0.95},
+      "average": {"lsi_min": 0.70, "lsi_max": 0.85},
+      "poor": {"lsi_min": 0.40, "lsi_max": 0.70}
+    },
+    "sources": [
+      "Gourgoulis et al. (2000) J Sports Sci 18(8):643-652",
+      "Isaka et al. (1996) J Applied Biomech 12(4):508-516",
+      "Garhammer (1985) Med Sci Sports Exerc 17(2):264-272",
+      "Harbili (2012) J Strength Cond Res 26(6):1511-1519",
+      "Ho et al. (2014) J Strength Cond Res 28(6):1688-1695"
+    ]
+  },
+
+  "sprint": {
+    "phases": {
+      "start": {
+        "elite": {
+          "hip_angle": {"mean": 80, "sd": 6},
+          "knee_angle": {"mean": 90, "sd": 6},
+          "shoulder_angle": {"mean": 45, "sd": 8},
+          "elbow_angle": {"mean": 90, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 65, "sd": 5},
+          "trunk_lean": {"mean": 45, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 78, "sd": 10},
+          "knee_angle": {"mean": 88, "sd": 10},
+          "shoulder_angle": {"mean": 42, "sd": 12},
+          "elbow_angle": {"mean": 88, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 67, "sd": 7},
+          "trunk_lean": {"mean": 43, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 75, "sd": 14},
+          "knee_angle": {"mean": 85, "sd": 14},
+          "shoulder_angle": {"mean": 38, "sd": 16},
+          "elbow_angle": {"mean": 85, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 70, "sd": 10},
+          "trunk_lean": {"mean": 40, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 70, "sd": 20},
+          "knee_angle": {"mean": 80, "sd": 20},
+          "shoulder_angle": {"mean": 33, "sd": 22},
+          "elbow_angle": {"mean": 80, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 14},
+          "trunk_lean": {"mean": 35, "sd": 15}
+        }
+      },
+      "acceleration": {
+        "elite": {
+          "hip_angle": {"mean": 140, "sd": 8},
+          "knee_angle": {"mean": 155, "sd": 7},
+          "shoulder_angle": {"mean": 55, "sd": 8},
+          "elbow_angle": {"mean": 85, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 5},
+          "trunk_lean": {"mean": 30, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 137, "sd": 12},
+          "knee_angle": {"mean": 152, "sd": 10},
+          "shoulder_angle": {"mean": 52, "sd": 12},
+          "elbow_angle": {"mean": 83, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 77, "sd": 7},
+          "trunk_lean": {"mean": 28, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 133, "sd": 16},
+          "knee_angle": {"mean": 148, "sd": 14},
+          "shoulder_angle": {"mean": 48, "sd": 16},
+          "elbow_angle": {"mean": 80, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 10},
+          "trunk_lean": {"mean": 25, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 127, "sd": 22},
+          "knee_angle": {"mean": 142, "sd": 20},
+          "shoulder_angle": {"mean": 42, "sd": 22},
+          "elbow_angle": {"mean": 76, "sd": 20},
+          "ankle_dorsiflexion": {"mean": 85, "sd": 14},
+          "trunk_lean": {"mean": 20, "sd": 15}
+        }
+      },
+      "max_velocity": {
+        "elite": {
+          "hip_angle": {"mean": 160, "sd": 7},
+          "knee_angle": {"mean": 165, "sd": 6},
+          "shoulder_angle": {"mean": 60, "sd": 8},
+          "elbow_angle": {"mean": 80, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 5},
+          "trunk_lean": {"mean": 8, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 157, "sd": 10},
+          "knee_angle": {"mean": 162, "sd": 10},
+          "shoulder_angle": {"mean": 57, "sd": 12},
+          "elbow_angle": {"mean": 78, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 82, "sd": 7},
+          "trunk_lean": {"mean": 10, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 153, "sd": 14},
+          "knee_angle": {"mean": 158, "sd": 14},
+          "shoulder_angle": {"mean": 53, "sd": 16},
+          "elbow_angle": {"mean": 75, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 85, "sd": 10},
+          "trunk_lean": {"mean": 13, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 147, "sd": 20},
+          "knee_angle": {"mean": 152, "sd": 20},
+          "shoulder_angle": {"mean": 48, "sd": 22},
+          "elbow_angle": {"mean": 70, "sd": 20},
+          "ankle_dorsiflexion": {"mean": 90, "sd": 14},
+          "trunk_lean": {"mean": 18, "sd": 13}
+        }
+      },
+      "deceleration": {
+        "elite": {
+          "hip_angle": {"mean": 150, "sd": 8},
+          "knee_angle": {"mean": 155, "sd": 7},
+          "shoulder_angle": {"mean": 50, "sd": 8},
+          "elbow_angle": {"mean": 85, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 78, "sd": 5},
+          "trunk_lean": {"mean": 12, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 147, "sd": 12},
+          "knee_angle": {"mean": 152, "sd": 10},
+          "shoulder_angle": {"mean": 48, "sd": 12},
+          "elbow_angle": {"mean": 83, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 7},
+          "trunk_lean": {"mean": 15, "sd": 7}
+        },
+        "average": {
+          "hip_angle": {"mean": 143, "sd": 16},
+          "knee_angle": {"mean": 148, "sd": 14},
+          "shoulder_angle": {"mean": 45, "sd": 16},
+          "elbow_angle": {"mean": 80, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 83, "sd": 10},
+          "trunk_lean": {"mean": 20, "sd": 10}
+        },
+        "poor": {
+          "hip_angle": {"mean": 137, "sd": 22},
+          "knee_angle": {"mean": 142, "sd": 20},
+          "shoulder_angle": {"mean": 40, "sd": 22},
+          "elbow_angle": {"mean": 75, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 88, "sd": 14},
+          "trunk_lean": {"mean": 26, "sd": 14}
+        }
+      }
+    },
+    "symmetry": {
+      "elite": {"lsi_min": 0.95, "lsi_max": 1.0},
+      "good": {"lsi_min": 0.85, "lsi_max": 0.95},
+      "average": {"lsi_min": 0.70, "lsi_max": 0.85},
+      "poor": {"lsi_min": 0.40, "lsi_max": 0.70}
+    },
+    "sources": [
+      "Mann & Herman (1985) Int J Sport Biomech 1(2):151-162",
+      "Novacheck (1998) Gait Posture 7(1):77-95",
+      "Bezodis et al. (2008) J Sports Sci 26(14):1517-1524",
+      "Haugen et al. (2018) Sports Med 48(7):1623-1639",
+      "Nagahara et al. (2014) PLoS One 9(6):e99401"
+    ]
+  },
+
+  "javelin": {
+    "phases": {
+      "approach": {
+        "elite": {
+          "hip_angle": {"mean": 160, "sd": 7},
+          "knee_angle": {"mean": 158, "sd": 7},
+          "shoulder_angle": {"mean": 30, "sd": 8},
+          "elbow_angle": {"mean": 170, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 5},
+          "trunk_lean": {"mean": 5, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 157, "sd": 10},
+          "knee_angle": {"mean": 155, "sd": 10},
+          "shoulder_angle": {"mean": 33, "sd": 12},
+          "elbow_angle": {"mean": 167, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 82, "sd": 7},
+          "trunk_lean": {"mean": 8, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 153, "sd": 14},
+          "knee_angle": {"mean": 150, "sd": 14},
+          "shoulder_angle": {"mean": 37, "sd": 16},
+          "elbow_angle": {"mean": 163, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 85, "sd": 10},
+          "trunk_lean": {"mean": 12, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 147, "sd": 20},
+          "knee_angle": {"mean": 145, "sd": 20},
+          "shoulder_angle": {"mean": 43, "sd": 22},
+          "elbow_angle": {"mean": 158, "sd": 20},
+          "ankle_dorsiflexion": {"mean": 90, "sd": 14},
+          "trunk_lean": {"mean": 18, "sd": 13}
+        }
+      },
+      "crossover": {
+        "elite": {
+          "hip_angle": {"mean": 145, "sd": 8},
+          "knee_angle": {"mean": 145, "sd": 8},
+          "shoulder_angle": {"mean": 160, "sd": 8},
+          "elbow_angle": {"mean": 165, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 5},
+          "trunk_lean": {"mean": 25, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 142, "sd": 12},
+          "knee_angle": {"mean": 142, "sd": 12},
+          "shoulder_angle": {"mean": 155, "sd": 12},
+          "elbow_angle": {"mean": 162, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 77, "sd": 7},
+          "trunk_lean": {"mean": 28, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 138, "sd": 16},
+          "knee_angle": {"mean": 138, "sd": 16},
+          "shoulder_angle": {"mean": 148, "sd": 16},
+          "elbow_angle": {"mean": 158, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 10},
+          "trunk_lean": {"mean": 33, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 132, "sd": 22},
+          "knee_angle": {"mean": 132, "sd": 22},
+          "shoulder_angle": {"mean": 140, "sd": 22},
+          "elbow_angle": {"mean": 153, "sd": 20},
+          "ankle_dorsiflexion": {"mean": 85, "sd": 14},
+          "trunk_lean": {"mean": 40, "sd": 15}
+        }
+      },
+      "delivery": {
+        "elite": {
+          "hip_angle": {"mean": 155, "sd": 8},
+          "knee_angle": {"mean": 160, "sd": 7},
+          "shoulder_angle": {"mean": 170, "sd": 6},
+          "elbow_angle": {"mean": 90, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 70, "sd": 5},
+          "trunk_lean": {"mean": 35, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 152, "sd": 12},
+          "knee_angle": {"mean": 157, "sd": 10},
+          "shoulder_angle": {"mean": 167, "sd": 10},
+          "elbow_angle": {"mean": 88, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 72, "sd": 7},
+          "trunk_lean": {"mean": 33, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 148, "sd": 16},
+          "knee_angle": {"mean": 153, "sd": 14},
+          "shoulder_angle": {"mean": 163, "sd": 14},
+          "elbow_angle": {"mean": 85, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 10},
+          "trunk_lean": {"mean": 30, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 142, "sd": 22},
+          "knee_angle": {"mean": 148, "sd": 20},
+          "shoulder_angle": {"mean": 157, "sd": 20},
+          "elbow_angle": {"mean": 80, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 14},
+          "trunk_lean": {"mean": 25, "sd": 15}
+        }
+      },
+      "release": {
+        "elite": {
+          "hip_angle": {"mean": 165, "sd": 7},
+          "knee_angle": {"mean": 170, "sd": 6},
+          "shoulder_angle": {"mean": 100, "sd": 8},
+          "elbow_angle": {"mean": 170, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 5},
+          "trunk_lean": {"mean": 40, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 162, "sd": 10},
+          "knee_angle": {"mean": 167, "sd": 10},
+          "shoulder_angle": {"mean": 95, "sd": 12},
+          "elbow_angle": {"mean": 167, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 77, "sd": 7},
+          "trunk_lean": {"mean": 38, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 158, "sd": 14},
+          "knee_angle": {"mean": 163, "sd": 14},
+          "shoulder_angle": {"mean": 88, "sd": 16},
+          "elbow_angle": {"mean": 163, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 10},
+          "trunk_lean": {"mean": 35, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 152, "sd": 20},
+          "knee_angle": {"mean": 158, "sd": 20},
+          "shoulder_angle": {"mean": 80, "sd": 22},
+          "elbow_angle": {"mean": 158, "sd": 20},
+          "ankle_dorsiflexion": {"mean": 85, "sd": 14},
+          "trunk_lean": {"mean": 30, "sd": 15}
+        }
+      },
+      "follow_through": {
+        "elite": {
+          "hip_angle": {"mean": 130, "sd": 10},
+          "knee_angle": {"mean": 140, "sd": 8},
+          "shoulder_angle": {"mean": 60, "sd": 10},
+          "elbow_angle": {"mean": 145, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 72, "sd": 5},
+          "trunk_lean": {"mean": 50, "sd": 6}
+        },
+        "good": {
+          "hip_angle": {"mean": 127, "sd": 14},
+          "knee_angle": {"mean": 137, "sd": 12},
+          "shoulder_angle": {"mean": 55, "sd": 14},
+          "elbow_angle": {"mean": 142, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 74, "sd": 7},
+          "trunk_lean": {"mean": 48, "sd": 9}
+        },
+        "average": {
+          "hip_angle": {"mean": 123, "sd": 18},
+          "knee_angle": {"mean": 133, "sd": 16},
+          "shoulder_angle": {"mean": 48, "sd": 18},
+          "elbow_angle": {"mean": 137, "sd": 18},
+          "ankle_dorsiflexion": {"mean": 77, "sd": 10},
+          "trunk_lean": {"mean": 45, "sd": 12}
+        },
+        "poor": {
+          "hip_angle": {"mean": 117, "sd": 24},
+          "knee_angle": {"mean": 128, "sd": 22},
+          "shoulder_angle": {"mean": 40, "sd": 24},
+          "elbow_angle": {"mean": 130, "sd": 24},
+          "ankle_dorsiflexion": {"mean": 82, "sd": 14},
+          "trunk_lean": {"mean": 40, "sd": 16}
+        }
+      }
+    },
+    "symmetry": {
+      "elite": {"lsi_min": 0.95, "lsi_max": 1.0},
+      "good": {"lsi_min": 0.85, "lsi_max": 0.95},
+      "average": {"lsi_min": 0.70, "lsi_max": 0.85},
+      "poor": {"lsi_min": 0.40, "lsi_max": 0.70}
+    },
+    "sources": [
+      "Best et al. (1993) J Sports Sci 11(4):315-328",
+      "Mero et al. (1994) J Applied Biomech 10(3):291-304",
+      "Liu et al. (2010) J Sports Sci Med 9(4):604-614",
+      "Bartlett et al. (1996) J Sports Sci 14(4):315-325",
+      "Whiting et al. (1991) Med Sci Sports Exerc 23(7):809-815"
+    ]
+  },
+
+  "cricket_bat": {
+    "phases": {
+      "stance": {
+        "elite": {
+          "hip_angle": {"mean": 160, "sd": 6},
+          "knee_angle": {"mean": 145, "sd": 6},
+          "shoulder_angle": {"mean": 35, "sd": 6},
+          "elbow_angle": {"mean": 120, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 5},
+          "trunk_lean": {"mean": 10, "sd": 4}
+        },
+        "good": {
+          "hip_angle": {"mean": 158, "sd": 10},
+          "knee_angle": {"mean": 143, "sd": 10},
+          "shoulder_angle": {"mean": 33, "sd": 10},
+          "elbow_angle": {"mean": 118, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 82, "sd": 7},
+          "trunk_lean": {"mean": 13, "sd": 6}
+        },
+        "average": {
+          "hip_angle": {"mean": 155, "sd": 14},
+          "knee_angle": {"mean": 140, "sd": 14},
+          "shoulder_angle": {"mean": 30, "sd": 14},
+          "elbow_angle": {"mean": 115, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 85, "sd": 10},
+          "trunk_lean": {"mean": 17, "sd": 9}
+        },
+        "poor": {
+          "hip_angle": {"mean": 150, "sd": 20},
+          "knee_angle": {"mean": 135, "sd": 20},
+          "shoulder_angle": {"mean": 26, "sd": 20},
+          "elbow_angle": {"mean": 110, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 90, "sd": 14},
+          "trunk_lean": {"mean": 22, "sd": 13}
+        }
+      },
+      "backswing": {
+        "elite": {
+          "hip_angle": {"mean": 155, "sd": 7},
+          "knee_angle": {"mean": 148, "sd": 7},
+          "shoulder_angle": {"mean": 140, "sd": 8},
+          "elbow_angle": {"mean": 130, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 78, "sd": 5},
+          "trunk_lean": {"mean": 15, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 152, "sd": 10},
+          "knee_angle": {"mean": 145, "sd": 10},
+          "shoulder_angle": {"mean": 135, "sd": 12},
+          "elbow_angle": {"mean": 127, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 7},
+          "trunk_lean": {"mean": 18, "sd": 7}
+        },
+        "average": {
+          "hip_angle": {"mean": 148, "sd": 14},
+          "knee_angle": {"mean": 142, "sd": 14},
+          "shoulder_angle": {"mean": 128, "sd": 16},
+          "elbow_angle": {"mean": 123, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 83, "sd": 10},
+          "trunk_lean": {"mean": 22, "sd": 10}
+        },
+        "poor": {
+          "hip_angle": {"mean": 142, "sd": 20},
+          "knee_angle": {"mean": 137, "sd": 20},
+          "shoulder_angle": {"mean": 120, "sd": 22},
+          "elbow_angle": {"mean": 118, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 88, "sd": 14},
+          "trunk_lean": {"mean": 28, "sd": 14}
+        }
+      },
+      "downswing": {
+        "elite": {
+          "hip_angle": {"mean": 145, "sd": 7},
+          "knee_angle": {"mean": 140, "sd": 7},
+          "shoulder_angle": {"mean": 90, "sd": 8},
+          "elbow_angle": {"mean": 155, "sd": 8},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 5},
+          "trunk_lean": {"mean": 20, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 142, "sd": 10},
+          "knee_angle": {"mean": 137, "sd": 10},
+          "shoulder_angle": {"mean": 87, "sd": 12},
+          "elbow_angle": {"mean": 152, "sd": 12},
+          "ankle_dorsiflexion": {"mean": 77, "sd": 7},
+          "trunk_lean": {"mean": 23, "sd": 7}
+        },
+        "average": {
+          "hip_angle": {"mean": 138, "sd": 14},
+          "knee_angle": {"mean": 133, "sd": 14},
+          "shoulder_angle": {"mean": 83, "sd": 16},
+          "elbow_angle": {"mean": 148, "sd": 16},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 10},
+          "trunk_lean": {"mean": 27, "sd": 10}
+        },
+        "poor": {
+          "hip_angle": {"mean": 132, "sd": 20},
+          "knee_angle": {"mean": 128, "sd": 20},
+          "shoulder_angle": {"mean": 78, "sd": 22},
+          "elbow_angle": {"mean": 143, "sd": 22},
+          "ankle_dorsiflexion": {"mean": 85, "sd": 14},
+          "trunk_lean": {"mean": 33, "sd": 14}
+        }
+      },
+      "contact": {
+        "elite": {
+          "hip_angle": {"mean": 150, "sd": 7},
+          "knee_angle": {"mean": 135, "sd": 7},
+          "shoulder_angle": {"mean": 70, "sd": 8},
+          "elbow_angle": {"mean": 165, "sd": 6},
+          "ankle_dorsiflexion": {"mean": 72, "sd": 5},
+          "trunk_lean": {"mean": 25, "sd": 5}
+        },
+        "good": {
+          "hip_angle": {"mean": 147, "sd": 10},
+          "knee_angle": {"mean": 132, "sd": 10},
+          "shoulder_angle": {"mean": 67, "sd": 12},
+          "elbow_angle": {"mean": 162, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 74, "sd": 7},
+          "trunk_lean": {"mean": 28, "sd": 7}
+        },
+        "average": {
+          "hip_angle": {"mean": 143, "sd": 14},
+          "knee_angle": {"mean": 128, "sd": 14},
+          "shoulder_angle": {"mean": 63, "sd": 16},
+          "elbow_angle": {"mean": 158, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 77, "sd": 10},
+          "trunk_lean": {"mean": 32, "sd": 10}
+        },
+        "poor": {
+          "hip_angle": {"mean": 137, "sd": 20},
+          "knee_angle": {"mean": 123, "sd": 20},
+          "shoulder_angle": {"mean": 57, "sd": 22},
+          "elbow_angle": {"mean": 153, "sd": 20},
+          "ankle_dorsiflexion": {"mean": 82, "sd": 14},
+          "trunk_lean": {"mean": 38, "sd": 14}
+        }
+      },
+      "follow_through": {
+        "elite": {
+          "hip_angle": {"mean": 140, "sd": 8},
+          "knee_angle": {"mean": 138, "sd": 8},
+          "shoulder_angle": {"mean": 120, "sd": 10},
+          "elbow_angle": {"mean": 150, "sd": 10},
+          "ankle_dorsiflexion": {"mean": 75, "sd": 5},
+          "trunk_lean": {"mean": 30, "sd": 6}
+        },
+        "good": {
+          "hip_angle": {"mean": 137, "sd": 12},
+          "knee_angle": {"mean": 135, "sd": 12},
+          "shoulder_angle": {"mean": 115, "sd": 14},
+          "elbow_angle": {"mean": 147, "sd": 14},
+          "ankle_dorsiflexion": {"mean": 77, "sd": 7},
+          "trunk_lean": {"mean": 33, "sd": 8}
+        },
+        "average": {
+          "hip_angle": {"mean": 133, "sd": 16},
+          "knee_angle": {"mean": 130, "sd": 16},
+          "shoulder_angle": {"mean": 108, "sd": 18},
+          "elbow_angle": {"mean": 143, "sd": 18},
+          "ankle_dorsiflexion": {"mean": 80, "sd": 10},
+          "trunk_lean": {"mean": 37, "sd": 11}
+        },
+        "poor": {
+          "hip_angle": {"mean": 127, "sd": 22},
+          "knee_angle": {"mean": 125, "sd": 22},
+          "shoulder_angle": {"mean": 100, "sd": 24},
+          "elbow_angle": {"mean": 138, "sd": 24},
+          "ankle_dorsiflexion": {"mean": 85, "sd": 14},
+          "trunk_lean": {"mean": 43, "sd": 15}
+        }
+      }
+    },
+    "symmetry": {
+      "elite": {"lsi_min": 0.95, "lsi_max": 1.0},
+      "good": {"lsi_min": 0.85, "lsi_max": 0.95},
+      "average": {"lsi_min": 0.70, "lsi_max": 0.85},
+      "poor": {"lsi_min": 0.40, "lsi_max": 0.70}
+    },
+    "sources": [
+      "Stretch et al. (1998) J Sports Sci 16(5):461-471",
+      "Stuelcken et al. (2005) Sports Biomech 4(1):17-34",
+      "Taliep et al. (2007) J Sci Med Sport 10(4):261-268",
+      "Escamilla et al. (2012) J Sports Sci Med 11(2):222-232",
+      "Cork et al. (2010) Sports Biomech 9(3):185-196"
+    ]
+  }
+}
