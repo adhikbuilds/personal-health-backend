@@ -62,3 +62,70 @@ async def mint_api_key(label: str = Query(min_length=1, max_length=80)):
     """Create a new service-to-service API key. The raw token is returned ONCE."""
     raw = create_api_key(label)
     return {"label": label, "api_key": raw, "warning": "store now — cannot be retrieved later"}
+
+
+# ─── Model Registry + Retrain ──────────────────────────────────────────────
+
+
+@router.get("/admin/model")
+async def model_status():
+    """Current model version, accuracy, and registry history."""
+    from services.model_registry import get_registry, predict_quality
+
+    reg = get_registry()
+    # Quick inference test to verify model is loaded
+    test_pred = predict_quality(
+        {"hip_angle_l": 100, "knee_angle_l": 120, "limb_symmetry_idx": 0.95},
+        sport="vertical_jump",
+    )
+    return {
+        "active_version": reg.get("active_version"),
+        "total_versions": len(reg.get("versions", [])),
+        "versions": reg.get("versions", []),
+        "model_loaded": test_pred is not None,
+        "model_type": test_pred.get("model_type") if test_pred else None,
+    }
+
+
+@router.get("/admin/retrain-status")
+async def retrain_status():
+    """Check whether a retrain is warranted based on available data."""
+    from services.model_registry import get_registry
+
+    sessions_file = database.DB_PATH / "sessions.json"
+    total_frames = 0
+    completed_sessions = 0
+    if sessions_file.exists():
+        import json as _json
+
+        with open(sessions_file) as f:
+            sessions = _json.load(f)
+        for s in sessions.values():
+            if s.get("status") == "completed":
+                completed_sessions += 1
+                total_frames += len(s.get("frames", []) or [])
+
+    reg = get_registry()
+    current_acc = 0.0
+    if reg.get("versions"):
+        current_acc = reg["versions"][-1].get("accuracy", 0)
+
+    threshold = 500
+    return {
+        "total_real_frames": total_frames,
+        "completed_sessions": completed_sessions,
+        "retrain_threshold": threshold,
+        "frames_to_threshold": max(0, threshold - total_frames),
+        "retrain_ready": total_frames >= threshold,
+        "current_model_version": reg.get("active_version"),
+        "current_model_accuracy": current_acc,
+    }
+
+
+@router.post("/admin/model/reload")
+async def reload_model():
+    """Hot-reload the model from disk (after manual retrain)."""
+    from services.model_registry import reload_model as _reload
+
+    success = _reload()
+    return {"reloaded": success}

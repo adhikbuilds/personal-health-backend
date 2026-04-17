@@ -17,10 +17,10 @@ from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconn
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
+import database
 from database import (
     _POSE_ANALYZERS,
     _RATE_LIMITS,
-    ANALYSIS_QUEUE,
     ATHLETE_DB,
     DATASET_PATH,
     FRAME_BUFFER,
@@ -116,7 +116,7 @@ def _resolve_sport_model_path(sport: str) -> Optional[str]:
 async def analysis_worker():
     while True:
         try:
-            item = await ANALYSIS_QUEUE.get()
+            item = await database.ANALYSIS_QUEUE.get()
             session_id, image_b64, sport, frame_dict = item
             try:
                 from services.pose_analyzer import PoseAnalyzer
@@ -126,8 +126,6 @@ async def analysis_worker():
                     _ath_id = SESSION_DB.get(session_id, {}).get("athlete_id")
                     _height = float(ATHLETE_DB.get(_ath_id, {}).get("height_cm", 170))
                     analyzer = PoseAnalyzer(sport=sport, body_height_cm=_height)
-                    # PF-10: attach sport-specific model path (fallback to generic)
-                    analyzer.model_path = _resolve_sport_model_path(sport)
                     _POSE_ANALYZERS[session_id] = analyzer
                 analyzer = _POSE_ANALYZERS[session_id]
                 result = analyzer.analyze_base64_image(image_b64, sport)
@@ -201,7 +199,7 @@ async def analysis_worker():
             except Exception as e:
                 print(f"[WORKER ERROR] {e}")
             finally:
-                ANALYSIS_QUEUE.task_done()
+                database.ANALYSIS_QUEUE.task_done()
         except asyncio.CancelledError:
             break
         except Exception as e:
@@ -329,9 +327,9 @@ async def add_frame(session_id: str, frame: FrameData):
     frame_dict["pose_detected"] = None
     FRAME_BUFFER[session_id].append(frame_dict)
     SESSION_DB[session_id]["frame_count"] += 1
-    if image_b64 and ANALYSIS_QUEUE is not None:
+    if image_b64 and database.ANALYSIS_QUEUE is not None:
         try:
-            ANALYSIS_QUEUE.put_nowait((session_id, image_b64, sport, frame_dict))
+            database.ANALYSIS_QUEUE.put_nowait((session_id, image_b64, sport, frame_dict))
         except asyncio.QueueFull:
             print(f"[WARN] Analysis queue full, dropping frame for {session_id[:8]}")
     latest = RESULT_STORE.get(session_id, {})
@@ -475,6 +473,13 @@ async def end_session(session_id: str):
             "quality_distribution": quality_counts,
             "xp_earned": _compute_xp(scores, jump_heights),
         }
+    # Enrich summary with coaching + data quality stats
+    try:
+        from services.data_pipeline import enrich_session_summary
+        summary = enrich_session_summary(session_id, summary)
+    except Exception as enrich_err:
+        summary["coaching"] = {"patterns": [], "summary": f"Analysis unavailable: {enrich_err}"}
+
     SESSION_DB[session_id]["status"] = "completed"
     SESSION_DB[session_id]["ended_at"] = datetime.now(timezone.utc).isoformat()
     SESSION_DB[session_id]["summary"] = summary
@@ -567,17 +572,78 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
                     from PIL import Image as _Image
 
                     _img_bytes = _b64.b64decode(data["image_b64"])
-                    _img = _Image.open(_BytesIO(_img_bytes)).convert("RGB").resize((16, 16))
-                    _arr = _np.array(_img, dtype=_np.float32)
-                    r, g, b = float(_arr[:, :, 0].mean()), float(_arr[:, :, 1].mean()), float(_arr[:, :, 2].mean())
+                    _img = _Image.open(_BytesIO(_img_bytes)).convert("RGB")
+                    _img_np = _np.array(_img)
+                    ih, iw = _img_np.shape[:2]
+
+                    # Face detection: run every 10th frame, cache bbox
+                    if not hasattr(proc, '_face_bbox'):
+                        proc._face_bbox = None
+                        proc._face_det_counter = 0
+                        # Init face detector once
+                        try:
+                            import mediapipe as _mp
+                            from mediapipe.tasks.python import BaseOptions as _BO
+                            from mediapipe.tasks.python.vision import FaceDetector as _FD, FaceDetectorOptions as _FDO
+                            from pathlib import Path
+                            _model = Path(__file__).parent.parent / "models" / "face_detector.tflite"
+                            if _model.exists():
+                                proc._face_det = _FD.create_from_options(
+                                    _FDO(base_options=_BO(model_asset_path=str(_model)))
+                                )
+                            else:
+                                proc._face_det = None
+                        except Exception:
+                            proc._face_det = None
+
+                    # Run face detection every 10 frames (expensive), cache result
+                    proc._face_det_counter = getattr(proc, '_face_det_counter', 0) + 1
+                    if proc._face_det and (proc._face_bbox is None or proc._face_det_counter % 10 == 0):
+                        try:
+                            import mediapipe as _mp
+                            mp_img = _mp.Image(image_format=_mp.ImageFormat.SRGB, data=_img_np)
+                            det = proc._face_det.detect(mp_img)
+                            if det.detections:
+                                bb = det.detections[0].bounding_box
+                                proc._face_bbox = (bb.origin_x, bb.origin_y, bb.width, bb.height)
+                            else:
+                                proc._face_bbox = None
+                        except Exception:
+                            pass
+
+                    # Extract RGB from face ROI (or center fallback)
+                    if proc._face_bbox:
+                        bx, by, bw, bh = proc._face_bbox
+                        # Forehead/cheek region: top 50%, center 60%
+                        fx = max(0, bx + int(bw * 0.2))
+                        fy = max(0, by + int(bh * 0.1))
+                        fw = min(iw - fx, int(bw * 0.6))
+                        fh = min(ih - fy, int(bh * 0.5))
+                        roi = _img_np[fy:fy+fh, fx:fx+fw] if fw > 0 and fh > 0 else None
+                    else:
+                        roi = None
+
+                    if roi is not None and roi.size > 0:
+                        r, g, b = float(roi[:,:,0].mean()), float(roi[:,:,1].mean()), float(roi[:,:,2].mean())
+                    else:
+                        # No face — center crop fallback
+                        cy, cx = ih // 2, iw // 2
+                        ch, cw = ih // 5, iw // 5
+                        crop = _img_np[max(0,cy-ch):cy+ch, max(0,cx-cw):cx+cw]
+                        r, g, b = float(crop[:,:,0].mean()), float(crop[:,:,1].mean()), float(crop[:,:,2].mean())
+
+                    # Send face status back to client
+                    result_extra = {"face_detected": proc._face_bbox is not None}
                 except Exception as _e:
-                    print(f"[RPPG] image_b64 decode error: {_e}")
+                    print(f"[RPPG] error: {_e}")
                     continue
             else:
                 r, g, b = data.get("r", 0.0), data.get("g", 0.0), data.get("b", 0.0)
+                result_extra = {}
             t = data.get("ts", time.time())
             proc.add_rgb(r, g, b, t)
             result = proc.compute()
+            result.update(result_extra)
             await websocket.send_json(result)
     except WebSocketDisconnect:
         print(f"[WS-RPPG] Client disconnected: {session_id[:8]}")
