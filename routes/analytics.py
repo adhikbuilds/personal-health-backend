@@ -204,3 +204,78 @@ async def readiness(athlete_id: str, days: int = Query(default=14, ge=3, le=90))
     payload = _compute_readiness(athlete_id, days)
     progress_cache.set(key, payload)
     return payload
+
+
+@router.get("/athlete/{athlete_id}/advanced-metrics")
+async def advanced_metrics(athlete_id: str, days: int = Query(default=60, ge=7, le=180)):
+    """Bundle of derived training metrics computed by services.metrics_service.
+
+    Includes ACWR + band, training monotony + strain, form momentum,
+    trend %, asymmetry %, intensity of the latest session, fatigue index,
+    and a composite readiness score. One endpoint the Android MetricsScreen
+    can hit to render every chart.
+    """
+    from services import metrics_service as ms
+    from services.repositories import athletes, sessions as session_repo
+
+    if not athletes.exists(athlete_id):
+        raise HTTPException(404, "athlete not found")
+
+    athlete_sessions = [s for s in session_repo.list(athlete_id=athlete_id, status="completed")]
+    # Keep only sessions within the window
+    cutoff_days = days
+    now = datetime.now(timezone.utc)
+    recent: list[dict] = []
+    for s in athlete_sessions:
+        ts = None
+        try:
+            ts = datetime.fromisoformat(str(s.get("ended_at") or s.get("started_at") or "").replace("Z", "+00:00"))
+        except Exception:
+            continue
+        if ts and (now - ts).days <= cutoff_days:
+            recent.append(s)
+
+    # Collect frames across recent sessions for asymmetry
+    all_frames: list[dict] = []
+    for s in recent[:15]:
+        all_frames.extend(s.get("frames", []) or [])
+
+    latest_summary = recent[0].get("summary") if recent else {}
+    hr_summary = recent[0].get("summary", {}).get("heart_rate") if recent else None
+
+    # Daily load for the chart
+    load_map = ms.daily_load(recent)
+    load_series = [{"date": d, "load": round(v, 1)} for d, v in sorted(load_map.items())]
+
+    # Form trend series (last 14 days, one point per session day)
+    trend_series: list[dict] = []
+    seen_days: set[str] = set()
+    for s in reversed(recent):
+        iso = (s.get("ended_at") or s.get("started_at") or "")[:10]
+        if not iso or iso in seen_days:
+            continue
+        summary = s.get("summary") or {}
+        avg = summary.get("avg_form_score", 0)
+        if avg:
+            trend_series.append({"date": iso, "score": round(float(avg), 1)})
+            seen_days.add(iso)
+    trend_series = trend_series[-14:]
+
+    return {
+        "athlete_id": athlete_id,
+        "window_days": days,
+        "session_count": len(recent),
+        "aggregate": ms.aggregate_sessions(recent),
+        "trend_pct": ms.form_score_trend_pct(recent),
+        "momentum": ms.form_momentum(recent),
+        "acwr": ms.acute_chronic_ratio(recent),
+        "monotony": ms.training_monotony(recent),
+        "asymmetry": ms.asymmetry_index(all_frames),
+        "latest_intensity": ms.session_intensity(latest_summary or {}, hr_summary),
+        "fatigue": ms.fatigue_index(recent),
+        "readiness": ms.readiness_score(recent),
+        "load_series": load_series,
+        "form_trend_series": trend_series,
+        "heart_rate": hr_summary,
+        "computed_at": datetime.now(timezone.utc).isoformat(),
+    }
