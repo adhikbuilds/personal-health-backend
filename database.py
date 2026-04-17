@@ -28,6 +28,7 @@ ANALYSIS_QUEUE: asyncio.Queue | None = None
 RESULT_STORE: dict[str, dict] = {}
 _POSE_ANALYZERS: dict[str, object] = {}
 RPPG_STORE: dict[str, object] = {}
+FOOD_DB: dict[str, dict] = {}
 _FOLLOWS: dict[str, set] = defaultdict(set)
 _RATE_LIMITS: dict[str, float] = {}  # PF-04: session_id → last frame timestamp
 
@@ -50,7 +51,7 @@ def _load_db():
                 ATHLETE_DB.update(json.load(f))
         except Exception as e:
             print(f"[DB WARN] Could not load athletes: {e}")
-    # Load foods database
+        # Load foods database
         foods_file = DB_PATH / "foods.json"
         if foods_file.exists():
             try:

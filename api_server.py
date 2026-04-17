@@ -27,7 +27,6 @@ except ImportError:
     FASTAPI_AVAILABLE = False
     print("[ERROR] FastAPI not installed. Run: pip install fastapi uvicorn")
 
-
 if FASTAPI_AVAILABLE:
     import database
     from config import settings
