@@ -39,6 +39,7 @@ if FASTAPI_AVAILABLE:
     from routes.athletes import router as athletes_router
     from routes.auth import router as auth_router
     from routes.coach import router as coach_router
+    from routes.coach_roster import router as coach_roster_router
     from routes.data_export import router as export_router
     from routes.fitness import analysis_worker, session_cleanup_worker
     from routes.fitness import router as fitness_router
@@ -52,7 +53,9 @@ if FASTAPI_AVAILABLE:
     from routes.progress import router as progress_router
     from routes.realtime import router as realtime_router
     from routes.scorecard import router as scorecard_router
+    from routes.session_replay import router as session_replay_router
     from routes.social import router as social_router
+    from routes.streaks import router as streaks_router
     from routes.weekly_summary import router as summary_router
     from routes.workouts import router as workouts_router
     from sqlite_store import init_db
@@ -136,6 +139,9 @@ if FASTAPI_AVAILABLE:
     app.include_router(realtime_router)
     app.include_router(workouts_router)
     app.include_router(intelligence_report_router)
+    app.include_router(coach_roster_router)
+    app.include_router(streaks_router)
+    app.include_router(session_replay_router)
 
     # ─── OpenAPI: advertise bearer scheme ───────────────────────────────────
     def _custom_openapi():
