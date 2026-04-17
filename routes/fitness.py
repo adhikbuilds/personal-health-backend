@@ -31,8 +31,56 @@ from database import (
     _compute_xp,
     _save_db,
 )
+from logging_setup import get_logger
 
 router = APIRouter()
+log = get_logger("routes.fitness")
+
+
+def _hr_zone(bpm: float, resting_hr: int = 60, max_hr: int = 190) -> dict:
+    """Classify heart rate into training zones.
+
+    Uses HR reserve (Karvonen) so zones respect the athlete's resting baseline.
+    Returns zone name, 1-5 index, and intensity % of HR reserve.
+    """
+    if bpm < 30:
+        return {"zone": "unknown", "index": 0, "intensity_pct": 0.0, "color": "#64748b"}
+    reserve = max(max_hr - resting_hr, 1)
+    pct = max(0.0, min(1.0, (bpm - resting_hr) / reserve))
+    if pct < 0.50:
+        return {"zone": "recovery", "index": 1, "intensity_pct": round(pct * 100, 1), "color": "#38bdf8"}
+    if pct < 0.60:
+        return {"zone": "endurance", "index": 2, "intensity_pct": round(pct * 100, 1), "color": "#22c55e"}
+    if pct < 0.70:
+        return {"zone": "tempo", "index": 3, "intensity_pct": round(pct * 100, 1), "color": "#facc15"}
+    if pct < 0.85:
+        return {"zone": "threshold", "index": 4, "intensity_pct": round(pct * 100, 1), "color": "#f97316"}
+    return {"zone": "anaerobic", "index": 5, "intensity_pct": round(pct * 100, 1), "color": "#ef4444"}
+
+
+def _hr_summary_for_session(session_id: str) -> Optional[dict]:
+    """Build an HR summary from the rPPG processor's full readings if one ran for this session."""
+    proc = RPPG_STORE.get(session_id)
+    if proc is None or not getattr(proc, "last_bpm", 0):
+        return None
+    bpms: list[float] = list(getattr(proc, "bpm_history", []) or [])
+    if not bpms:
+        bpms = [float(proc.last_bpm)]
+    # Zone distribution in seconds (approx — we don't store per-sample timestamps for bpm_history)
+    zone_counts: dict[str, int] = {}
+    for bpm in bpms:
+        z = _hr_zone(bpm).get("zone", "unknown")
+        zone_counts[z] = zone_counts.get(z, 0) + 1
+    return {
+        "avg_bpm": round(sum(bpms) / len(bpms), 1),
+        "peak_bpm": round(max(bpms), 1),
+        "min_bpm": round(min(bpms), 1),
+        "last_bpm": round(float(proc.last_bpm), 1),
+        "last_hrv_ms": round(float(getattr(proc, "last_hrv", 0) or 0), 1),
+        "last_zone": _hr_zone(float(proc.last_bpm)),
+        "zone_distribution": zone_counts,
+        "sample_count": len(bpms),
+    }
 
 
 # ─── Pydantic Models ────────────────────────────────────────────────────────
@@ -41,6 +89,7 @@ router = APIRouter()
 class StartSessionRequest(BaseModel):
     athlete_id: str = "athlete_01"
     sport: str = "vertical_jump"
+    huddle_id: Optional[str] = None
     model_config = {"json_schema_extra": {"example": {"athlete_id": "athlete_01", "sport": "vertical_jump"}}}
 
 
@@ -96,20 +145,39 @@ async def _broadcast(session_id: str, payload: dict):
             conns.remove(ws)
 
 
+_RESOLVED_MODEL_LOGGED: set[str] = set()
+
+
 def _resolve_sport_model_path(sport: str) -> Optional[str]:
     """PF-10: pick a sport-specific .tflite if it exists, else fall back to the generic one.
     Returns the resolved path as a string, or None if no model is available.
-    pose_analyzer is rule-based today, so this is attached to the analyzer for
-    observability / eventual on-device deployment — it does not change scoring."""
+    Logs once per (sport, outcome) pair so operators can see when a sport silently
+    falls back to rule-based scoring.
+    """
     from pathlib import Path as _P
 
     models_dir = _P(__file__).resolve().parent.parent / "models"
     specific = models_dir / f"pose_classifier_{sport}.tflite"
     generic = models_dir / "pose_classifier.tflite"
+
     if specific.exists():
+        key = f"{sport}:specific"
+        if key not in _RESOLVED_MODEL_LOGGED:
+            log.info("sport model resolved", extra={"sport": sport, "kind": "specific"})
+            _RESOLVED_MODEL_LOGGED.add(key)
         return str(specific)
+
     if generic.exists():
+        key = f"{sport}:generic"
+        if key not in _RESOLVED_MODEL_LOGGED:
+            log.info("sport model resolved", extra={"sport": sport, "kind": "generic"})
+            _RESOLVED_MODEL_LOGGED.add(key)
         return str(generic)
+
+    key = f"{sport}:none"
+    if key not in _RESOLVED_MODEL_LOGGED:
+        log.warning("no pose model available — falling back to rule-based", extra={"sport": sport})
+        _RESOLVED_MODEL_LOGGED.add(key)
     return None
 
 
@@ -178,15 +246,20 @@ async def analysis_worker():
                         with open(DB_PATH / "predictions.jsonl", "a") as plog:
                             plog.write(json.dumps(log_entry) + "\n")
                     except Exception as plog_err:
-                        print(f"[PRED LOG] {plog_err}")
+                        log.warning("prediction log write failed", extra={"error": str(plog_err)})
 
-                    print(
-                        f"[AI] session={session_id[:8]} score={result['form_score']:.0f} "
-                        f"quality={result['form_quality']} phase={result['phase']}"
+                    log.info(
+                        "frame analyzed",
+                        extra={
+                            "session_id": session_id[:8],
+                            "form_score": round(result["form_score"], 1),
+                            "form_quality": result["form_quality"],
+                            "phase": result["phase"],
+                        },
                     )
                     await _broadcast(session_id, {"type": "frame", **result_entry})
                 else:
-                    print(f"[AI] No pose in frame (session {session_id[:8]})")
+                    log.debug("no pose in frame", extra={"session_id": session_id[:8]})
                     await _broadcast(
                         session_id,
                         {
@@ -197,13 +270,13 @@ async def analysis_worker():
                         },
                     )
             except Exception as e:
-                print(f"[WORKER ERROR] {e}")
+                log.error("analysis worker error", extra={"error": str(e), "session_id": session_id[:8]})
             finally:
                 database.ANALYSIS_QUEUE.task_done()
         except asyncio.CancelledError:
             break
         except Exception as e:
-            print(f"[WORKER FATAL] {e}")
+            log.error("analysis worker fatal", extra={"error": str(e)})
             await asyncio.sleep(1)
 
 
@@ -237,11 +310,11 @@ async def session_cleanup_worker():
                                 fp.unlink()
                                 removed += 1
                             except Exception as rm_err:
-                                print(f"[PF-12] Failed to remove {fp}: {rm_err}")
+                                log.warning("frame file unlink failed", extra={"path": str(fp), "error": str(rm_err)})
                     if removed:
-                        print(f"[PF-12] Cleaned up {removed} expired frame files")
+                        log.info("frame files cleaned up", extra={"removed": removed})
             except Exception as cleanup_err:
-                print(f"[PF-12] Frame file cleanup error: {cleanup_err}")
+                log.error("frame cleanup error", extra={"error": str(cleanup_err)})
 
             for sid, session in list(SESSION_DB.items()):
                 if session.get("status") != "active":
@@ -263,12 +336,12 @@ async def session_cleanup_worker():
                     session["status"] = "completed"
                     session["ended_at"] = datetime.utcnow().isoformat()
                     session["auto_ended"] = True
-                    print(f"[CLEANUP] Auto-ended stale session {sid[:8]}")
+                    log.info("auto-ended stale session", extra={"session_id": sid[:8]})
             _save_db()
         except asyncio.CancelledError:
             break
         except Exception as e:
-            print(f"[CLEANUP ERROR] {e}")
+            log.error("cleanup worker error", extra={"error": str(e)})
             await asyncio.sleep(60)
 
 
@@ -287,9 +360,22 @@ async def start_session(req: StartSessionRequest):
         "ended_at": None,
         "frame_count": 0,
         "summary": None,
+        "huddle_id": req.huddle_id,
     }
     SESSION_DB[session_id] = session
     FRAME_BUFFER[session_id] = []
+
+    if req.huddle_id:
+        try:
+            from services.huddle import bind_session_to_huddle
+
+            bind_session_to_huddle(req.huddle_id, req.athlete_id, session_id)
+        except Exception as bind_err:
+            log.warning(
+                "huddle bind failed",
+                extra={"session_id": session_id[:8], "huddle_id": req.huddle_id, "error": str(bind_err)},
+            )
+
     return {"session_id": session_id, "sport": req.sport, "athlete_id": req.athlete_id, "message": "Session started"}
 
 
@@ -320,7 +406,7 @@ async def add_frame(session_id: str, frame: FrameData):
         with open(frames_dir / f"{session_id}.jsonl", "a") as fp:
             fp.write(json.dumps(frame_log, default=str) + "\n")
     except Exception as fperr:
-        print(f"[FRAME PERSIST] {fperr}")
+        log.warning("frame persist failed", extra={"session_id": session_id[:8], "error": str(fperr)})
     image_b64 = frame_dict.pop("image_b64", None)
     frame_dict["frame_num"] = len(FRAME_BUFFER[session_id])
     frame_dict["timestamp"] = time.time()
@@ -331,7 +417,7 @@ async def add_frame(session_id: str, frame: FrameData):
         try:
             database.ANALYSIS_QUEUE.put_nowait((session_id, image_b64, sport, frame_dict))
         except asyncio.QueueFull:
-            print(f"[WARN] Analysis queue full, dropping frame for {session_id[:8]}")
+            log.warning("analysis queue full, dropped frame", extra={"session_id": session_id[:8]})
     latest = RESULT_STORE.get(session_id, {})
     return {
         "frame_num": frame_dict["frame_num"],
@@ -392,7 +478,7 @@ async def calibrate_pose(frame: FrameData, sport: str = Query(default="vertical_
             "symmetry_score": result["symmetry_score"],
         }
     except Exception as e:
-        print(f"[CALIBRATE ERROR] {e}")
+        log.error("calibration error", extra={"error": str(e)})
         return {
             "pose_detected": False,
             "form_score": 0,
@@ -429,9 +515,12 @@ async def end_session(session_id: str):
                 if recovered:
                     frames = recovered
                     FRAME_BUFFER[session_id] = recovered
-                    print(f"[PF-12] Recovered {len(recovered)} frames from disk for {session_id[:8]}")
+                    log.info(
+                        "recovered frames from disk",
+                        extra={"session_id": session_id[:8], "count": len(recovered)},
+                    )
         except Exception as recover_err:
-            print(f"[PF-12] Recovery failed: {recover_err}")
+            log.warning("frame recovery failed", extra={"session_id": session_id[:8], "error": str(recover_err)})
     if not frames:
         summary = {
             "session_id": session_id,
@@ -479,6 +568,11 @@ async def end_session(session_id: str):
         summary = enrich_session_summary(session_id, summary)
     except Exception as enrich_err:
         summary["coaching"] = {"patterns": [], "summary": f"Analysis unavailable: {enrich_err}"}
+
+    # Fold in heart-rate summary if an rPPG stream ran during the session
+    hr_summary = _hr_summary_for_session(session_id)
+    if hr_summary:
+        summary["heart_rate"] = hr_summary
 
     SESSION_DB[session_id]["status"] = "completed"
     SESSION_DB[session_id]["ended_at"] = datetime.now(timezone.utc).isoformat()
@@ -542,13 +636,23 @@ async def get_active_sessions():
 @router.websocket("/rppg/live-stream/{session_id}")
 async def rppg_live_stream(websocket: WebSocket, session_id: str):
     await websocket.accept()
-    print(f"[WS-RPPG] Client connected: {session_id[:8]}")
+    log.info("rppg client connected", extra={"session_id": session_id[:8]})
     try:
         from services.rppg_processor import RPPGProcessor
 
         if session_id not in RPPG_STORE:
             RPPG_STORE[session_id] = RPPGProcessor()
         proc = RPPG_STORE[session_id]
+        # Track bpm history so end_session can summarise zones
+        if not hasattr(proc, "bpm_history"):
+            proc.bpm_history = []
+
+        # Pull resting/max HR from athlete profile when available
+        _ath_id = SESSION_DB.get(session_id, {}).get("athlete_id", "")
+        _athlete = ATHLETE_DB.get(_ath_id, {}) if _ath_id else {}
+        resting_hr = int(_athlete.get("resting_hr", 60))
+        max_hr = int(_athlete.get("max_hr", 190))
+
         while True:
             data = await websocket.receive_json()
             if data.get("face_found") is False:
@@ -560,6 +664,7 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
                         "bpm": 0,
                         "hrv_ms": 0,
                         "waveform": [],
+                        "zone": _hr_zone(0),
                     }
                 )
                 continue
@@ -635,7 +740,7 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
                     # Send face status back to client
                     result_extra = {"face_detected": proc._face_bbox is not None}
                 except Exception as _e:
-                    print(f"[RPPG] error: {_e}")
+                    log.warning("rppg image decode failed", extra={"session_id": session_id[:8], "error": str(_e)})
                     continue
             else:
                 r, g, b = data.get("r", 0.0), data.get("g", 0.0), data.get("b", 0.0)
@@ -644,11 +749,36 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
             proc.add_rgb(r, g, b, t)
             result = proc.compute()
             result.update(result_extra)
+
+            # Enrich with training zone and record history for session summary
+            bpm_val = float(result.get("bpm", 0) or 0)
+            if bpm_val > 30 and result.get("status") == "ok":
+                result["zone"] = _hr_zone(bpm_val, resting_hr, max_hr)
+                # Keep last 10 minutes at ~2 Hz = 1200 samples
+                proc.bpm_history.append(bpm_val)
+                if len(proc.bpm_history) > 1200:
+                    proc.bpm_history = proc.bpm_history[-1200:]
+            else:
+                result["zone"] = _hr_zone(0)
+
+            # Broadcast to dashboard listeners so biomech + HR land on one stream
+            await _broadcast(
+                session_id,
+                {
+                    "type": "hr",
+                    "bpm": result.get("bpm"),
+                    "hrv_ms": result.get("hrv_ms"),
+                    "zone": result["zone"],
+                    "signal_quality": result.get("signal_quality"),
+                    "ts": t,
+                },
+            )
+
             await websocket.send_json(result)
     except WebSocketDisconnect:
-        print(f"[WS-RPPG] Client disconnected: {session_id[:8]}")
+        log.info("rppg client disconnected", extra={"session_id": session_id[:8]})
     except Exception as e:
-        print(f"[WS-RPPG] Error: {e}")
+        log.error("rppg stream error", extra={"session_id": session_id[:8], "error": str(e)})
 
 
 @router.get("/rppg/result/{session_id}", tags=["rPPG"])
@@ -666,7 +796,7 @@ async def rppg_get_result(session_id: str):
 async def websocket_live(websocket: WebSocket, session_id: str):
     await websocket.accept()
     WS_CONNECTIONS[session_id].append(websocket)
-    print(f"[WS] Client connected to session {session_id[:8]}")
+    log.info("metrics ws connected", extra={"session_id": session_id[:8]})
     try:
         while True:
             try:
@@ -674,9 +804,9 @@ async def websocket_live(websocket: WebSocket, session_id: str):
             except TimeoutError:
                 await websocket.send_text(json.dumps({"type": "ping", "ts": time.time()}))
     except WebSocketDisconnect:
-        print(f"[WS] Client disconnected from session {session_id[:8]}")
+        log.info("metrics ws disconnected", extra={"session_id": session_id[:8]})
     except Exception as e:
-        print(f"[WS] Error: {e}")
+        log.error("metrics ws error", extra={"session_id": session_id[:8], "error": str(e)})
     finally:
         conns = WS_CONNECTIONS.get(session_id, [])
         if websocket in conns:
@@ -686,7 +816,7 @@ async def websocket_live(websocket: WebSocket, session_id: str):
 @router.websocket("/session/{session_id}/live-stream")
 async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
     await websocket.accept()
-    print(f"[WS-STREAM] Native phone streaming for {session_id[:8]}")
+    log.info("native landmark stream connected", extra={"session_id": session_id[:8]})
     if session_id not in SESSION_DB:
         SESSION_DB[session_id] = {"athlete_id": "test", "sport": "vertical_jump", "status": "active"}
         FRAME_BUFFER[session_id] = []
@@ -725,9 +855,9 @@ async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
                 }
             )
     except WebSocketDisconnect:
-        print(f"[WS-STREAM] Native device disconnected {session_id[:8]}")
+        log.info("native landmark stream disconnected", extra={"session_id": session_id[:8]})
     except Exception as e:
-        print(f"[WS-STREAM] Error: {e}")
+        log.error("native landmark stream error", extra={"session_id": session_id[:8], "error": str(e)})
 
 
 # ─── Dataset ────────────────────────────────────────────────────────────────

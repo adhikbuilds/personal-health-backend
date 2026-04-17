@@ -29,6 +29,8 @@ class Huddle:
     athletes: list[str] = field(default_factory=list)
     sessions: dict[str, str] = field(default_factory=dict)
     leaderboard: list[dict] = field(default_factory=list)
+    started_at: str | None = None
+    ended_at: str | None = None
 
 
 # ─── Persistence helpers ───────────────────────────────────────────────────
@@ -112,6 +114,35 @@ def join_huddle(huddle_id: str, athlete_id: str) -> dict:
     }
 
 
+def leave_huddle(huddle_id: str, athlete_id: str) -> dict:
+    """Remove an athlete from a huddle. Safe to call on ended huddles (no-op)."""
+    huddle = _get_huddle(huddle_id)
+    if athlete_id not in huddle.athletes:
+        raise ValueError("Athlete not in huddle")
+    huddle.athletes.remove(athlete_id)
+    huddle.sessions.pop(athlete_id, None)
+    _persist(huddle)
+    logger.info("Athlete left huddle", extra={"huddle_id": huddle_id, "athlete_id": athlete_id})
+    return {
+        "huddle_id": huddle_id,
+        "athlete_id": athlete_id,
+        "remaining": len(huddle.athletes),
+        "status": huddle.status,
+    }
+
+
+def bind_session_to_huddle(huddle_id: str, athlete_id: str, session_id: str) -> None:
+    """Link an athlete's session to a huddle so the live leaderboard tracks it."""
+    try:
+        huddle = _get_huddle(huddle_id)
+    except KeyError:
+        return
+    if athlete_id not in huddle.athletes:
+        return
+    huddle.sessions[athlete_id] = session_id
+    _persist(huddle)
+
+
 def start_huddle(huddle_id: str) -> Huddle:
     """Transition huddle from 'waiting' to 'active'."""
     huddle = _get_huddle(huddle_id)
@@ -123,6 +154,7 @@ def start_huddle(huddle_id: str) -> Huddle:
         raise ValueError("Cannot start huddle with no athletes")
 
     huddle.status = "active"
+    huddle.started_at = datetime.now(timezone.utc).isoformat()
     _persist(huddle)
     logger.info("Huddle started", extra={"huddle_id": huddle_id, "count": len(huddle.athletes)})
     return huddle
@@ -136,6 +168,7 @@ def end_huddle(huddle_id: str) -> Huddle:
         raise ValueError("Huddle already ended")
 
     huddle.status = "ended"
+    huddle.ended_at = datetime.now(timezone.utc).isoformat()
     huddle.leaderboard = compute_huddle_leaderboard(huddle_id, huddle=huddle)
     _persist(huddle)
     logger.info("Huddle ended", extra={"huddle_id": huddle_id})

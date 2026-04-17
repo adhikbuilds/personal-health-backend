@@ -12,6 +12,10 @@ import os
 from collections import defaultdict
 from pathlib import Path
 
+from logging_setup import get_logger
+
+_log = get_logger("database")
+
 DB_PATH = Path(os.path.dirname(os.path.abspath(__file__))) / "db"
 DB_PATH.mkdir(parents=True, exist_ok=True)
 
@@ -43,26 +47,26 @@ def _load_db():
             with open(sessions_file, encoding="utf-8") as f:
                 SESSION_DB.update(json.load(f))
         except Exception as e:
-            print(f"[DB WARN] Could not load sessions: {e}")
+            _log.warning("could not load sessions", extra={"error": str(e)})
     if athletes_file.exists():
         try:
             with open(athletes_file, encoding="utf-8") as f:
                 ATHLETE_DB.update(json.load(f))
         except Exception as e:
-            print(f"[DB WARN] Could not load athletes: {e}")
-    # Load foods database
-        foods_file = DB_PATH / "foods.json"
-        if foods_file.exists():
-            try:
-                with open(foods_file, encoding="utf-8") as f:
-                    raw = json.load(f)
-                    for food in raw.get("foods", []):
-                        FOOD_DB[food["food_id"]] = food
-                print(f"[DB] {len(FOOD_DB)} foods loaded")
-            except Exception as e:
-                print(f"[DB WARN] Could not load foods: {e}")
+            _log.warning("could not load athletes", extra={"error": str(e)})
+    # Load foods database (independent of athletes file)
+    foods_file = DB_PATH / "foods.json"
+    if foods_file.exists():
+        try:
+            with open(foods_file, encoding="utf-8") as f:
+                raw = json.load(f)
+                for food in raw.get("foods", []):
+                    FOOD_DB[food["food_id"]] = food
+            _log.info("foods loaded", extra={"count": len(FOOD_DB)})
+        except Exception as e:
+            _log.warning("could not load foods", extra={"error": str(e)})
 
-        # Seed athletes and sessions if DB is sparse
+    # Seed athletes and sessions if DB is sparse
     if len(ATHLETE_DB) < 10:
         try:
             import sys
@@ -79,9 +83,9 @@ def _load_db():
                     s = generate_session(athlete, i, n)
                     SESSION_DB[s["session_id"]] = s
             _save_db()
-            print(f"[DB] Auto-seeded {len(athletes)} athletes, {len(SESSION_DB)} sessions")
+            _log.info("auto-seeded athletes/sessions", extra={"athletes": len(athletes), "sessions": len(SESSION_DB)})
         except Exception as e:
-            print(f"[DB] Seed failed ({e}), using minimal defaults")
+            _log.warning("seed failed, using minimal defaults", extra={"error": str(e)})
             ATHLETE_DB.update(
                 {
                     "athlete_01": {
@@ -164,9 +168,12 @@ def _load_db():
                     reloaded_sessions += 1
                     reloaded_frames += len(recovered)
             except Exception as e:
-                print(f"[PF-12 WARN] Could not reload frames for {sid[:8]}: {e}")
+                _log.warning("frame reload failed", extra={"session_id": sid[:8], "error": str(e)})
         if reloaded_sessions:
-            print(f"[PF-12] Reloaded {reloaded_frames} frames across {reloaded_sessions} active sessions")
+            _log.info(
+                "reloaded active-session frames",
+                extra={"frames": reloaded_frames, "sessions": reloaded_sessions},
+            )
 
     # Load follow relationships
     follows_file = DB_PATH / "follows.json"
@@ -177,21 +184,73 @@ def _load_db():
             for k, v in raw_follows.items():
                 _FOLLOWS[k] = set(v)
         except Exception as e:
-            print(f"[DB WARN] Could not load follows: {e}")
-    print(f"[DB] {len(SESSION_DB)} sessions, {len(ATHLETE_DB)} athletes loaded")
+            _log.warning("could not load follows", extra={"error": str(e)})
+    _log.info("db loaded", extra={"sessions": len(SESSION_DB), "athletes": len(ATHLETE_DB)})
 
 
 def _save_db():
-    try:
-        with open(DB_PATH / "sessions.json", "w", encoding="utf-8") as f:
-            json.dump(SESSION_DB, f, indent=2, default=str)
-        with open(DB_PATH / "athletes.json", "w", encoding="utf-8") as f:
-            json.dump(ATHLETE_DB, f, indent=2, default=str)
-        follows_data = {k: list(v) for k, v in _FOLLOWS.items()}
-        with open(DB_PATH / "follows.json", "w", encoding="utf-8") as f:
-            json.dump(follows_data, f, indent=2)
-    except Exception as e:
-        print(f"[DB WARN] Could not save db: {e}")
+    """Atomically persist SESSION_DB/ATHLETE_DB/follows.
+
+    Writes to a temp file first and renames on success so a crash during write
+    can't leave a half-written JSON that kills the next startup.
+    """
+    targets = [
+        (DB_PATH / "sessions.json", SESSION_DB),
+        (DB_PATH / "athletes.json", ATHLETE_DB),
+        (DB_PATH / "follows.json", {k: list(v) for k, v in _FOLLOWS.items()}),
+    ]
+    for path, data in targets:
+        try:
+            tmp = path.with_suffix(path.suffix + ".tmp")
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, default=str)
+            os.replace(tmp, path)
+        except Exception as e:
+            _log.error("save db failed", extra={"path": str(path), "error": str(e)})
+
+
+# ─── Per-key locks for safe async mutations ─────────────────────────────────
+
+
+SESSION_LOCKS: dict[str, asyncio.Lock] = {}
+ATHLETE_LOCKS: dict[str, asyncio.Lock] = {}
+
+
+def session_lock(session_id: str) -> asyncio.Lock:
+    lock = SESSION_LOCKS.get(session_id)
+    if lock is None:
+        lock = asyncio.Lock()
+        SESSION_LOCKS[session_id] = lock
+    return lock
+
+
+def athlete_lock(athlete_id: str) -> asyncio.Lock:
+    lock = ATHLETE_LOCKS.get(athlete_id)
+    if lock is None:
+        lock = asyncio.Lock()
+        ATHLETE_LOCKS[athlete_id] = lock
+    return lock
+
+
+# ─── Periodic save worker ───────────────────────────────────────────────────
+
+
+async def periodic_save_worker(interval_seconds: int = 60) -> None:
+    """Flush in-memory DB to disk every `interval_seconds`.
+
+    Without this, a crashed server loses every session started since the last
+    shutdown. Saves are atomic via _save_db's temp-rename pattern.
+    """
+    while True:
+        try:
+            await asyncio.sleep(interval_seconds)
+            _save_db()
+            _log.debug("periodic db save", extra={"sessions": len(SESSION_DB)})
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            _log.warning("periodic save error", extra={"error": str(e)})
+            await asyncio.sleep(5)
 
 
 def _load_json(filename: str) -> dict:
