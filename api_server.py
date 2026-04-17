@@ -47,12 +47,13 @@ if FASTAPI_AVAILABLE:
     from routes.huddle import router as huddle_router
     from routes.load import router as load_router
     from routes.nutrition_ai import router as nutrition_ai_router
-    from routes.realtime import router as realtime_router
     from routes.plan import router as plan_router
     from routes.progress import router as progress_router
+    from routes.realtime import router as realtime_router
     from routes.scorecard import router as scorecard_router
     from routes.social import router as social_router
     from routes.weekly_summary import router as summary_router
+    from routes.workouts import router as workouts_router
     from sqlite_store import init_db
 
     configure_logging("INFO")
@@ -121,6 +122,7 @@ if FASTAPI_AVAILABLE:
     app.include_router(analytics_router)
     app.include_router(coach_router)
     from routes.nutrition import router as nutrition_router
+
     app.include_router(nutrition_router)
     app.include_router(plan_router)
     app.include_router(summary_router)
@@ -131,6 +133,7 @@ if FASTAPI_AVAILABLE:
     app.include_router(export_router)
     app.include_router(nutrition_ai_router)
     app.include_router(realtime_router)
+    app.include_router(workouts_router)
 
     # ─── OpenAPI: advertise bearer scheme ───────────────────────────────────
     def _custom_openapi():
