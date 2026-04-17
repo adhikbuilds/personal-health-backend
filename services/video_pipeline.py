@@ -20,6 +20,7 @@ import types
 from dataclasses import dataclass, field
 from typing import Any
 
+from services import sports_catalog
 from services.pose_analyzer import PoseAnalyzer
 from services.smart_coach import coach_frame
 from logging_setup import get_logger
@@ -54,21 +55,11 @@ class VideoSession:
     - Running statistics
     """
 
-    # Rep counting: (from_phase, to_phase) = 1 rep
-    REP_TRANSITIONS = {
-        "vertical_jump": ("descent", "takeoff"),
-        "squat": ("descent", "setup"),
-        "push_up": ("descent", "setup"),
-        "pull_up": ("descent", "setup"),
-        "snatch": ("descent", "catch"),
-        "sprint": ("drive", "flight"),
-        "javelin": ("wind_up", "release"),
-        "cricket_bat": ("backswing", "contact"),
-        "general": ("descent", "setup"),
-    }
-
     STORE_EVERY_N = 10  # store 1 in 10 frames for training data
     BROADCAST_EVERY_N = 5  # send 1 in 5 frames to dashboard
+
+    # Module-level table kept for external callers still importing it.
+    REP_TRANSITIONS = sports_catalog.build_rep_transitions_map()
 
     def __init__(self, sport: str = "general", body_height_cm: float = 170):
         self.sport = sport
@@ -78,7 +69,7 @@ class VideoSession:
         self.last_phase = None
         self.scores: list[float] = []
         self.start_time = time.time()
-        self._rep_from, self._rep_to = self.REP_TRANSITIONS.get(sport, ("descent", "setup"))
+        self._rep_from, self._rep_to = sports_catalog.rep_transition(sport)
 
     def process_landmarks(self, landmarks: list[list[float]], timestamp: float = None) -> FormResult:
         """

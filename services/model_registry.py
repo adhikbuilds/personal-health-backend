@@ -31,20 +31,18 @@ from pathlib import Path
 from typing import Any
 
 from logging_setup import get_logger
+from services import sports_catalog
 
 log = get_logger("services.model_registry")
 
 _MODELS_DIR = Path(__file__).parent.parent / "models"
 _REGISTRY_PATH = _MODELS_DIR / "registry.json"
 
-# Sport index mapping — must match model_trainer.py
-SPORT_INDEX = {
-    "vertical_jump": 0,
-    "snatch": 1,
-    "sprint": 2,
-    "javelin": 3,
-    "cricket_bat": 4,
-}
+# Sport index mapping is sourced from the unified catalog so adding a new
+# sport doesn't require editing this file. Kept as a module-level name
+# for any external callers that have imported it directly.
+SPORT_INDEX = sports_catalog.build_sport_index_map()
+
 QUALITY_CLASSES = ["poor", "average", "good", "elite"]
 
 # Quality class → form score midpoint (used to convert class prediction
@@ -235,7 +233,7 @@ def predict_quality(
         raw = []
         for fname in feature_names:
             if fname == "sport_idx":
-                raw.append(SPORT_INDEX.get(sport, 0) / 4.0)
+                raw.append(sports_catalog.sport_index(sport) / 4.0)
             else:
                 val = frame_data.get(fname, 0.0)
                 raw.append(float(val) if val is not None else 0.0)
