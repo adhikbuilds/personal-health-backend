@@ -567,7 +567,9 @@ class PoseAnalyzer:
     def _to_landmark(self, lm) -> Landmark:
         """Convert MediaPipe NormalizedLandmark to our Landmark type."""
         return Landmark(
-            x=lm.x, y=lm.y, z=lm.z,
+            x=lm.x,
+            y=lm.y,
+            z=lm.z,
             visibility=getattr(lm, "visibility", getattr(lm, "presence", 0.9)),
         )
 
@@ -842,9 +844,7 @@ class PoseAnalyzer:
                 )
                 for lm in landmarks_list
             ]
-            mock_results = types.SimpleNamespace(
-                pose_landmarks=types.SimpleNamespace(landmark=lms)
-            )
+            mock_results = types.SimpleNamespace(pose_landmarks=types.SimpleNamespace(landmark=lms))
 
             # Multi-person guard
             multi_person_warning = None

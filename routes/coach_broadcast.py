@@ -11,7 +11,6 @@ Trainer-first v1 flows:
   POST /coach/{id}/drill-assignment    — bulk assign tomorrow's drill to athlete subset
 """
 
-import secrets
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
