@@ -1,50 +1,31 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+"""Nutrition domain — foods catalog, nutrition goals, daily summary."""
+
+from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel, Field
 
-from database import ATHLETE_DB, FOOD_DB, _load_json
+from database import ATHLETE_DB, FOOD_DB, _load_json, _save_json
+from logging_setup import get_logger
 
-router = APIRouter(prefix="/foods", tags=["Nutrition"])
+log = get_logger("routes.nutrition")
 
-
-@router.get("/")
-async def list_foods(
-    category: str | None = Query(None),
-    cuisine: str | None = Query(None),
-    tag: str | None = Query(None),
-    q: str | None = Query(None),
-    limit: int = Query(50, ge=1, le=200),
-    offset: int = Query(0, ge=0),
-):
-    results = list(FOOD_DB.values())
-    if category:
-        results = [f for f in results if f["category"] == category]
-    if cuisine:
-        results = [f for f in results if f["cuisine"] == cuisine]
-    if tag:
-        results = [f for f in results if tag in f.get("tags", [])]
-    if q:
-        q_lower = q.lower()
-        results = [f for f in results if q_lower in f["name"].lower()]
-    total = len(results)
-    results = results[offset : offset + limit]
-    return {"count": total, "limit": limit, "offset": offset, "foods": results}
+router = APIRouter(tags=["nutrition"])
 
 
-@router.get("/{food_id}")
-async def get_food(food_id: str):
-    food = FOOD_DB.get(food_id)
-    if not food:
-        raise HTTPException(404, detail=f"Food '{food_id}' not found")
-    return food
+# ================== GOALS API ==================
 
 
-nutrition_router = APIRouter(tags=["Nutrition"])
+class NutritionGoals(BaseModel):
+    daily_calories: float = Field(gt=0)
+    protein_g: float = Field(gt=0)
+    carbs_g: float = Field(gt=0)
+    fat_g: float = Field(gt=0)
+    fiber_g: float = Field(gt=0)
 
 
-# TODO: Move to shared module after PR #6 merges
 def get_default_goals(sport: str):
     if sport in ["vertical_jump", "sprint", "javelin"]:
         return {
@@ -78,6 +59,82 @@ def get_default_goals(sport: str):
             "fat_g": 60,
             "fiber_g": 30,
         }
+
+
+@router.post("/athlete/{athlete_id}/nutrition/goals")
+async def set_goals(athlete_id: str, payload: NutritionGoals):
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(status_code=404, detail="Athlete not found")
+
+    data = _load_json("nutrition.json") or {}
+
+    if athlete_id not in data:
+        data[athlete_id] = {}
+
+    data[athlete_id]["goals"] = payload.model_dump()
+    data[athlete_id]["goals"]["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    _save_json("nutrition.json", data)
+
+    log.info("nutrition goals updated", extra={"athlete_id": athlete_id})
+
+    return {"status": "success", "data": data[athlete_id]["goals"]}
+
+
+@router.get("/athlete/{athlete_id}/nutrition/goals")
+async def get_goals(athlete_id: str, sport: str = "sprint"):
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(status_code=404, detail="Athlete not found")
+
+    data = _load_json("nutrition.json") or {}
+
+    if athlete_id in data and "goals" in data[athlete_id]:
+        return {"status": "success", "data": data[athlete_id]["goals"]}
+
+    default = get_default_goals(sport)
+    default["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    return {"status": "default", "data": default}
+
+
+# ================== FOOD API ==================
+
+
+@router.get("/foods")
+async def list_foods(
+    category: str | None = Query(None),
+    cuisine: str | None = Query(None),
+    tag: str | None = Query(None),
+    q: str | None = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+):
+    results = list(FOOD_DB.values())
+    if category:
+        results = [f for f in results if f["category"] == category]
+    if cuisine:
+        results = [f for f in results if f["cuisine"] == cuisine]
+    if tag:
+        results = [f for f in results if tag in f.get("tags", [])]
+    if q:
+        q_lower = q.lower()
+        results = [f for f in results if q_lower in f["name"].lower()]
+
+    total = len(results)
+    results = results[offset : offset + limit]
+
+    return {"count": total, "limit": limit, "offset": offset, "foods": results}
+
+
+@router.get("/foods/{food_id}")
+async def get_food(food_id: str):
+    food = FOOD_DB.get(food_id)
+    if not food:
+        raise HTTPException(404, detail=f"Food '{food_id}' not found")
+    return food
+
+
+nutrition_router = APIRouter(tags=["Nutrition"])
 
 
 @nutrition_router.get("/athlete/{athlete_id}/nutrition/summary")
