@@ -4,6 +4,8 @@ from __future__ import annotations
 Personal Health — Auth routes (/auth/*).
 """
 
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, EmailStr, Field
 
@@ -26,7 +28,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     name: str = Field(min_length=1, max_length=80)
     password: str = Field(min_length=8, max_length=128)
-    athlete_id: str | None = None
+    athlete_id: Optional[str] = None
 
 
 class LoginRequest(BaseModel):

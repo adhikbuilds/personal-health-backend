@@ -136,6 +136,15 @@ def _distance(p1: Landmark, p2: Landmark) -> float:
 # ─── Form Scoring Rules ──────────────────────────────────────────────────────
 
 SPORT_IDEAL_ANGLES = {
+    "general": {
+        # Freeform training — wide acceptable ranges, focus on symmetry + posture
+        "knee_angle": (60, 170),
+        "hip_angle": (60, 170),
+        "trunk_lean": (0, 30),
+        "shoulder_angle": (20, 170),
+        "elbow_angle": (30, 170),
+        "symmetry": 0.85,
+    },
     "vertical_jump": {
         # Countermovement Jump — descent phase ideal
         "knee_angle": (80, 110),  # deep squat at bottom
@@ -196,11 +205,53 @@ SPORT_IDEAL_ANGLES = {
 
 def compute_form_score(frame: BiomechanicalFrame, sport: str) -> tuple[float, str, str]:
     """
-    Compute a 0-100 form score based on how close key metrics are to
-    the sport-specific ideal ranges.
+    Compute a 0-100 form score.
+
+    Strategy: try the trained MLP classifier first (data flywheel path).
+    If model prediction succeeds, use it as primary — it captures patterns
+    the rule-based scorer can't. Fall through to rule-based scoring when
+    the model isn't loaded (no TF, first deploy, inference error).
 
     Returns: (score, quality_label, primary_feedback)
     """
+    # ── ML model path (primary when available) ──
+    try:
+        from services.model_registry import predict_quality
+
+        frame_dict = {
+            "hip_angle_l": frame.hip_angle_l,
+            "hip_angle_r": frame.hip_angle_r,
+            "knee_angle_l": frame.knee_angle_l,
+            "knee_angle_r": frame.knee_angle_r,
+            "shoulder_angle_l": frame.shoulder_angle_l,
+            "shoulder_angle_r": frame.shoulder_angle_r,
+            "elbow_angle_l": frame.elbow_angle_l,
+            "elbow_angle_r": frame.elbow_angle_r,
+            "ankle_dorsiflexion_l": frame.ankle_dorsiflexion_l,
+            "ankle_dorsiflexion_r": frame.ankle_dorsiflexion_r,
+            "trunk_lean": frame.trunk_lean,
+            "spine_deviation": frame.spine_deviation,
+            "shoulder_hip_sep": frame.shoulder_hip_sep,
+            "head_forward_pos": frame.head_forward_pos,
+            "com_height_norm": frame.com_height_norm,
+            "estimated_jump_height": frame.estimated_jump_height,
+            "limb_symmetry_idx": frame.limb_symmetry_idx,
+        }
+        prediction = predict_quality(frame_dict, sport)
+        if prediction is not None and prediction["confidence"] >= 0.5:
+            # Use model score but still generate rule-based feedback
+            # (model gives quality class, rules give actionable coaching cue)
+            _, _, rule_feedback = _rule_based_form_score(frame, sport)
+            return prediction["form_score"], prediction["quality"], rule_feedback
+    except Exception:
+        pass  # fall through to rules
+
+    # ── Rule-based fallback (always works, no dependencies) ──
+    return _rule_based_form_score(frame, sport)
+
+
+def _rule_based_form_score(frame: BiomechanicalFrame, sport: str) -> tuple[float, str, str]:
+    """Rule-based form scoring from sport-specific ideal angle ranges."""
     if sport not in SPORT_IDEAL_ANGLES:
         sport = "vertical_jump"  # default
 
@@ -490,7 +541,7 @@ class PoseAnalyzer:
     BiomechanicalFrame with all derived metrics.
     """
 
-    MIN_VISIBILITY = 0.5  # ignore keypoints below this confidence
+    MIN_VISIBILITY = 0.3  # lowered from 0.5 — phone camera poses often have partial occlusion
 
     # Smoothing buffer for temporal consistency
     SMOOTH_WINDOW = 5
@@ -515,7 +566,10 @@ class PoseAnalyzer:
 
     def _to_landmark(self, lm) -> Landmark:
         """Convert MediaPipe NormalizedLandmark to our Landmark type."""
-        return Landmark(x=lm.x, y=lm.y, z=lm.z, visibility=lm.visibility)
+        return Landmark(
+            x=lm.x, y=lm.y, z=lm.z,
+            visibility=getattr(lm, "visibility", getattr(lm, "presence", 0.9)),
+        )
 
     def _is_visible(self, *landmarks: Landmark) -> bool:
         return all(l.visibility >= self.MIN_VISIBILITY for l in landmarks)
@@ -559,7 +613,11 @@ class PoseAnalyzer:
         l_an, r_an = lms[27], lms[28]
         l_foot, r_foot = lms[31], lms[32]
 
-        frame.visibility_ok = self._is_visible(l_hip, r_hip, l_kn, r_kn)
+        # Check visibility — require at least one hip + one knee visible
+        # (real phone camera often has partial occlusion on one side)
+        hip_ok = l_hip.visibility >= self.MIN_VISIBILITY or r_hip.visibility >= self.MIN_VISIBILITY
+        knee_ok = l_kn.visibility >= self.MIN_VISIBILITY or r_kn.visibility >= self.MIN_VISIBILITY
+        frame.visibility_ok = hip_ok and knee_ok
         if not frame.visibility_ok:
             return frame
 
@@ -702,8 +760,13 @@ class PoseAnalyzer:
         Analyze a single frame from a base64-encoded JPEG (from mobile camera).
         Returns a metrics dict or {'pose_detected': False} if no person found.
         Called by: POST /session/{id}/frame when image_b64 field is present.
+
+        Uses MediaPipe PoseLandmarker Task API (0.10.x+). Falls back to legacy
+        solutions API for older installs.
         """
         import base64
+        import types
+        from pathlib import Path
 
         import numpy as np
 
@@ -723,26 +786,73 @@ class PoseAnalyzer:
             if frame_bgr is None:
                 return {"pose_detected": False, "error": "image decode failed"}
 
-            if self._mp_pose is None:
-                mp_pose = mp.solutions.pose
-                self._mp_pose = mp_pose.Pose(static_image_mode=True, model_complexity=1, min_detection_confidence=0.5)
             rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
-            results = self._mp_pose.process(rgb)
 
-            if not results.pose_landmarks:
+            # ── Try new Task API first (MediaPipe 0.10.x+) ──
+            landmarks_list = None
+            try:
+                from mediapipe.tasks.python import BaseOptions
+                from mediapipe.tasks.python.vision import PoseLandmarker, PoseLandmarkerOptions, RunningMode
+
+                if self._mp_pose is None or not isinstance(self._mp_pose, PoseLandmarker):
+                    model_path = Path(__file__).parent.parent / "models" / "pose_landmarker.task"
+                    if not model_path.exists():
+                        raise FileNotFoundError(f"Model not found: {model_path}")
+                    options = PoseLandmarkerOptions(
+                        base_options=BaseOptions(model_asset_path=str(model_path)),
+                        running_mode=RunningMode.IMAGE,
+                        num_poses=1,
+                        min_pose_detection_confidence=0.5,
+                        min_tracking_confidence=0.5,
+                    )
+                    self._mp_pose = PoseLandmarker.create_from_options(options)
+
+                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+                detection = self._mp_pose.detect(mp_image)
+
+                if detection.pose_landmarks and len(detection.pose_landmarks) > 0:
+                    landmarks_list = detection.pose_landmarks[0]
+            except (ImportError, FileNotFoundError):
+                # Fall back to legacy solutions API
+                try:
+                    mp_pose = mp.solutions.pose
+                    if self._mp_pose is None:
+                        self._mp_pose = mp_pose.Pose(
+                            static_image_mode=True,
+                            model_complexity=1,
+                            min_detection_confidence=0.5,
+                        )
+                    results = self._mp_pose.process(rgb)
+                    if results.pose_landmarks:
+                        landmarks_list = results.pose_landmarks.landmark
+                except AttributeError:
+                    return {"pose_detected": False, "error": "mediapipe API unavailable"}
+
+            if not landmarks_list or len(landmarks_list) < 33:
                 return {"pose_detected": False}
 
-            # PF-13: Multi-person guard — warn if primary detection confidence is low
-            multi_person_warning = None
-            try:
-                landmarks = results.pose_landmarks.landmark
-                avg_visibility = sum(lm.visibility for lm in landmarks) / len(landmarks)
-                if avg_visibility < 0.6:
-                    multi_person_warning = "Multiple people detected — ensure only you are in frame"
-            except Exception:
-                pass
+            # Convert to the format self.analyze() expects:
+            # a namespace with .pose_landmarks.landmark = list of objects with .x,.y,.z,.visibility
+            lms = [
+                types.SimpleNamespace(
+                    x=getattr(lm, "x", 0),
+                    y=getattr(lm, "y", 0),
+                    z=getattr(lm, "z", 0),
+                    visibility=getattr(lm, "visibility", getattr(lm, "presence", 0.9)),
+                )
+                for lm in landmarks_list
+            ]
+            mock_results = types.SimpleNamespace(
+                pose_landmarks=types.SimpleNamespace(landmark=lms)
+            )
 
-            bio = self.analyze(results)
+            # Multi-person guard
+            multi_person_warning = None
+            avg_visibility = sum(l.visibility for l in lms) / len(lms)
+            if avg_visibility < 0.6:
+                multi_person_warning = "Low visibility — ensure only you are in frame"
+
+            bio = self.analyze(mock_results)
             result = {
                 "pose_detected": True,
                 "visibility_ok": bio.visibility_ok,

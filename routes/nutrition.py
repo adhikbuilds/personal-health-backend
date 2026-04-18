@@ -1,20 +1,19 @@
 from __future__ import annotations
 
-"""Nutrition domain — goal setting and defaults."""
+"""Nutrition domain — goal setting and food APIs."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from datetime import datetime, timezone
-from database import _load_json, _save_json, ATHLETE_DB
+from database import _load_json, _save_json, ATHLETE_DB, FOOD_DB
 from logging_setup import get_logger
 
 log = get_logger("routes.nutrition")
 
-router = APIRouter(
-    prefix="/athlete/{athlete_id}/nutrition",
-    tags=["nutrition"]
-)
+router = APIRouter(tags=["nutrition"])
 
+
+# ================== GOALS API ==================
 
 class NutritionGoals(BaseModel):
     daily_calories: float = Field(gt=0)
@@ -59,7 +58,7 @@ def get_default_goals(sport: str):
         }
 
 
-@router.post("/goals")
+@router.post("/athlete/{athlete_id}/nutrition/goals")
 async def set_goals(athlete_id: str, payload: NutritionGoals):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")
@@ -79,7 +78,7 @@ async def set_goals(athlete_id: str, payload: NutritionGoals):
     return {"status": "success", "data": data[athlete_id]["goals"]}
 
 
-@router.get("/goals")
+@router.get("/athlete/{athlete_id}/nutrition/goals")
 async def get_goals(athlete_id: str, sport: str = "sprint"):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")
@@ -93,3 +92,39 @@ async def get_goals(athlete_id: str, sport: str = "sprint"):
     default["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     return {"status": "default", "data": default}
+
+
+# ================== FOOD API ==================
+
+@router.get("/foods")
+async def list_foods(
+    category: str | None = Query(None),
+    cuisine: str | None = Query(None),
+    tag: str | None = Query(None),
+    q: str | None = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+):
+    results = list(FOOD_DB.values())
+    if category:
+        results = [f for f in results if f["category"] == category]
+    if cuisine:
+        results = [f for f in results if f["cuisine"] == cuisine]
+    if tag:
+        results = [f for f in results if tag in f.get("tags", [])]
+    if q:
+        q_lower = q.lower()
+        results = [f for f in results if q_lower in f["name"].lower()]
+
+    total = len(results)
+    results = results[offset : offset + limit]
+
+    return {"count": total, "limit": limit, "offset": offset, "foods": results}
+
+
+@router.get("/foods/{food_id}")
+async def get_food(food_id: str):
+    food = FOOD_DB.get(food_id)
+    if not food:
+        raise HTTPException(404, detail=f"Food '{food_id}' not found")
+    return food

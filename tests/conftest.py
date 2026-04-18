@@ -32,7 +32,7 @@ object.__setattr__(config.settings, "db_path", Path(_tmp))
 
 
 @pytest.fixture(scope="session")
-def app():
+def _fastapi_app():
     # Import here so config patching above takes effect first.
     import api_server
 
@@ -40,8 +40,8 @@ def app():
 
 
 @pytest.fixture()
-def client(app):
+def client(_fastapi_app):
     from fastapi.testclient import TestClient
 
-    with TestClient(app) as c:
+    with TestClient(_fastapi_app) as c:
         yield c

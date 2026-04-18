@@ -27,7 +27,6 @@ except ImportError:
     FASTAPI_AVAILABLE = False
     print("[ERROR] FastAPI not installed. Run: pip install fastapi uvicorn")
 
-
 if FASTAPI_AVAILABLE:
     import database
     from config import settings
@@ -38,13 +37,32 @@ if FASTAPI_AVAILABLE:
     from routes.analytics import router as analytics_router
     from routes.athletes import router as athletes_router
     from routes.auth import router as auth_router
+    from routes.baseline import router as baseline_router
     from routes.coach import router as coach_router
+    from routes.coach_roster import router as coach_roster_router
+    from routes.data_export import router as export_router
     from routes.fitness import analysis_worker, session_cleanup_worker
     from routes.fitness import router as fitness_router
     from routes.health import router as health_router
+    from routes.huddle import list_router as huddle_list_router
+    from routes.huddle import router as huddle_router
+    from routes.intelligence_report import router as intelligence_report_router
+    from routes.leaderboard import router as leaderboard_router
+    from routes.load import router as load_router
+    from routes.notifications import router as notifications_router
+    from routes.nutrition_ai import router as nutrition_ai_router
+    from routes.plan import router as plan_router
     from routes.progress import router as progress_router
+    from routes.realtime import router as realtime_router
+    from routes.scorecard import router as scorecard_router
+    from routes.session_replay import router as session_replay_router
     from routes.social import router as social_router
-    from routes.nutrition import router as nutrition_router 
+    from routes.social import router as social_router
+    from routes.nutrition import router as nutrition_router
+    from routes.streaks import router as streaks_router
+    from routes.weekly_summary import router as summary_router
+    from routes.wellness import router as wellness_router
+    from routes.workouts import router as workouts_router 
     from sqlite_store import init_db
 
     configure_logging("INFO")
@@ -110,7 +128,26 @@ if FASTAPI_AVAILABLE:
     app.include_router(progress_router)
     app.include_router(analytics_router)
     app.include_router(coach_router)
+    app.include_router(coach_router)
     app.include_router(nutrition_router)
+    app.include_router(plan_router)
+    app.include_router(summary_router)
+    app.include_router(load_router)
+    app.include_router(scorecard_router)
+    app.include_router(huddle_router)
+    app.include_router(huddle_list_router)
+    app.include_router(export_router)
+    app.include_router(nutrition_ai_router)
+    app.include_router(realtime_router)
+    app.include_router(workouts_router)
+    app.include_router(intelligence_report_router)
+    app.include_router(coach_roster_router)
+    app.include_router(streaks_router)
+    app.include_router(session_replay_router)
+    app.include_router(leaderboard_router)
+    app.include_router(notifications_router)
+    app.include_router(baseline_router)
+    app.include_router(wellness_router)
 
     # ─── OpenAPI ────────────────────────────────────────────
     def _custom_openapi():

@@ -18,7 +18,7 @@ from pathlib import Path
 SEED = 42
 random.seed(SEED)
 
-DB_PATH = Path(__file__).parent / "db"
+DB_PATH = Path(__file__).resolve().parent.parent / "db"
 DB_PATH.mkdir(parents=True, exist_ok=True)
 
 # ── Athlete profiles ──────────────────────────────────────────────────────────
