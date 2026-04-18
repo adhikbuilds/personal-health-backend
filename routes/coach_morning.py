@@ -26,7 +26,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 
 from auth import require_coach_or_admin
-from database import ATHLETE_DB, SESSION_DB, _load_json
+from database import ATHLETE_DB, SESSION_DB, _load_json, _save_json
 from logging_setup import get_logger
 from routes.progress import _compute_injury_risk
 
@@ -188,9 +188,34 @@ async def coach_priorities(coach_id: str, _: dict = Depends(require_coach_or_adm
         raise HTTPException(404, "coach roster is empty — add athletes first")
 
     priorities = _build_priorities(athlete_ids)
-    return {
+    result = {
         "coach_id": coach_id,
         "priorities": priorities,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "roster_size": len(athlete_ids),
     }
+
+    # Persist as offline triage cache so the app can show stale data if backend is unreachable
+    cache = _load_json("triage_cache.json")
+    cache[coach_id] = {**result, "cached_at": result["generated_at"]}
+    _save_json("triage_cache.json", cache)
+
+    return result
+
+
+@router.get("/{coach_id}/triage-cache")
+async def coach_triage_cache(coach_id: str):
+    """
+    Returns the last-cached triage for offline use.
+    No auth check — device reads this when backend is unreachable.
+    Response includes 'cached_at' so the app can show '3 hours ago' banner.
+    """
+    cache = _load_json("triage_cache.json")
+    entry = cache.get(coach_id)
+    if not entry:
+        return {"coach_id": coach_id, "priorities": [], "cached_at": None, "stale": True}
+
+    cached_at = datetime.fromisoformat(entry["cached_at"])
+    age_minutes = (datetime.now(timezone.utc) - cached_at).total_seconds() / 60
+
+    return {**entry, "stale": age_minutes > 60, "age_minutes": round(age_minutes)}

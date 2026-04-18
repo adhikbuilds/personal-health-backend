@@ -31,6 +31,7 @@ from database import (
     _compute_xp,
     _save_db,
 )
+from services.cues import clear_cue_state, evaluate_cues
 
 router = APIRouter()
 
@@ -67,6 +68,10 @@ class FrameData(BaseModel):
     primary_feedback: str = ""
     phase: str = "setup"
     image_b64: Optional[str] = None
+
+
+class PoseCheckRequest(BaseModel):
+    image_b64: str
 
 
 class FitnessTestRequest(BaseModel):
@@ -149,6 +154,12 @@ async def analysis_worker():
                         "pose_detected": True,
                     }
                     frame_dict.update(update)
+                    cues = evaluate_cues(
+                        session_id=session_id,
+                        athlete_id=SESSION_DB.get(session_id, {}).get("athlete_id", ""),
+                        sport=sport,
+                        frame=frame_dict,
+                    )
                     result_entry = {
                         **update,
                         "frame_num": frame_dict["frame_num"],
@@ -156,6 +167,7 @@ async def analysis_worker():
                         "analyzed_at": time.time(),
                         "data_source": "real",
                         "keypoints": result.get("keypoints", []),
+                        "cues": cues,
                     }
                     RESULT_STORE[session_id] = result_entry
                     if FRAME_BUFFER.get(session_id):
@@ -185,6 +197,8 @@ async def analysis_worker():
                         f"quality={result['form_quality']} phase={result['phase']}"
                     )
                     await _broadcast(session_id, {"type": "frame", **result_entry})
+                    for cue in cues:
+                        await _broadcast(session_id, cue)
                 else:
                     print(f"[AI] No pose in frame (session {session_id[:8]})")
                     await _broadcast(
@@ -402,6 +416,55 @@ async def calibrate_pose(frame: FrameData, sport: str = Query(default="vertical_
         }
 
 
+@router.post("/pose/check", tags=["Sessions"])
+async def pose_check(req: PoseCheckRequest):
+    try:
+        from services.pose_analyzer import PoseAnalyzer
+
+        analyzer = PoseAnalyzer(sport="sprint")
+        result = analyzer.analyze_base64_image(req.image_b64, "sprint")
+        keypoints = result.get("keypoints", []) or []
+        visible = [kp for kp in keypoints if isinstance(kp, dict) and float(kp.get("visibility", 0)) >= 0.3]
+        landmarks_visible = len(visible)
+        if landmarks_visible < 17:
+            return {
+                "landmarks_visible": landmarks_visible,
+                "bbox_pct": 0.0,
+                "head_y_pct": 0.0,
+                "hips_y_pct": 0.0,
+                "recommendation": "no_body",
+            }
+
+        ys = [float(kp.get("y", 0)) for kp in visible]
+        min_y, max_y = min(ys), max(ys)
+        bbox_pct = max(0.0, min(1.0, max_y - min_y))
+        head_y_pct = min_y
+        hip_points = [kp for kp in visible if int(kp.get("index", -1)) in {23, 24}]
+        hips_y_pct = (
+            sum(float(kp.get("y", 0.5)) for kp in hip_points) / len(hip_points) if hip_points else sum(ys) / len(ys)
+        )
+
+        recommendation = "ready"
+        if bbox_pct > 0.70:
+            recommendation = "step_back"
+        elif bbox_pct < 0.35:
+            recommendation = "step_closer"
+        elif hips_y_pct < 0.33:
+            recommendation = "move_lower"
+        elif head_y_pct > 0.50:
+            recommendation = "move_higher"
+
+        return {
+            "landmarks_visible": landmarks_visible,
+            "bbox_pct": round(bbox_pct, 3),
+            "head_y_pct": round(head_y_pct, 3),
+            "hips_y_pct": round(hips_y_pct, 3),
+            "recommendation": recommendation,
+        }
+    except Exception as e:
+        raise HTTPException(500, f"pose check failed: {e}") from e
+
+
 @router.post("/session/{session_id}/end", tags=["Sessions"])
 async def end_session(session_id: str):
     if session_id not in SESSION_DB:
@@ -493,6 +556,7 @@ async def end_session(session_id: str):
         ATHLETE_DB[athlete_id]["bpi"] = ATHLETE_DB[athlete_id].get("bpi", 0) + summary["xp_earned"]
         SESSION_DB[session_id]["bpi_after"] = ATHLETE_DB[athlete_id]["bpi"]
     _RATE_LIMITS.pop(session_id, None)  # PF-04: cleanup rate limit tracker
+    clear_cue_state(session_id)
     _save_db()
     return summary
 

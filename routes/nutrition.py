@@ -180,6 +180,7 @@ async def list_foods(
     cuisine: str | None = Query(None),
     tag: str | None = Query(None),
     q: str | None = Query(None),
+    search: str | None = Query(None, alias="search"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
 ):
@@ -190,9 +191,20 @@ async def list_foods(
         results = [f for f in results if f.get("cuisine") == cuisine]
     if tag:
         results = [f for f in results if tag in f.get("tags", [])]
-    if q:
-        ql = q.lower()
-        results = [f for f in results if ql in f.get("name", "").lower()]
+    effective_q = q or search
+    if effective_q:
+        ql = effective_q.lower().strip()
+        tokens = ql.split()
+
+        def _fuzzy_match(name: str) -> bool:
+            nl = name.lower()
+            if all(t in nl for t in tokens):
+                return True
+            it = iter(nl)
+            matched = sum(1 for ch in ql if ch in it)
+            return matched >= max(1, int(len(ql) * 0.7))
+
+        results = [f for f in results if _fuzzy_match(f.get("name", ""))]
     total = len(results)
     results = results[offset : offset + limit]
     return {"count": total, "limit": limit, "offset": offset, "foods": results}
@@ -282,6 +294,67 @@ async def get_meals(
     day_total = _sum_macros(all_items)
 
     return {"athlete_id": athlete_id, "date": date_str, "meals": grouped, "day_total": day_total}
+
+
+@router.delete("/athlete/{athlete_id}/meals/{date_str}/{slot}", status_code=200)
+async def delete_meal(
+    athlete_id: str,
+    date_str: str,
+    slot: str,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
+    """Remove a meal slot entry for an athlete on a given date. (WN-04)"""
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(status_code=404, detail=f"Athlete not found: {athlete_id}")
+    if slot not in VALID_SLOTS:
+        raise HTTPException(status_code=400, detail=f"Invalid slot '{slot}'. Must be one of: {sorted(VALID_SLOTS)}")
+    async with _get_lock(athlete_id):
+        nutrition_db = _load_json("nutrition.json") or {}
+        day_log = nutrition_db.get(athlete_id, {}).get("logs", {}).get(date_str, {})
+        if slot not in day_log:
+            raise HTTPException(status_code=404, detail=f"No meal found for slot '{slot}' on {date_str}")
+        del nutrition_db[athlete_id]["logs"][date_str][slot]
+        _save_json("nutrition.json", nutrition_db)
+    log.info("meal deleted athlete=%s date=%s slot=%s", athlete_id, date_str, slot)
+    return {"deleted": True, "athlete_id": athlete_id, "date": date_str, "slot": slot}
+
+
+@router.get("/nutrition/team-summary")
+async def get_team_nutrition_summary():
+    """Return today's nutrition compliance for all athletes. (WN-27)"""
+    today = datetime.now(timezone.utc).date().isoformat()
+    data = _load_json("nutrition.json") or {}
+    results = []
+    for athlete_id, athlete in ATHLETE_DB.items():
+        athlete_data = data.get(athlete_id, {})
+        day_log = athlete_data.get("logs", {}).get(today, {})
+        raw_goals = athlete_data.get("goals") or {}
+        if not raw_goals:
+            sport = athlete.get("sport", "sprint")
+            raw_goals = get_default_goals(sport)
+        goal_cals = raw_goals.get("daily_calories", 2400)
+        goal_prot = raw_goals.get("protein_g", 120)
+        total_cals = 0.0
+        total_prot = 0.0
+        for slot_data in day_log.values():
+            if isinstance(slot_data, dict):
+                t = slot_data.get("total", {})
+                total_cals += t.get("calories", 0) or 0
+                total_prot += t.get("protein_g", 0) or 0
+        cal_pct = round((total_cals / max(goal_cals, 1)) * 100)
+        prot_pct = round((total_prot / max(goal_prot, 1)) * 100)
+        results.append(
+            {
+                "id": athlete_id,
+                "name": athlete.get("name", "Unknown"),
+                "calories_pct": cal_pct,
+                "protein_pct": prot_pct,
+                "meals_logged": len(day_log),
+                "flag": "red" if cal_pct < 40 else ("yellow" if cal_pct < 60 else "ok"),
+            }
+        )
+    team_avg = round(sum(r["calories_pct"] for r in results) / len(results)) if results else 0
+    return {"date": today, "athletes": results, "team_avg_calories_pct": team_avg}
 
 
 # ─── Summary endpoint (PR #9, WN-05) ─────────────────────────────────────────
