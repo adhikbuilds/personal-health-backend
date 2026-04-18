@@ -120,7 +120,7 @@ async def create_subscription(
             razorpay_link_id = payment_link.get("id", "")
         except Exception as e:
             log.error("razorpay payment link failed", extra={"error": str(e)})
-            raise HTTPException(502, f"Razorpay error: {e}")
+            raise HTTPException(502, f"Razorpay error: {e}") from e
     else:
         # Stub mode — UPI deeplink placeholder
         payment_url = f"upi://pay?pa=coach.{coach_id}@upi&pn=PersonalHealth&am={req.amount_inr}&cu=INR"
@@ -148,9 +148,7 @@ async def create_subscription(
     _save_billing(billing)
 
     whatsapp_msg = (
-        f"₹{req.amount_inr} due to your coach for {req.plan_name}.\n"
-        f"Pay via UPI: {payment_url}\n"
-        f"Due by: {due_date}"
+        f"₹{req.amount_inr} due to your coach for {req.plan_name}.\nPay via UPI: {payment_url}\nDue by: {due_date}"
     )
 
     log.info("subscription created", extra={"key": key, "amount": req.amount_inr})
@@ -192,7 +190,7 @@ async def razorpay_webhook(
     try:
         payload = json.loads(body)
     except Exception:
-        raise HTTPException(400, "invalid JSON payload")
+        raise HTTPException(400, "invalid JSON payload") from None
 
     event = payload.get("event", "")
     if event != "payment.captured":

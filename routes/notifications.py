@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# Module-level task set prevents fire-and-forget tasks from being GC'd
+_background_tasks: set = set()
+
 """
 Notification system — in-app notifications for athletes.
 
@@ -24,6 +27,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from auth import require_athlete_or_admin
 from database import ATHLETE_DB, SESSION_DB, _load_json, _save_json
 from logging_setup import get_logger
+
+
+# Imported lazily inside async context to avoid circular imports
+async def _push(athlete_id: str, title: str, body: str, data: dict | None = None) -> None:
+    try:
+        from routes.push_tokens import send_push
+
+        await send_push(athlete_id, title, body, data)
+    except Exception:
+        pass
+
 
 router = APIRouter(tags=["Notifications"])
 log = get_logger("routes.notifications")
@@ -72,6 +86,10 @@ def _add_notif(athlete_id: str, notif_type: str, title: str, body: str, data: di
     # keep only last 50 notifications per athlete
     notifs[athlete_id] = notifs[athlete_id][-50:]
     _save_notifs(notifs)
+    # NOTE: push delivery is the caller's responsibility — see the explicit
+    # `await _push(...)` calls in generate_notifications. Keeping transport
+    # out of this sync helper avoids double-firing and lets seed scripts +
+    # tests call _add_notif without hitting an external push endpoint.
 
 
 @router.get("/athlete/{athlete_id}/notifications")
@@ -178,23 +196,27 @@ async def generate_notifications(athlete_id: str, _: dict = Depends(require_athl
                 prev_best_jump = pj
 
         if latest_form > prev_best_form and latest_form > 50:
+            pb_body = f"form score {latest_form:.0f} beats your previous best of {prev_best_form:.0f}"
             _add_notif(
                 athlete_id,
                 "personal_best",
                 "new personal best",
-                f"form score {latest_form:.0f} beats your previous best of {prev_best_form:.0f}",
+                pb_body,
                 {"metric": "form_score", "value": latest_form},
             )
+            await _push(athlete_id, "Personal Best!", pb_body, {"screen": "CoachInbox"})
             generated.append("pb_form")
 
         if latest_jump > prev_best_jump and latest_jump > 10:
+            jump_body = f"{latest_jump:.1f}cm beats your previous best of {prev_best_jump:.1f}cm"
             _add_notif(
                 athlete_id,
                 "personal_best",
                 "new jump record",
-                f"{latest_jump:.1f}cm beats your previous best of {prev_best_jump:.1f}cm",
+                jump_body,
                 {"metric": "jump_height", "value": latest_jump},
             )
+            await _push(athlete_id, "New Jump Record!", jump_body, {"screen": "CoachInbox"})
             generated.append("pb_jump")
 
     # 3. check if they hit a session milestone
