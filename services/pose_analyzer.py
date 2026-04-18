@@ -874,6 +874,16 @@ class PoseAnalyzer:
                 "estimated_jump_height": round(bio.estimated_jump_height, 1),
                 "com_height_norm": round(bio.com_height_norm, 3),
                 "injury_flags": bio.injury_flags,
+                "keypoints": [
+                    {
+                        "index": i,
+                        "x": round(l.x, 4),
+                        "y": round(l.y, 4),
+                        "z": round(l.z, 4),
+                        "visibility": round(l.visibility, 4),
+                    }
+                    for i, l in enumerate(lms)
+                ],
             }
             if multi_person_warning:
                 result["warning"] = multi_person_warning

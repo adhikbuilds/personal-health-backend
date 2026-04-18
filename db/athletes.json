@@ -7,7 +7,32 @@
     "tier": "Block",
     "bpi": 3252,
     "sessions": 29,
-    "rank": 30
+    "rank": 30,
+    "height_cm": 175.0,
+    "baseline": {
+      "height_cm": 175.0,
+      "weight_kg": 72.0,
+      "bmi": 23.5,
+      "age": 22,
+      "sport": "vertical_jump",
+      "training_years": 3.0,
+      "sessions_per_week": 4,
+      "known_injuries": "mild left knee pain",
+      "goals": "increase vertical jump by 5cm",
+      "assessed_at": "2026-04-18T21:25:25.083172+00:00"
+    },
+    "daily_tracker": {
+      "2026-04-01": {
+        "steps": 8500,
+        "active_minutes": 45,
+        "distance_km": 6.2,
+        "calories_burned": 420,
+        "calorie_intake": 1900,
+        "water_glasses": 6,
+        "sleep_hours": 7.5,
+        "updated_at": "2026-04-18T21:25:34.199556+00:00"
+      }
+    }
   },
   "athlete_02": {
     "id": "athlete_02",
@@ -295,8 +320,811 @@
     "avatar": "UT",
     "sport": "vertical_jump",
     "tier": "Elite",
-    "bpi": 20787,
-    "sessions": 32,
+    "bpi": 20937,
+    "sessions": 35,
     "rank": 1
+  },
+  "athlete_f791be53": {
+    "id": "athlete_f791be53",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:06:56.565875+00:00Z"
+  },
+  "athlete_b426f2a0": {
+    "id": "athlete_b426f2a0",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:06:56.635361+00:00Z"
+  },
+  "athlete_76c7e407": {
+    "id": "athlete_76c7e407",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:06:56.697879+00:00Z"
+  },
+  "athlete_bf2dad00": {
+    "id": "athlete_bf2dad00",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:06:56.798066+00:00Z"
+  },
+  "athlete_ae36ae33": {
+    "id": "athlete_ae36ae33",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:06:56.851671+00:00Z"
+  },
+  "athlete_1df149f8": {
+    "id": "athlete_1df149f8",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:06:56.907372+00:00Z"
+  },
+  "athlete_9c4f97f6": {
+    "id": "athlete_9c4f97f6",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:10:26.694502+00:00Z"
+  },
+  "athlete_394e6527": {
+    "id": "athlete_394e6527",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:10:26.798604+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 0.0,
+        "water_glasses": 0,
+        "mood": 1,
+        "energy": 1,
+        "stress": 10,
+        "soreness": 10,
+        "logged_at": "2026-04-18T21:10:26.810842+00:00"
+      }
+    }
+  },
+  "athlete_3759db58": {
+    "id": "athlete_3759db58",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:10:26.845431+00:00Z"
+  },
+  "athlete_9541f400": {
+    "id": "athlete_9541f400",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:10:26.930444+00:00Z"
+  },
+  "athlete_f28f8e10": {
+    "id": "athlete_f28f8e10",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:10:26.968798+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:10:26.983738+00:00"
+      }
+    }
+  },
+  "athlete_342ab111": {
+    "id": "athlete_342ab111",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:10:27.036659+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:10:27.070261+00:00"
+      }
+    }
+  },
+  "athlete_5b687d9d": {
+    "id": "athlete_5b687d9d",
+    "name": "x",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "X",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:11:21.590551+00:00Z"
+  },
+  "athlete_6226de2b": {
+    "id": "athlete_6226de2b",
+    "name": "x",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "X",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:11:21.603812+00:00Z"
+  },
+  "athlete_c0c7379a": {
+    "id": "athlete_c0c7379a",
+    "name": "x",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "X",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:11:21.618784+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:11:21.635906+00:00"
+      }
+    }
+  },
+  "athlete_964f75a7": {
+    "id": "athlete_964f75a7",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:11:45.722237+00:00Z"
+  },
+  "athlete_289caea4": {
+    "id": "athlete_289caea4",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:13:08.104383+00:00Z"
+  },
+  "athlete_60039be3": {
+    "id": "athlete_60039be3",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:13:08.177411+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 0.0,
+        "water_glasses": 0,
+        "mood": 1,
+        "energy": 1,
+        "stress": 10,
+        "soreness": 10,
+        "logged_at": "2026-04-18T21:13:08.192126+00:00"
+      }
+    }
+  },
+  "athlete_227bd452": {
+    "id": "athlete_227bd452",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:13:34.581949+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:13:34.601485+00:00"
+      }
+    }
+  },
+  "athlete_e8490147": {
+    "id": "athlete_e8490147",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:13:34.672481+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 0.0,
+        "water_glasses": 0,
+        "mood": 1,
+        "energy": 1,
+        "stress": 10,
+        "soreness": 10,
+        "logged_at": "2026-04-18T21:13:34.700948+00:00"
+      }
+    }
+  },
+  "athlete_ead92fb5": {
+    "id": "athlete_ead92fb5",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:13:34.762755+00:00Z"
+  },
+  "athlete_60fa647c": {
+    "id": "athlete_60fa647c",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:13:34.892668+00:00Z"
+  },
+  "athlete_64066832": {
+    "id": "athlete_64066832",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:13:34.958004+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:13:34.977958+00:00"
+      }
+    }
+  },
+  "athlete_b4018295": {
+    "id": "athlete_b4018295",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:13:35.059350+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:13:35.127805+00:00"
+      }
+    }
+  },
+  "athlete_5733e85c": {
+    "id": "athlete_5733e85c",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:17.986273+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:14:18.006291+00:00"
+      }
+    }
+  },
+  "athlete_9880e0ee": {
+    "id": "athlete_9880e0ee",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:18.063706+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 0.0,
+        "water_glasses": 0,
+        "mood": 1,
+        "energy": 1,
+        "stress": 10,
+        "soreness": 10,
+        "logged_at": "2026-04-18T21:14:18.080942+00:00"
+      }
+    }
+  },
+  "athlete_7ca97cad": {
+    "id": "athlete_7ca97cad",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:18.138910+00:00Z"
+  },
+  "athlete_02e1b41c": {
+    "id": "athlete_02e1b41c",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:18.252948+00:00Z"
+  },
+  "athlete_61978806": {
+    "id": "athlete_61978806",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:18.309762+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:14:18.324210+00:00"
+      }
+    }
+  },
+  "athlete_05dd30fe": {
+    "id": "athlete_05dd30fe",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:18.390077+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:14:18.441632+00:00"
+      }
+    }
+  },
+  "athlete_d325f75a": {
+    "id": "athlete_d325f75a",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:53.828858+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:14:53.841170+00:00"
+      }
+    }
+  },
+  "athlete_ffa0deaa": {
+    "id": "athlete_ffa0deaa",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:53.900728+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 0.0,
+        "water_glasses": 0,
+        "mood": 1,
+        "energy": 1,
+        "stress": 10,
+        "soreness": 10,
+        "logged_at": "2026-04-18T21:14:53.913831+00:00"
+      }
+    }
+  },
+  "athlete_4db7aa02": {
+    "id": "athlete_4db7aa02",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:53.969519+00:00Z"
+  },
+  "athlete_98ffb468": {
+    "id": "athlete_98ffb468",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:54.060100+00:00Z"
+  },
+  "athlete_b5e39a84": {
+    "id": "athlete_b5e39a84",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:54.125580+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:14:54.138349+00:00"
+      }
+    }
+  },
+  "athlete_500c3842": {
+    "id": "athlete_500c3842",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:14:54.202999+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:14:54.237824+00:00"
+      }
+    }
+  },
+  "athlete_f0ee2a18": {
+    "id": "athlete_f0ee2a18",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:15:16.186858+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:15:16.199479+00:00"
+      }
+    }
+  },
+  "athlete_56d414d7": {
+    "id": "athlete_56d414d7",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:15:16.262765+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 0.0,
+        "water_glasses": 0,
+        "mood": 1,
+        "energy": 1,
+        "stress": 10,
+        "soreness": 10,
+        "logged_at": "2026-04-18T21:15:16.273808+00:00"
+      }
+    }
+  },
+  "athlete_390b9903": {
+    "id": "athlete_390b9903",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:15:16.332117+00:00Z"
+  },
+  "athlete_333a2751": {
+    "id": "athlete_333a2751",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:15:16.416519+00:00Z"
+  },
+  "athlete_c9568668": {
+    "id": "athlete_c9568668",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:15:16.467918+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:15:16.478953+00:00"
+      }
+    }
+  },
+  "athlete_600b99c5": {
+    "id": "athlete_600b99c5",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:15:16.539677+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:15:16.587635+00:00"
+      }
+    }
+  },
+  "athlete_5a2c08e8": {
+    "id": "athlete_5a2c08e8",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:25:35.455113+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:25:35.467985+00:00"
+      }
+    }
+  },
+  "athlete_0b8b1782": {
+    "id": "athlete_0b8b1782",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:25:35.518969+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 0.0,
+        "water_glasses": 0,
+        "mood": 1,
+        "energy": 1,
+        "stress": 10,
+        "soreness": 10,
+        "logged_at": "2026-04-18T21:25:35.530110+00:00"
+      }
+    }
+  },
+  "athlete_5505ac13": {
+    "id": "athlete_5505ac13",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:25:35.586908+00:00Z"
+  },
+  "athlete_34aac1b7": {
+    "id": "athlete_34aac1b7",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:25:35.676392+00:00Z"
+  },
+  "athlete_58ad84da": {
+    "id": "athlete_58ad84da",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:25:35.728214+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:25:35.739114+00:00"
+      }
+    }
+  },
+  "athlete_4140d248": {
+    "id": "athlete_4140d248",
+    "name": "Wellness Tester",
+    "sport": "vertical_jump",
+    "tier": "Block",
+    "bpi": 1000,
+    "sessions": 0,
+    "avatar": "WT",
+    "height_cm": 170,
+    "created_at": "2026-04-18T21:25:35.797592+00:00Z",
+    "wellness_log": {
+      "2026-04-18": {
+        "sleep_hours": 8.0,
+        "water_glasses": 8,
+        "mood": 10,
+        "energy": 10,
+        "stress": 1,
+        "soreness": 1,
+        "logged_at": "2026-04-18T21:25:35.835143+00:00"
+      }
+    }
   }
 }

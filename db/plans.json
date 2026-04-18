@@ -1,0 +1,229 @@
+{
+  "athlete_30": {
+    "2026-04-13": {
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "week_start": "2026-04-13",
+      "week_end": "2026-04-19",
+      "generated_at": "2026-04-18T21:14:54.447611+00:00",
+      "source": "deterministic",
+      "summary": "Light week behind you \u2014 build volume gradually, lead with technique.",
+      "adherence_pct": 16.7,
+      "days": [
+        {
+          "date": "2026-04-13",
+          "day_name": "Mon",
+          "type": "technique",
+          "label": "Technique",
+          "intensity": "low",
+          "rpe": 6,
+          "duration_min": 45,
+          "drills": [
+            {
+              "name": "Landing mechanics drill",
+              "sets": "4\u00d75",
+              "joint": "knee_angle",
+              "cue": "Knees track over toes"
+            },
+            {
+              "name": "Vertical jump ladder (bodyweight)",
+              "sets": "5\u00d73",
+              "joint": "hip_angle",
+              "cue": "Full hip extension"
+            },
+            {
+              "name": "Ankle pogo hops",
+              "sets": "3\u00d720",
+              "joint": "ankle_dorsiflexion",
+              "cue": "Stiff ankle, short contacts"
+            }
+          ],
+          "rationale": "Skill block \u2014 the goal is clean reps, not hard reps.",
+          "completed": true,
+          "completed_at": "2026-04-18T21:25:34.834929+00:00"
+        },
+        {
+          "date": "2026-04-14",
+          "day_name": "Tue",
+          "type": "strength",
+          "label": "Strength",
+          "intensity": "high",
+          "rpe": 8,
+          "duration_min": 55,
+          "drills": [
+            {
+              "name": "Back squat",
+              "sets": "4\u00d75 @ 80%",
+              "joint": "hip_angle",
+              "cue": "Break at hips first"
+            },
+            {
+              "name": "Romanian deadlift",
+              "sets": "3\u00d78",
+              "joint": "hip_angle",
+              "cue": "Push hips back, flat back"
+            },
+            {
+              "name": "Bulgarian split squat",
+              "sets": "3\u00d78/side",
+              "joint": "knee_angle",
+              "cue": "Front knee stacks over ankle"
+            }
+          ],
+          "rationale": "Load day \u2014 push intensity now that your form is holding.",
+          "completed": false,
+          "completed_at": null
+        },
+        {
+          "date": "2026-04-15",
+          "day_name": "Wed",
+          "type": "technique",
+          "label": "Technique",
+          "intensity": "low",
+          "rpe": 6,
+          "duration_min": 45,
+          "drills": [
+            {
+              "name": "Landing mechanics drill",
+              "sets": "4\u00d75",
+              "joint": "knee_angle",
+              "cue": "Knees track over toes"
+            },
+            {
+              "name": "Vertical jump ladder (bodyweight)",
+              "sets": "5\u00d73",
+              "joint": "hip_angle",
+              "cue": "Full hip extension"
+            },
+            {
+              "name": "Ankle pogo hops",
+              "sets": "3\u00d720",
+              "joint": "ankle_dorsiflexion",
+              "cue": "Stiff ankle, short contacts"
+            }
+          ],
+          "rationale": "Skill block \u2014 the goal is clean reps, not hard reps.",
+          "completed": false,
+          "completed_at": null
+        },
+        {
+          "date": "2026-04-16",
+          "day_name": "Thu",
+          "type": "power",
+          "label": "Power",
+          "intensity": "high",
+          "rpe": 9,
+          "duration_min": 50,
+          "drills": [
+            {
+              "name": "Box jumps",
+              "sets": "5\u00d73",
+              "joint": "hip_angle",
+              "cue": "Soft landing, reset every rep"
+            },
+            {
+              "name": "Depth drops",
+              "sets": "4\u00d74",
+              "joint": "knee_angle",
+              "cue": "Absorb, don't collapse"
+            },
+            {
+              "name": "Trap bar jump",
+              "sets": "5\u00d73 @ 30%",
+              "joint": "hip_angle",
+              "cue": "Maximum intent"
+            }
+          ],
+          "rationale": "Rate of force development. Full rest between sets, maximum intent.",
+          "completed": false,
+          "completed_at": null
+        },
+        {
+          "date": "2026-04-17",
+          "day_name": "Fri",
+          "type": "recovery",
+          "label": "Active Recovery",
+          "intensity": "low",
+          "rpe": 3,
+          "duration_min": 30,
+          "drills": [
+            {
+              "name": "Banded ankle mobility",
+              "sets": "2\u00d710/side",
+              "joint": "ankle_dorsiflexion",
+              "cue": "Drive knee over toe"
+            },
+            {
+              "name": "90/90 hip switches",
+              "sets": "2\u00d710",
+              "joint": "hip_angle",
+              "cue": "Control the rotation"
+            },
+            {
+              "name": "Foam roll quads + calves",
+              "sets": "5 min",
+              "joint": "knee_angle",
+              "cue": "Slow, find tender spots"
+            }
+          ],
+          "rationale": "Light movement to flush yesterday and keep you loose.",
+          "completed": false,
+          "completed_at": null
+        },
+        {
+          "date": "2026-04-18",
+          "day_name": "Sat",
+          "type": "strength",
+          "label": "Strength",
+          "intensity": "high",
+          "rpe": 8,
+          "duration_min": 55,
+          "drills": [
+            {
+              "name": "Back squat",
+              "sets": "4\u00d75 @ 80%",
+              "joint": "hip_angle",
+              "cue": "Break at hips first"
+            },
+            {
+              "name": "Romanian deadlift",
+              "sets": "3\u00d78",
+              "joint": "hip_angle",
+              "cue": "Push hips back, flat back"
+            },
+            {
+              "name": "Bulgarian split squat",
+              "sets": "3\u00d78/side",
+              "joint": "knee_angle",
+              "cue": "Front knee stacks over ankle"
+            }
+          ],
+          "rationale": "Load day \u2014 push intensity now that your form is holding.",
+          "completed": false,
+          "completed_at": null
+        },
+        {
+          "date": "2026-04-19",
+          "day_name": "Sun",
+          "type": "rest",
+          "label": "Rest",
+          "intensity": "rest",
+          "rpe": 0,
+          "duration_min": 0,
+          "drills": [],
+          "rationale": "Full rest. Recovery is when adaptation actually happens \u2014 take it.",
+          "completed": false,
+          "completed_at": null
+        }
+      ],
+      "context": {
+        "volume_state": "under",
+        "injury_risk": "unknown",
+        "form_bucket": "unknown",
+        "avg_form_score": 0.0,
+        "session_count": 1,
+        "weak_joint": null
+      }
+    }
+  }
+}

@@ -22,8 +22,8 @@ def test_register_login_me(client):
     assert login.json()["access_token"]
 
 
-def test_me_requires_token(client):
-    r = client.get("/auth/me")
+def test_me_requires_token(anonymous_client):
+    r = anonymous_client.get("/auth/me")
     assert r.status_code == 401
 
 
