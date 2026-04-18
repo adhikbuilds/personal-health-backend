@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+
 """
 Shared pytest fixtures for the Personal Health backend.
 
@@ -55,13 +57,14 @@ def client(_fastapi_app):
     predate auth enforcement continue to work. For anonymous-only tests use
     the `anonymous_client` fixture.
     """
+    from fastapi.testclient import TestClient
+
     import sqlite_store
     from auth import issue_access_token
-    from fastapi.testclient import TestClient
 
     with TestClient(_fastapi_app) as c:
         # insert admin AFTER lifespan startup has run init_db()
-        try:
+        with contextlib.suppress(Exception):
             sqlite_store.insert_user(
                 {
                     "id": "test-admin-id",
@@ -72,8 +75,6 @@ def client(_fastapi_app):
                     "athlete_id": None,
                 }
             )
-        except Exception:
-            pass  # already exists from an earlier test in the session
         token = issue_access_token("test-admin-id", "admin")
         c.headers.update({"Authorization": f"Bearer {token}"})
         yield c
@@ -85,7 +86,7 @@ def admin_token(_fastapi_app):
     import sqlite_store
     from auth import issue_access_token
 
-    try:
+    with contextlib.suppress(Exception):
         sqlite_store.insert_user(
             {
                 "id": "test-admin-id",
@@ -96,8 +97,6 @@ def admin_token(_fastapi_app):
                 "athlete_id": None,
             }
         )
-    except Exception:
-        pass
     return issue_access_token("test-admin-id", "admin")
 
 
@@ -120,14 +119,15 @@ def athlete_client(_fastapi_app):
     Returns a factory that takes an athlete_id and gives back a TestClient
     whose token asserts that athlete_id.
     """
-    from auth import issue_access_token
     from fastapi.testclient import TestClient
+
+    from auth import issue_access_token
 
     def _make(athlete_id: str):
         # Inject a synthetic user row so current_user's DB lookup succeeds
         import sqlite_store
 
-        try:
+        with contextlib.suppress(Exception):
             sqlite_store.insert_user(
                 {
                     "id": f"u-{athlete_id}",
@@ -138,8 +138,6 @@ def athlete_client(_fastapi_app):
                     "athlete_id": athlete_id,
                 }
             )
-        except Exception:
-            pass  # already exists from a previous test
         token = issue_access_token(f"u-{athlete_id}", "athlete")
         c = TestClient(_fastapi_app)
         c.headers.update({"Authorization": f"Bearer {token}"})
