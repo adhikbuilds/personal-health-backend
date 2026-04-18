@@ -64,7 +64,16 @@ if FASTAPI_AVAILABLE:
     from routes.streaks import router as streaks_router
     from routes.weekly_summary import router as summary_router
     from routes.wellness import router as wellness_router
+    from routes.wellness_extended import router as wellness_extended_router
     from routes.workouts import router as workouts_router
+    from routes.billing import router as billing_router
+    from routes.coach_broadcast import router as coach_broadcast_router
+    from routes.coach_invite import router as coach_invite_router
+    from routes.messaging import router as messaging_router
+    from routes.parent import router as parent_router
+    from routes.push_tokens import router as push_tokens_router
+    from routes.parent_digest import router as parent_digest_router
+    from routes.voice_upload import router as voice_upload_router
     from sqlite_store import init_db
 
     configure_logging("INFO")
@@ -153,6 +162,15 @@ if FASTAPI_AVAILABLE:
     app.include_router(notifications_router)
     app.include_router(baseline_router)
     app.include_router(wellness_router)
+    app.include_router(wellness_extended_router)
+    app.include_router(parent_router)
+    app.include_router(coach_broadcast_router)
+    app.include_router(coach_invite_router)
+    app.include_router(billing_router)
+    app.include_router(parent_digest_router)
+    app.include_router(messaging_router)
+    app.include_router(voice_upload_router)
+    app.include_router(push_tokens_router)
 
     # ─── OpenAPI ────────────────────────────────────────────
     def _custom_openapi():
