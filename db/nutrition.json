@@ -1,9 +1,10 @@
 {
   "athlete_01": {
+    "goals": {},
     "logs": {
       "2026-04-07": {
         "breakfast": {
-          "meal_id": "0c1debc6-3af9-4635-9bd4-73cf8f69f769",
+          "meal_id": "81891f77-0e78-4664-9777-fa04b892e049",
           "time": "08:30",
           "items": [
             {
@@ -28,7 +29,7 @@
           }
         },
         "lunch": {
-          "meal_id": "a36563a3-ece1-4146-8f0d-1bdfe8df0676",
+          "meal_id": "0da3d95c-2ad4-4ced-b982-210d0b2e6d16",
           "time": null,
           "items": [
             {
@@ -67,7 +68,7 @@
       },
       "2026-04-10": {
         "dinner": {
-          "meal_id": "47296578-b3f0-43a2-a7b0-63850f082601",
+          "meal_id": "c2d45d32-93e3-4279-af10-9ee7998d8a8e",
           "time": null,
           "items": [
             {
@@ -94,7 +95,7 @@
       },
       "2026-04-09": {
         "breakfast": {
-          "meal_id": "edc27fe9-bdd0-4c16-b16a-ef5777a9636b",
+          "meal_id": "59a202ea-4c9d-4702-abd2-5137913938eb",
           "time": null,
           "items": [
             {
@@ -119,7 +120,7 @@
           }
         },
         "lunch": {
-          "meal_id": "7d4d82aa-50c7-4e50-be47-871687ee0206",
+          "meal_id": "d476b81d-8c26-460b-99cd-2c8962344b31",
           "time": null,
           "items": [
             {
