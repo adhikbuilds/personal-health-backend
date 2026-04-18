@@ -13,6 +13,7 @@ Three variants driven by the data, not by the client:
   - "pb"         = this session produced a personal best form score
   - "streak"     = no PB, but athlete has trained 3+ days this week
   - "show_up"    = neither of the above; still shareable as consistency
+  - "first_session" = athlete has just completed the first logged session
 
 The variant controls copy only. Visual treatment stays identical per the
 locked design system.
@@ -28,8 +29,9 @@ Endpoint:
 
 from urllib.parse import quote
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from auth import current_user
 from database import ATHLETE_DB, SESSION_DB
 from logging_setup import get_logger
 
@@ -72,6 +74,8 @@ def _days_trained_this_week(athlete_id: str) -> int:
 def _pick_variant(athlete_id: str, this_session: dict) -> tuple[str, dict]:
     """Returns (variant, signals) where signals are booleans for downstream use."""
     sessions = _completed_sessions_for(athlete_id)
+    if len(sessions) <= 1:
+        return ("first_session", {"is_pb": False, "days_this_week": _days_trained_this_week(athlete_id)})
     latest_peak = float((this_session.get("summary") or {}).get("peak_form_score") or 0)
 
     is_pb = False
@@ -126,6 +130,14 @@ def _copy_for(variant: str, signals: dict, athlete_name: str, sport: str) -> dic
             "chip_colour": DESIGN_SYSTEM["accent"],
             "share_text": f"{signals['days_this_week']} training days this week. {sport_label}. Personal Health.",
         }
+    if variant == "first_session":
+        return {
+            "headline_label": "first session",
+            "sub": f"first session logged · {sport_label}",
+            "chip": "first session",
+            "chip_colour": DESIGN_SYSTEM["accent"],
+            "share_text": f"First session logged · {sport_label}. Personal Health.",
+        }
     return {
         "headline_label": "form score",
         "sub": f"{sport_label} · session logged",
@@ -136,7 +148,7 @@ def _copy_for(variant: str, signals: dict, athlete_name: str, sport: str) -> dic
 
 
 @router.get("/session/{session_id}/share-card")
-async def get_share_card(session_id: str):
+async def get_share_card(session_id: str, user: dict = Depends(current_user)):
     session = SESSION_DB.get(session_id)
     if not session:
         raise HTTPException(404, "session not found")
@@ -144,6 +156,11 @@ async def get_share_card(session_id: str):
         raise HTTPException(400, "session not completed — end it first")
 
     athlete_id = session.get("athlete_id") or ""
+    # Only the session's athlete, their coach, or an admin can read the card.
+    role = user.get("role")
+    if role not in {"admin", "coach", "service"} and user.get("athlete_id") != athlete_id:
+        raise HTTPException(403, "forbidden — not your session")
+
     athlete = ATHLETE_DB.get(athlete_id, {"id": athlete_id, "name": athlete_id})
     athlete_name = athlete.get("name") or athlete_id
     sport = session.get("sport") or (session.get("summary") or {}).get("sport") or "session"

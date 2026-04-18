@@ -18,7 +18,7 @@ from auth import (
     rotate_refresh,
 )
 from logging_setup import get_logger
-from sqlite_store import audit
+from sqlite_store import audit, delete_user, set_user_consent
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 log = get_logger("routes.auth")
@@ -103,3 +103,43 @@ async def me(user: dict = Depends(current_user)):
         "role": user["role"],
         "athlete_id": user.get("athlete_id"),
     }
+
+
+class DisclaimerRequest(BaseModel):
+    key: str = Field(pattern=r"^[a-z_]{3,40}$", description="e.g. injury_disclaimer, dpdp_notice")
+    accepted: bool = True
+
+
+@router.post("/accept-disclaimer", status_code=200)
+async def accept_disclaimer(req: DisclaimerRequest, request: Request, user: dict = Depends(current_user)):
+    """
+    Record that the user accepted a named disclaimer/consent.
+    Used for injury-liability acknowledgement and DPDP privacy-notice acceptance.
+    """
+    set_user_consent(user["id"], req.key, req.accepted)
+    audit(
+        "user.consent",
+        user_id=user["id"],
+        key=req.key,
+        accepted=req.accepted,
+        ip=_ip(request),
+        request_id=_rid(request),
+    )
+    return {"ok": True, "key": req.key, "accepted": req.accepted}
+
+
+@router.delete("/account", status_code=200)
+async def delete_account(request: Request, user: dict = Depends(current_user)):
+    """
+    Hard-delete the caller's account. DPDP right-to-delete.
+
+    Removes the user row + all refresh tokens immediately. Linked athlete_id
+    record in ATHLETE_DB is NOT deleted here (it may be coach-owned or have
+    referential integrity implications) — surfaced for follow-up in an async
+    purge job. The user can no longer authenticate after this endpoint returns.
+    """
+    user_id = user["id"]
+    delete_user(user_id)
+    audit("user.account_deleted", user_id=user_id, ip=_ip(request), request_id=_rid(request))
+    log.info("account deleted user=%s", user_id)
+    return {"ok": True, "deleted_user_id": user_id}

@@ -18,8 +18,9 @@ Endpoints:
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from auth import require_session_owner_or_admin
 from database import FRAME_BUFFER, SESSION_DB
 from logging_setup import get_logger
 
@@ -31,6 +32,7 @@ log = get_logger("routes.session_replay")
 async def session_replay(
     session_id: str,
     downsample: int = Query(default=1, ge=1, le=10, description="take every Nth frame"),
+    _: dict = Depends(require_session_owner_or_admin("session_id")),
 ):
     """
     Full frame timeline for session replay.
@@ -113,7 +115,10 @@ async def session_replay(
 
 
 @router.get("/sessions/{session_id}/highlights")
-async def session_highlights(session_id: str):
+async def session_highlights(
+    session_id: str,
+    _: dict = Depends(require_session_owner_or_admin("session_id")),
+):
     """
     Key moments from a session: best frame, worst frame, phase transitions,
     personal bests, biggest form drops.

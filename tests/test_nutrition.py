@@ -62,6 +62,17 @@ patch("routes.nutrition.FOOD_DB", MOCK_FOODS).start()
 
 from api_server import app  # noqa: E402
 
+# Bypass auth for this test module by overriding the current_user dep.
+import auth  # noqa: E402
+
+app.dependency_overrides[auth.current_user] = lambda: {
+    "id": "test-admin-nutrition",
+    "role": "admin",
+    "athlete_id": None,
+    "email": "admin@test.local",
+    "name": "Test Admin",
+}
+
 client = TestClient(app)
 
 ATHLETE_ID = "athlete_01"

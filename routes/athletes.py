@@ -8,9 +8,10 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from auth import require_athlete_or_admin, require_session_owner_or_admin
 from database import ATHLETE_DB, FRAME_BUFFER, SESSION_DB, _save_db
 
 router = APIRouter()
@@ -65,7 +66,7 @@ async def create_athlete(req: NewAthleteRequest):
 
 
 @router.get("/athlete/{athlete_id}", tags=["Athletes"])
-async def get_athlete(athlete_id: str):
+async def get_athlete(athlete_id: str, _: dict = Depends(require_athlete_or_admin("athlete_id"))):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "Athlete not found")
     athlete = dict(ATHLETE_DB[athlete_id])
@@ -81,7 +82,7 @@ async def get_athlete(athlete_id: str):
 
 
 @router.get("/athlete/{athlete_id}/insights", tags=["Intelligence"])
-async def athlete_insights(athlete_id: str):
+async def athlete_insights(athlete_id: str, _: dict = Depends(require_athlete_or_admin("athlete_id"))):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "Athlete not found")
     try:
@@ -97,7 +98,10 @@ async def athlete_insights(athlete_id: str):
 
 
 @router.get("/session/{session_id}/coaching", tags=["Intelligence"])
-async def session_coaching(session_id: str):
+async def session_coaching(
+    session_id: str,
+    _: dict = Depends(require_session_owner_or_admin("session_id")),
+):
     if session_id not in SESSION_DB:
         raise HTTPException(404, "Session not found")
     session = SESSION_DB[session_id]
@@ -125,7 +129,10 @@ async def session_coaching(session_id: str):
 
 
 @router.get("/athlete/{athlete_id}/progress", tags=["Athletes"])
-async def get_athlete_progress(athlete_id: str):
+async def get_athlete_progress(
+    athlete_id: str,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")
     athlete_sessions = sorted(
@@ -187,7 +194,10 @@ async def get_athlete_progress(athlete_id: str):
 
 
 @router.get("/athlete/{athlete_id}/daily-tracker", tags=["Daily Tracker"])
-async def get_daily_tracker(athlete_id: str):
+async def get_daily_tracker(
+    athlete_id: str,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     athlete = ATHLETE_DB.get(athlete_id, {})
     today = datetime.now(timezone.utc).date().isoformat()
     tracker = athlete.get("daily_tracker", {}).get(today, {})
@@ -195,7 +205,11 @@ async def get_daily_tracker(athlete_id: str):
 
 
 @router.post("/athlete/{athlete_id}/daily-tracker", tags=["Daily Tracker"])
-async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
+async def update_daily_tracker(
+    athlete_id: str,
+    data: DailyTrackerUpdate,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found — register via POST /athlete first")
     athlete = ATHLETE_DB[athlete_id]
@@ -224,7 +238,11 @@ async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
 
 
 @router.get("/athlete/{athlete_id}/daily-tracker/history", tags=["Daily Tracker"])
-async def daily_tracker_history(athlete_id: str, days: int = 30):
+async def daily_tracker_history(
+    athlete_id: str,
+    days: int = 30,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     """Returns up to `days` most recent daily-tracker entries, newest first.
 
     Reads from SQLite v2 store first; falls back to the legacy JSON dict

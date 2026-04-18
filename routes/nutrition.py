@@ -41,9 +41,10 @@ from datetime import date as Date
 from datetime import datetime, timezone
 from typing import List, Literal, Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, field_validator
 
+from auth import require_athlete_or_admin
 from database import ATHLETE_DB, FOOD_DB, _load_json, _save_json
 from logging_setup import get_logger
 
@@ -136,7 +137,11 @@ class LogMealRequest(BaseModel):
 
 
 @router.post("/athlete/{athlete_id}/nutrition/goals")
-async def set_goals(athlete_id: str, payload: NutritionGoals):
+async def set_goals(
+    athlete_id: str,
+    payload: NutritionGoals,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")
     async with _get_lock(athlete_id):
@@ -150,7 +155,11 @@ async def set_goals(athlete_id: str, payload: NutritionGoals):
 
 
 @router.get("/athlete/{athlete_id}/nutrition/goals")
-async def get_goals(athlete_id: str, sport: str | None = None):
+async def get_goals(
+    athlete_id: str,
+    sport: str | None = None,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")
     data = _load_json("nutrition.json") or {}
@@ -201,7 +210,11 @@ async def get_food(food_id: str):
 
 
 @router.post("/athlete/{athlete_id}/meals", status_code=201)
-async def log_meal(athlete_id: str, body: LogMealRequest):
+async def log_meal(
+    athlete_id: str,
+    body: LogMealRequest,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     """
     Log a meal for an athlete. Posting to the same slot on the same date
     overwrites the previous entry (idempotent upsert).
@@ -248,7 +261,11 @@ async def log_meal(athlete_id: str, body: LogMealRequest):
 
 
 @router.get("/athlete/{athlete_id}/meals")
-async def get_meals(athlete_id: str, date: Date):
+async def get_meals(
+    athlete_id: str,
+    date: Date,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail=f"Athlete not found: {athlete_id}")
 
@@ -274,6 +291,7 @@ async def get_meals(athlete_id: str, date: Date):
 async def get_nutrition_summary(
     athlete_id: str,
     on_date: Date | None = Query(default=None),
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
 ):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")

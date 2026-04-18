@@ -15,8 +15,9 @@ Endpoints:
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from auth import require_coach_or_admin
 from database import ATHLETE_DB, _load_json, _save_json
 from logging_setup import get_logger
 from routes.progress import _athlete_sessions, _compute_injury_risk
@@ -34,7 +35,11 @@ def _save_rosters(data: dict):
 
 
 @router.post("/{coach_id}/athletes")
-async def add_athlete_to_roster(coach_id: str, athlete_id: str):
+async def add_athlete_to_roster(
+    coach_id: str,
+    athlete_id: str,
+    _: dict = Depends(require_coach_or_admin("coach_id")),
+):
     """Coach claims an athlete. Coach ID can be any athlete ID acting as coach."""
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")
@@ -57,7 +62,11 @@ async def add_athlete_to_roster(coach_id: str, athlete_id: str):
 
 
 @router.delete("/{coach_id}/athletes/{athlete_id}")
-async def remove_athlete_from_roster(coach_id: str, athlete_id: str):
+async def remove_athlete_from_roster(
+    coach_id: str,
+    athlete_id: str,
+    _: dict = Depends(require_coach_or_admin("coach_id")),
+):
     rosters = _load_rosters()
     if coach_id not in rosters:
         raise HTTPException(404, "coach roster not found")
@@ -72,7 +81,7 @@ async def remove_athlete_from_roster(coach_id: str, athlete_id: str):
 
 
 @router.get("/{coach_id}/athletes")
-async def list_roster(coach_id: str):
+async def list_roster(coach_id: str, _: dict = Depends(require_coach_or_admin("coach_id"))):
     """List all athletes in a coach's roster with basic stats."""
     rosters = _load_rosters()
     if coach_id not in rosters:
@@ -101,7 +110,7 @@ async def list_roster(coach_id: str):
 
 
 @router.get("/{coach_id}/dashboard")
-async def coach_dashboard(coach_id: str):
+async def coach_dashboard(coach_id: str, _: dict = Depends(require_coach_or_admin("coach_id"))):
     """
     Aggregated view for a coach: how are all my athletes doing?
 
