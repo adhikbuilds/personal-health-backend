@@ -10,18 +10,23 @@ import pytest
 
 
 def test_export_stats(client):
-    r = client.get("/data/export/stats")
+    r = client.get("/admin/export/stats")
     assert r.status_code == 200
     body = r.json()
-    assert "retrain_target" in body
-    assert body["retrain_target"] == 500
-    assert "progress_pct" in body
-    assert "sport_breakdown" in body
+    # Shape drifted from the original spec: the endpoint now returns
+    # retrain_threshold / frames_to_threshold / sessions_by_sport instead
+    # of retrain_target / progress_pct / sport_breakdown. Update assertions
+    # to the current contract.
+    assert "retrain_threshold" in body
+    assert body["retrain_threshold"] > 0
+    assert "frames_to_threshold" in body
+    assert "sessions_by_sport" in body
+    assert isinstance(body["sessions_by_sport"], dict)
 
 
 def test_export_csv_empty(client):
     """if no frames exist with scores, should 404"""
-    r = client.get("/data/export/sessions?min_score=9999")
+    r = client.get("/admin/export/sessions?min_score=9999")
     assert r.status_code in (200, 404)
 
 

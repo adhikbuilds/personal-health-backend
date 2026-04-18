@@ -71,22 +71,42 @@ MOCK_FOODS = {
     },
 }
 
-patch("database.ATHLETE_DB", MOCK_ATHLETES).start()
-patch("database.FOOD_DB", MOCK_FOODS).start()
-patch("routes.nutrition.ATHLETE_DB", MOCK_ATHLETES).start()
-patch("routes.nutrition.FOOD_DB", MOCK_FOODS).start()
+_PATCHES = [
+    patch("database.ATHLETE_DB", MOCK_ATHLETES),
+    patch("database.FOOD_DB", MOCK_FOODS),
+    patch("routes.nutrition.ATHLETE_DB", MOCK_ATHLETES),
+    patch("routes.nutrition.FOOD_DB", MOCK_FOODS),
+]
 
 # Bypass auth for this test module by overriding the current_user dep.
 import auth
 from api_server import app
 
-app.dependency_overrides[auth.current_user] = lambda: {
-    "id": "test-admin-nutrition",
-    "role": "admin",
-    "athlete_id": None,
-    "email": "admin@test.local",
-    "name": "Test Admin",
-}
+
+@pytest.fixture(autouse=True)
+def _wn03_test_isolation():
+    """
+    Start the ATHLETE_DB / FOOD_DB patches + install an admin dep-override for
+    the duration of ONE test, then tear everything back down so later test
+    modules see the real app state. This was previously module-level which
+    poisoned test_auth, test_coach_roster, test_features, test_plan.
+    """
+    for p in _PATCHES:
+        p.start()
+    app.dependency_overrides[auth.current_user] = lambda: {
+        "id": "test-admin-nutrition",
+        "role": "admin",
+        "athlete_id": None,
+        "email": "admin@test.local",
+        "name": "Test Admin",
+    }
+    try:
+        yield
+    finally:
+        app.dependency_overrides.pop(auth.current_user, None)
+        for p in _PATCHES:
+            p.stop()
+
 
 client = TestClient(app)
 
