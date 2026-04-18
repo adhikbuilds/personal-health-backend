@@ -39,6 +39,7 @@ if FASTAPI_AVAILABLE:
     from routes.auth import router as auth_router
     from routes.baseline import router as baseline_router
     from routes.coach import router as coach_router
+    from routes.coach_morning import router as coach_morning_router
     from routes.coach_roster import router as coach_roster_router
     from routes.data_export import router as export_router
     from routes.fitness import analysis_worker, session_cleanup_worker
@@ -56,6 +57,7 @@ if FASTAPI_AVAILABLE:
     from routes.realtime import router as realtime_router
     from routes.scorecard import router as scorecard_router
     from routes.session_replay import router as session_replay_router
+    from routes.share_card import router as share_card_router
     from routes.social import router as social_router
     from routes.streaks import router as streaks_router
     from routes.weekly_summary import router as summary_router
@@ -143,8 +145,10 @@ if FASTAPI_AVAILABLE:
     app.include_router(workouts_router)
     app.include_router(intelligence_report_router)
     app.include_router(coach_roster_router)
+    app.include_router(coach_morning_router)
     app.include_router(streaks_router)
     app.include_router(session_replay_router)
+    app.include_router(share_card_router)
     app.include_router(leaderboard_router)
     app.include_router(notifications_router)
     app.include_router(baseline_router)
