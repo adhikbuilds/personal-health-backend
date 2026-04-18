@@ -13,6 +13,13 @@ ignore = [
     "SIM211", # ternary style preference
 ]
 
+[lint.isort]
+known-first-party = [
+    "database", "auth", "cache", "config", "logging_setup",
+    "middleware", "sqlite_store", "ai_coach", "routes",
+    "services", "pipeline", "seeds",
+]
+
 [lint.per-file-ignores]
 "seeds/*" = ["S311"]
 "tests/*" = ["S101"]
