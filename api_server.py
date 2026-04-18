@@ -38,7 +38,10 @@ if FASTAPI_AVAILABLE:
     from routes.athletes import router as athletes_router
     from routes.auth import router as auth_router
     from routes.baseline import router as baseline_router
+    from routes.billing import router as billing_router
     from routes.coach import router as coach_router
+    from routes.coach_broadcast import router as coach_broadcast_router
+    from routes.coach_invite import router as coach_invite_router
     from routes.coach_morning import router as coach_morning_router
     from routes.coach_roster import router as coach_roster_router
     from routes.data_export import router as export_router
@@ -50,30 +53,27 @@ if FASTAPI_AVAILABLE:
     from routes.intelligence_report import router as intelligence_report_router
     from routes.leaderboard import router as leaderboard_router
     from routes.load import router as load_router
+    from routes.messaging import router as messaging_router
     from routes.notifications import router as notifications_router
     from routes.nutrition import nutrition_router
     from routes.nutrition import router as nutrition_router_foods
     from routes.nutrition_ai import router as nutrition_ai_router
+    from routes.parent import router as parent_router
+    from routes.parent_digest import router as parent_digest_router
     from routes.plan import router as plan_router
     from routes.progress import router as progress_router
+    from routes.push_tokens import router as push_tokens_router
     from routes.realtime import router as realtime_router
     from routes.scorecard import router as scorecard_router
     from routes.session_replay import router as session_replay_router
     from routes.share_card import router as share_card_router
     from routes.social import router as social_router
     from routes.streaks import router as streaks_router
+    from routes.voice_upload import router as voice_upload_router
     from routes.weekly_summary import router as summary_router
     from routes.wellness import router as wellness_router
     from routes.wellness_extended import router as wellness_extended_router
     from routes.workouts import router as workouts_router
-    from routes.billing import router as billing_router
-    from routes.coach_broadcast import router as coach_broadcast_router
-    from routes.coach_invite import router as coach_invite_router
-    from routes.messaging import router as messaging_router
-    from routes.parent import router as parent_router
-    from routes.push_tokens import router as push_tokens_router
-    from routes.parent_digest import router as parent_digest_router
-    from routes.voice_upload import router as voice_upload_router
     from sqlite_store import init_db
 
     configure_logging("INFO")

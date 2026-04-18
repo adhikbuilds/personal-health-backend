@@ -261,3 +261,29 @@ async def daily_tracker_history(
         legacy = ATHLETE_DB[athlete_id].get("daily_tracker", {}) or {}
         rows = [{"date": k, **v} for k, v in sorted(legacy.items(), reverse=True)[:days]]
     return {"athlete_id": athlete_id, "days": days, "history": rows, "total": len(rows)}
+
+
+class AthleteProfilePatch(BaseModel):
+    primary_sport: Optional[str] = None
+    name: Optional[str] = None
+    height_cm: Optional[float] = None
+
+
+@router.patch("/athlete/{athlete_id}")
+async def patch_athlete_profile(
+    athlete_id: str,
+    req: AthleteProfilePatch,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
+    """Update mutable athlete profile fields (sport, name, height)."""
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(404, "athlete not found")
+    athlete = ATHLETE_DB[athlete_id]
+    if req.primary_sport is not None:
+        athlete["sport"] = req.primary_sport
+    if req.name is not None:
+        athlete["name"] = req.name
+    if req.height_cm is not None:
+        athlete["height_cm"] = req.height_cm
+    _save_db()
+    return {"athlete_id": athlete_id, "updated": req.model_dump(exclude_none=True)}

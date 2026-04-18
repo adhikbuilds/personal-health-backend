@@ -343,14 +343,16 @@ async def get_team_nutrition_summary():
                 total_prot += t.get("protein_g", 0) or 0
         cal_pct = round((total_cals / max(goal_cals, 1)) * 100)
         prot_pct = round((total_prot / max(goal_prot, 1)) * 100)
-        results.append({
-            "id": athlete_id,
-            "name": athlete.get("name", "Unknown"),
-            "calories_pct": cal_pct,
-            "protein_pct": prot_pct,
-            "meals_logged": len(day_log),
-            "flag": "red" if cal_pct < 40 else ("yellow" if cal_pct < 60 else "ok"),
-        })
+        results.append(
+            {
+                "id": athlete_id,
+                "name": athlete.get("name", "Unknown"),
+                "calories_pct": cal_pct,
+                "protein_pct": prot_pct,
+                "meals_logged": len(day_log),
+                "flag": "red" if cal_pct < 40 else ("yellow" if cal_pct < 60 else "ok"),
+            }
+        )
     team_avg = round(sum(r["calories_pct"] for r in results) / len(results)) if results else 0
     return {"date": today, "athletes": results, "team_avg_calories_pct": team_avg}
 
