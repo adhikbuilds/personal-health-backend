@@ -221,6 +221,43 @@ async def generate_notifications(athlete_id: str):
     except Exception:
         pass
 
+    # 5. re-engagement — Flow 14 from BIOMECHANICS-ARCHITECT.md
+    # Lapsed athletes: push ONCE between day 6 and day 13. Silent after day 14
+    # (accept the churn; spam damages trust more than one lost user).
+    # Copy is drill-specific, not guilt-trippy. "We miss you" is banned.
+    last_trained = None
+    for s in SESSION_DB.values():
+        if s.get("athlete_id") != athlete_id or s.get("status") != "completed":
+            continue
+        started = s.get("started_at", "")[:10]
+        if started and (last_trained is None or started > last_trained):
+            last_trained = started
+
+    if last_trained:
+        try:
+            last_dt = datetime.fromisoformat(last_trained).date()
+            idle_days = (now - last_dt).days
+        except ValueError:
+            idle_days = 0
+
+        if 6 <= idle_days <= 13:
+            # Only push once per lapse window.
+            existing = [
+                n
+                for n in _load_notifs().get(athlete_id, [])
+                if n.get("type") == "reengage" and (n.get("data") or {}).get("lapse_anchor") == last_trained
+            ]
+            if not existing:
+                sport = athlete.get("sport", "your sport")
+                _add_notif(
+                    athlete_id,
+                    "reengage",
+                    f"{idle_days} days since your last rep",
+                    f"your {sport} drill from last week is queued up. 15 minutes, one drill, pick it up when you can.",
+                    {"idle_days": idle_days, "lapse_anchor": last_trained},
+                )
+                generated.append("reengage")
+
     return {
         "athlete_id": athlete_id,
         "generated": generated,
