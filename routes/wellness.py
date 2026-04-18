@@ -7,9 +7,10 @@ Wellness domain — Morning check-in and composite wellness score
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from auth import require_athlete_or_admin
 from cache import progress_cache
 from database import ATHLETE_DB, _save_db
 from logging_setup import get_logger
@@ -129,7 +130,11 @@ def _generate_recommendation(breakdown: dict[str, int], entry: dict) -> str:
 
 
 @router.post("/athlete/{athlete_id}/wellness/checkin")
-async def log_wellness_checkin(athlete_id: str, data: WellnessCheckin):
+async def log_wellness_checkin(
+    athlete_id: str,
+    data: WellnessCheckin,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     """Log a morning wellness check-in for an athlete."""
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")
@@ -170,7 +175,7 @@ async def log_wellness_checkin(athlete_id: str, data: WellnessCheckin):
 
 
 @router.get("/athlete/{athlete_id}/wellness/score")
-async def get_wellness_score(athlete_id: str):
+async def get_wellness_score(athlete_id: str, _: dict = Depends(require_athlete_or_admin("athlete_id"))):
     """Return today's composite wellness score (0-100)."""
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")

@@ -8,7 +8,7 @@ import time
 import uuid
 from typing import Optional
 
-from fastapi import Depends, Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, Request, status
 
 from config import settings
 from logging_setup import get_logger
@@ -257,5 +257,78 @@ def require_role(*roles: str):
         if user["role"] not in roles:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "insufficient role")
         return user
+
+    return _dep
+
+
+def require_athlete_or_admin(path_param: str = "athlete_id"):
+    """
+    Parameterized dep. Given the name of the path parameter that holds the
+    athlete_id, returns a FastAPI dependency that enforces self-or-admin.
+
+    Example:
+        @router.get("/athlete/{athlete_id}/wellness/score")
+        async def endpoint(
+            athlete_id: str,
+            _: dict = Depends(require_athlete_or_admin("athlete_id")),
+        ):
+            ...
+    """
+
+    def _dep(request: Request, user: dict = Depends(current_user)) -> dict:
+        target = request.path_params.get(path_param)
+        if target is None:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"missing path param {path_param}")
+        role = user.get("role")
+        if role in {"admin", "coach", "service"}:
+            return user
+        if user.get("athlete_id") and user["athlete_id"] == target:
+            return user
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "forbidden — not your athlete record")
+
+    return _dep
+
+
+def require_session_owner_or_admin(path_param: str = "session_id"):
+    """
+    Session-based auth: caller must be the athlete who owns the session, or
+    have an admin/coach/service role. Looks up the session in SESSION_DB.
+    """
+    from database import SESSION_DB
+
+    def _dep(request: Request, user: dict = Depends(current_user)) -> dict:
+        session_id = request.path_params.get(path_param)
+        if session_id is None:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"missing path param {path_param}")
+        session = SESSION_DB.get(session_id)
+        if not session:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "session not found")
+        role = user.get("role")
+        if role in {"admin", "coach", "service"}:
+            return user
+        if user.get("athlete_id") and user["athlete_id"] == session.get("athlete_id"):
+            return user
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "forbidden — not your session")
+
+    return _dep
+
+
+def require_coach_or_admin(path_param: str = "coach_id"):
+    """
+    Coach endpoints: only the coach user themselves or an admin can read.
+    `coach_id` on our current schema is just another athlete_id (coaches and
+    athletes share one user table), so the check mirrors the self-or-admin rule.
+    """
+
+    def _dep(request: Request, user: dict = Depends(current_user)) -> dict:
+        target = request.path_params.get(path_param)
+        if target is None:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"missing path param {path_param}")
+        role = user.get("role")
+        if role in {"admin", "service"}:
+            return user
+        if user.get("athlete_id") and user["athlete_id"] == target:
+            return user
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "forbidden — not your coach record")
 
     return _dep

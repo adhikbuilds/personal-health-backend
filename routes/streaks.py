@@ -17,8 +17,9 @@ Endpoints:
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from auth import require_athlete_or_admin
 from database import ATHLETE_DB, SESSION_DB
 from logging_setup import get_logger
 
@@ -120,7 +121,7 @@ def _weekly_volume(athlete_id: str, weeks: int = 4) -> list[dict]:
 
 
 @router.get("/athlete/{athlete_id}/streaks")
-async def get_streaks(athlete_id: str):
+async def get_streaks(athlete_id: str, _: dict = Depends(require_athlete_or_admin("athlete_id"))):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")
 
@@ -194,7 +195,7 @@ ACHIEVEMENTS = [
 
 
 @router.get("/athlete/{athlete_id}/achievements")
-async def get_achievements(athlete_id: str):
+async def get_achievements(athlete_id: str, _: dict = Depends(require_athlete_or_admin("athlete_id"))):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")
 

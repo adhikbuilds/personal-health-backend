@@ -19,8 +19,9 @@ import asyncio
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from auth import require_athlete_or_admin
 from cache import progress_cache
 from database import ATHLETE_DB, _load_json, _save_json
 from logging_setup import get_logger
@@ -147,6 +148,7 @@ async def get_weekly_plan(
         description="Monday of the target week (YYYY-MM-DD). Defaults to current week.",
     ),
     refresh: bool = False,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
 ) -> dict[str, Any]:
     _ensure_athlete(athlete_id)
 
@@ -204,6 +206,7 @@ async def get_weekly_plan(
 async def regenerate_plan(
     athlete_id: str,
     week_start: str | None = Query(default=None),
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
 ) -> dict[str, Any]:
     _ensure_athlete(athlete_id)
 
@@ -227,7 +230,11 @@ async def regenerate_plan(
 
 
 @router.post("/{athlete_id}/day/{day_date}/complete")
-async def complete_day(athlete_id: str, day_date: str) -> dict[str, Any]:
+async def complete_day(
+    athlete_id: str,
+    day_date: str,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+) -> dict[str, Any]:
     _ensure_athlete(athlete_id)
 
     try:
@@ -260,7 +267,11 @@ async def complete_day(athlete_id: str, day_date: str) -> dict[str, Any]:
 
 
 @router.get("/{athlete_id}/history")
-async def plan_history(athlete_id: str, limit: int = Query(default=4, ge=1, le=12)) -> dict[str, Any]:
+async def plan_history(
+    athlete_id: str,
+    limit: int = Query(default=4, ge=1, le=12),
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+) -> dict[str, Any]:
     _ensure_athlete(athlete_id)
     all_plans = _load_all_plans()
     athlete_plans = all_plans.get(athlete_id, {})

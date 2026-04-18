@@ -19,9 +19,10 @@ Endpoints:
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from auth import require_athlete_or_admin
 from database import ATHLETE_DB, SESSION_DB, _save_db
 from logging_setup import get_logger
 
@@ -41,7 +42,11 @@ class BaselineRequest(BaseModel):
 
 
 @router.post("/athlete/{athlete_id}/baseline")
-async def set_baseline(athlete_id: str, req: BaselineRequest):
+async def set_baseline(
+    athlete_id: str,
+    req: BaselineRequest,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")
 
@@ -107,7 +112,7 @@ def _baseline_recommendation(level: str, req: BaselineRequest) -> str:
 
 
 @router.get("/athlete/{athlete_id}/baseline")
-async def get_baseline(athlete_id: str):
+async def get_baseline(athlete_id: str, _: dict = Depends(require_athlete_or_admin("athlete_id"))):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")
 

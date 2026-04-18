@@ -19,8 +19,9 @@ Endpoints:
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from auth import require_athlete_or_admin
 from database import ATHLETE_DB, SESSION_DB, _load_json, _save_json
 from logging_setup import get_logger
 
@@ -74,7 +75,11 @@ def _add_notif(athlete_id: str, notif_type: str, title: str, body: str, data: di
 
 
 @router.get("/athlete/{athlete_id}/notifications")
-async def get_notifications(athlete_id: str, unread_only: bool = False):
+async def get_notifications(
+    athlete_id: str,
+    unread_only: bool = False,
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")
 
@@ -96,7 +101,7 @@ async def get_notifications(athlete_id: str, unread_only: bool = False):
 
 
 @router.post("/athlete/{athlete_id}/notifications/read")
-async def mark_all_read(athlete_id: str):
+async def mark_all_read(athlete_id: str, _: dict = Depends(require_athlete_or_admin("athlete_id"))):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")
 
@@ -115,7 +120,7 @@ async def mark_all_read(athlete_id: str):
 
 
 @router.post("/notifications/generate/{athlete_id}")
-async def generate_notifications(athlete_id: str):
+async def generate_notifications(athlete_id: str, _: dict = Depends(require_athlete_or_admin("athlete_id"))):
     """
     Check conditions and create notifications for an athlete.
     Call this after end_session or on a daily cron.

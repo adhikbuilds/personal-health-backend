@@ -23,8 +23,9 @@ Endpoint:
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from auth import require_coach_or_admin
 from database import ATHLETE_DB, SESSION_DB, _load_json
 from logging_setup import get_logger
 from routes.progress import _compute_injury_risk
@@ -168,7 +169,7 @@ def _build_priorities(athlete_ids: list[str]) -> list[dict]:
 
 
 @router.get("/{coach_id}/priorities")
-async def coach_priorities(coach_id: str):
+async def coach_priorities(coach_id: str, _: dict = Depends(require_coach_or_admin("coach_id"))):
     """
     Return the top athletes the coach should talk to today, each with a
     one-sentence reason in coach voice. Max 5 items.

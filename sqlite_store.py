@@ -78,6 +78,10 @@ def init_db() -> None:
             """
         )
         cur.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)")
+        # Idempotent ALTER — add `consents` column if missing (DPDP / injury-disclaimer flags)
+        _cols = {r["name"] for r in cur.execute("PRAGMA table_info(users)").fetchall()}
+        if "consents" not in _cols:
+            cur.execute("ALTER TABLE users ADD COLUMN consents TEXT")
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS refresh_tokens (
@@ -199,6 +203,29 @@ def get_user_by_id(user_id: str) -> Optional[dict]:
 def touch_login(user_id: str) -> None:
     with cursor() as cur:
         cur.execute("UPDATE users SET last_login_at = ? WHERE id = ?", (time.time(), user_id))
+
+
+def delete_user(user_id: str) -> None:
+    """Hard-delete a user + their refresh tokens. DPDP right-to-delete."""
+    with cursor() as cur:
+        cur.execute("DELETE FROM refresh_tokens WHERE user_id = ?", (user_id,))
+        cur.execute("DELETE FROM users WHERE id = ?", (user_id,))
+
+
+def set_user_consent(user_id: str, key: str, accepted: bool) -> None:
+    """Record an arbitrary consent flag (e.g. injury_disclaimer, dpdp_notice)."""
+    import json as _json
+
+    with cursor() as cur:
+        row = cur.execute("SELECT consents FROM users WHERE id = ?", (user_id,)).fetchone()
+        consents = {}
+        if row and row["consents"]:
+            try:
+                consents = _json.loads(row["consents"])
+            except (ValueError, TypeError):
+                consents = {}
+        consents[key] = {"accepted": bool(accepted), "at": time.time()}
+        cur.execute("UPDATE users SET consents = ? WHERE id = ?", (_json.dumps(consents), user_id))
 
 
 # ─── Refresh tokens ─────────────────────────────────────────────────────────

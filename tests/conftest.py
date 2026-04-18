@@ -40,8 +40,109 @@ def _fastapi_app():
 
 
 @pytest.fixture()
-def client(_fastapi_app):
+def anonymous_client(_fastapi_app):
+    """TestClient with no auth headers. Use when asserting 401s."""
     from fastapi.testclient import TestClient
 
     with TestClient(_fastapi_app) as c:
         yield c
+
+
+@pytest.fixture()
+def client(_fastapi_app):
+    """
+    Default test client — authenticated as an admin so existing tests that
+    predate auth enforcement continue to work. For anonymous-only tests use
+    the `anonymous_client` fixture.
+    """
+    import sqlite_store
+    from auth import issue_access_token
+    from fastapi.testclient import TestClient
+
+    with TestClient(_fastapi_app) as c:
+        # insert admin AFTER lifespan startup has run init_db()
+        try:
+            sqlite_store.insert_user(
+                {
+                    "id": "test-admin-id",
+                    "email": "admin@test.local",
+                    "name": "Test Admin",
+                    "password_hash": "x",
+                    "role": "admin",
+                    "athlete_id": None,
+                }
+            )
+        except Exception:
+            pass  # already exists from an earlier test in the session
+        token = issue_access_token("test-admin-id", "admin")
+        c.headers.update({"Authorization": f"Bearer {token}"})
+        yield c
+
+
+@pytest.fixture()
+def admin_token(_fastapi_app):
+    """Mint an admin JWT for tests that need to bypass self-only auth checks."""
+    import sqlite_store
+    from auth import issue_access_token
+
+    try:
+        sqlite_store.insert_user(
+            {
+                "id": "test-admin-id",
+                "email": "admin@test.local",
+                "name": "Test Admin",
+                "password_hash": "x",
+                "role": "admin",
+                "athlete_id": None,
+            }
+        )
+    except Exception:
+        pass
+    return issue_access_token("test-admin-id", "admin")
+
+
+@pytest.fixture()
+def admin_client(_fastapi_app, admin_token):
+    """A TestClient pre-configured with an admin bearer token."""
+    from fastapi.testclient import TestClient
+
+    with TestClient(_fastapi_app) as c:
+        c.headers.update({"Authorization": f"Bearer {admin_token}"})
+        yield c
+
+
+@pytest.fixture()
+def athlete_client(_fastapi_app):
+    """
+    A TestClient authenticated as a specific athlete. Use when tests need
+    to assert *self-scope* behavior (e.g. "athlete A cannot read athlete B").
+
+    Returns a factory that takes an athlete_id and gives back a TestClient
+    whose token asserts that athlete_id.
+    """
+    from auth import issue_access_token
+    from fastapi.testclient import TestClient
+
+    def _make(athlete_id: str):
+        # Inject a synthetic user row so current_user's DB lookup succeeds
+        import sqlite_store
+
+        try:
+            sqlite_store.insert_user(
+                {
+                    "id": f"u-{athlete_id}",
+                    "email": f"{athlete_id}@test.local",
+                    "name": athlete_id,
+                    "password_hash": "x",
+                    "role": "athlete",
+                    "athlete_id": athlete_id,
+                }
+            )
+        except Exception:
+            pass  # already exists from a previous test
+        token = issue_access_token(f"u-{athlete_id}", "athlete")
+        c = TestClient(_fastapi_app)
+        c.headers.update({"Authorization": f"Bearer {token}"})
+        return c
+
+    return _make

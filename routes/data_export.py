@@ -18,9 +18,10 @@ import csv
 import io
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
+from auth import require_athlete_or_admin
 from database import ATHLETE_DB, SESSION_DB
 from logging_setup import get_logger
 
@@ -160,6 +161,7 @@ async def export_all_sessions(
 async def export_athlete_data(
     athlete_id: str,
     format: str = Query(default="csv", pattern="^(csv|json)$"),
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
 ):
     """Export a single athlete's session frame data."""
     if athlete_id not in ATHLETE_DB:

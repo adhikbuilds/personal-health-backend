@@ -26,8 +26,9 @@ import statistics
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from auth import require_athlete_or_admin
 from database import ATHLETE_DB
 from logging_setup import get_logger
 from routes.progress import (
@@ -777,7 +778,11 @@ def _generate_report(athlete_id: str, days: int) -> dict:
 
 
 @router.get("/athlete/{athlete_id}/intelligence-report")
-async def intelligence_report(athlete_id: str, days: int = Query(default=30, ge=7, le=180)):
+async def intelligence_report(
+    athlete_id: str,
+    days: int = Query(default=30, ge=7, le=180),
+    _: dict = Depends(require_athlete_or_admin("athlete_id")),
+):
     """
     The comprehensive athlete intelligence report.
 
