@@ -20,13 +20,49 @@ router = APIRouter()
 
 
 @router.get("/leaderboard", tags=["Leaderboard"])
-async def get_leaderboard(sport: Optional[str] = None, limit: int = Query(default=20, le=50)):
+async def get_leaderboard(
+    sport: Optional[str] = None,
+    limit: int = Query(default=20, le=50),
+    athlete_id: Optional[str] = None,
+    bucket_size: int = Query(default=8, ge=4, le=20),
+):
+    """
+    Public leaderboard. When athlete_id is provided, returns the athlete's
+    bucketed view — their nearby peers only (TRAINER-FIRST-PROMPT anti-pattern:
+    athlete #47 of 50 must NOT see the full list; they see their bucket of 8).
+    """
     athletes = list(ATHLETE_DB.values())
     if sport:
         athletes = [a for a in athletes if a.get("sport") == sport]
     athletes.sort(key=lambda x: x.get("bpi", 0), reverse=True)
-    ranked = [{"rank": i + 1, **{k: v for k, v in a.items() if k != "rank"}} for i, a in enumerate(athletes[:limit])]
-    return {"leaderboard": ranked, "sport": sport or "all", "total": len(athletes)}
+
+    full_ranked = [{"rank": i + 1, **{k: v for k, v in a.items() if k != "rank"}} for i, a in enumerate(athletes)]
+
+    if athlete_id:
+        # Find athlete's position, then return a window of bucket_size centred on them
+        athlete_pos = next((i for i, a in enumerate(full_ranked) if a.get("id") == athlete_id), None)
+        if athlete_pos is not None:
+            half = bucket_size // 2
+            start = max(0, athlete_pos - half)
+            end = min(len(full_ranked), start + bucket_size)
+            start = max(0, end - bucket_size)  # re-anchor if near bottom
+            bucket = full_ranked[start:end]
+            return {
+                "leaderboard": bucket,
+                "sport": sport or "all",
+                "total": len(athletes),
+                "athlete_rank": athlete_pos + 1,
+                "bucket_start": start + 1,
+                "bucket_end": end,
+                "bucketed": True,
+            }
+
+    return {
+        "leaderboard": full_ranked[:limit],
+        "sport": sport or "all",
+        "total": len(athletes),
+        "bucketed": False,
+    }
 
 
 # ─── Feed ───────────────────────────────────────────────────────────────────
