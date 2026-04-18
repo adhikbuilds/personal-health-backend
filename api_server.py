@@ -51,6 +51,8 @@ if FASTAPI_AVAILABLE:
     from routes.leaderboard import router as leaderboard_router
     from routes.load import router as load_router
     from routes.notifications import router as notifications_router
+    from routes.nutrition import nutrition_router
+    from routes.nutrition import router as nutrition_router_foods
     from routes.nutrition_ai import router as nutrition_ai_router
     from routes.plan import router as plan_router
     from routes.progress import router as progress_router
@@ -70,7 +72,6 @@ if FASTAPI_AVAILABLE:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        # Startup
         init_db()
         _load_db()
         database.ANALYSIS_QUEUE = asyncio.Queue(maxsize=200)
@@ -86,7 +87,6 @@ if FASTAPI_AVAILABLE:
             },
         )
         yield
-        # Shutdown — drain workers, then save
         task.cancel()
         cleanup_task.cancel()
         import contextlib
@@ -105,12 +105,12 @@ if FASTAPI_AVAILABLE:
         lifespan=lifespan,
     )
 
-    # ─── Middleware ──────────────────────────────────────────────────────────
     install_middleware(app)
 
     _allow_credentials = False if "*" in settings.cors_origins else True
     if settings.is_prod and "*" in settings.cors_origins:
         log.warning("CORS wildcard in prod — set CORS_ORIGINS env explicitly")
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -120,7 +120,7 @@ if FASTAPI_AVAILABLE:
         expose_headers=["X-Request-ID", "X-RateLimit-Remaining", "Retry-After"],
     )
 
-    # ─── Routers ────────────────────────────────────────────────────────────
+    # ─── Routers ────────────────────────────────────────────
     app.include_router(health_router)
     app.include_router(admin_router)
     app.include_router(auth_router)
@@ -131,9 +131,7 @@ if FASTAPI_AVAILABLE:
     app.include_router(progress_router)
     app.include_router(analytics_router)
     app.include_router(coach_router)
-    from routes.nutrition import nutrition_router, router
-
-    app.include_router(router)
+    app.include_router(nutrition_router_foods)
     app.include_router(nutrition_router)
     app.include_router(plan_router)
     app.include_router(summary_router)
@@ -156,11 +154,16 @@ if FASTAPI_AVAILABLE:
     app.include_router(baseline_router)
     app.include_router(wellness_router)
 
-    # ─── OpenAPI: advertise bearer scheme ───────────────────────────────────
+    # ─── OpenAPI ────────────────────────────────────────────
     def _custom_openapi():
         if app.openapi_schema:
             return app.openapi_schema
-        schema = get_openapi(title=app.title, version=app.version, description=app.description, routes=app.routes)
+        schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+        )
         schema.setdefault("components", {}).setdefault("securitySchemes", {})["bearerAuth"] = {
             "type": "http",
             "scheme": "bearer",
@@ -171,11 +174,15 @@ if FASTAPI_AVAILABLE:
 
     app.openapi = _custom_openapi  # type: ignore[assignment]
 
-
-# ─── Entry point ────────────────────────────────────────────────────────────
-
+# ─── Entry point ────────────────────────────────────────────
 if __name__ == "__main__":
     if not FASTAPI_AVAILABLE:
         print("Install: pip install fastapi uvicorn pydantic")
     else:
-        uvicorn.run("api_server:app", host=settings.host, port=settings.port, reload=False, log_level="info")
+        uvicorn.run(
+            "api_server:app",
+            host=settings.host,
+            port=settings.port,
+            reload=False,
+            log_level="info",
+        )
