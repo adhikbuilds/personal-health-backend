@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+
 """
 Personal Health — Parent safety view (Flow 15).
 
@@ -86,8 +88,7 @@ def _compute_safety_summary(athlete_id: str) -> dict:
 
     athlete = ATHLETE_DB[athlete_id]
     all_sessions = [
-        s for s in SESSION_DB.values()
-        if s.get("athlete_id") == athlete_id and s.get("status") == "completed"
+        s for s in SESSION_DB.values() if s.get("athlete_id") == athlete_id and s.get("status") == "completed"
     ]
 
     last_session_date: Optional[str] = None
@@ -99,10 +100,8 @@ def _compute_safety_summary(athlete_id: str) -> dict:
         sm = s.get("summary") or {}
         score = sm.get("avg_form_score") or s.get("avg_form_score") or s.get("form_score")
         if score is not None:
-            try:
+            with contextlib.suppress(TypeError, ValueError):
                 form_scores.append(float(score))
-            except (TypeError, ValueError):
-                pass
 
     sessions_last_7 = len(_athlete_sessions_last_n_days(athlete_id, 7))
 

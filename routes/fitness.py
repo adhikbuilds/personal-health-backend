@@ -435,7 +435,6 @@ async def pose_check(req: PoseCheckRequest):
                 "recommendation": "no_body",
             }
 
-        xs = [float(kp.get("x", 0)) for kp in visible]
         ys = [float(kp.get("y", 0)) for kp in visible]
         min_y, max_y = min(ys), max(ys)
         bbox_pct = max(0.0, min(1.0, max_y - min_y))
