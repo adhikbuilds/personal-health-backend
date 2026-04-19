@@ -6,6 +6,7 @@ Personal Health — auth helpers (bcrypt + JWT) and FastAPI dependencies.
 
 import time
 import uuid
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import Depends, Header, HTTPException, Request, status
@@ -165,6 +166,34 @@ def register_user(email: str, password: str, name: str, athlete_id: Optional[str
     }
     insert_user(user)
     log.info("user registered", extra={"user_id": user["id"], "email": email})
+
+    # Auto-provision the corresponding athlete record so that every
+    # /athlete/{athlete_id}/* endpoint works immediately after signup.
+    # Previously the user row was created without the athlete, so the very
+    # first /athlete/{id}/wellness, /notifications, /plan etc. would 404.
+    if athlete_id:
+        try:
+            from database import ATHLETE_DB, _save_db
+
+            if athlete_id not in ATHLETE_DB:
+                initials = "".join(w[0].upper() for w in name.strip().split()[:2]) or "A"
+                ATHLETE_DB[athlete_id] = {
+                    "id": athlete_id,
+                    "name": name,
+                    "sport": "vertical_jump",
+                    "tier": "Block",
+                    "bpi": 1000,
+                    "sessions": 0,
+                    "avatar": initials,
+                    "height_cm": 170,
+                    "created_at": datetime.now(timezone.utc).isoformat() + "Z",
+                    "source": "device_auto",
+                }
+                _save_db()
+                log.info("athlete auto-provisioned", extra={"athlete_id": athlete_id})
+        except Exception as exc:
+            log.warning("athlete auto-provision failed: %s", exc)
+
     return user
 
 
