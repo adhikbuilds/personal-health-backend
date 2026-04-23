@@ -12,11 +12,49 @@ from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from database import _FOLLOWS, ATHLETE_DB, SESSION_DB, _save_db
+from database import _FOLLOWS, ATHLETE_DB, SESSION_DB, _save_db, _load_json, _save_json
 from logging_setup import get_logger
 
 router = APIRouter()
 log = get_logger("routes.social")
+
+
+# ─── Claps (one-tap reactions) ─────────────────────────────────────────────
+# Closed-circle, one-tap, no comments. Each athlete may clap a target post
+# (session_id or athlete_id) at most once. Aggregate count is shown on /feed.
+
+_CLAPS: dict[str, dict] = {}  # target_id -> { "count": int, "clapped_by": list[str] }
+
+
+def _load_claps() -> None:
+    raw = _load_json("claps.json")
+    if not isinstance(raw, dict):
+        return
+    for target, payload in raw.items():
+        if not isinstance(payload, dict):
+            continue
+        clapped_by = payload.get("clapped_by") or []
+        if not isinstance(clapped_by, list):
+            clapped_by = []
+        _CLAPS[target] = {
+            "count": int(payload.get("count", len(clapped_by))),
+            "clapped_by": list(dict.fromkeys(clapped_by)),  # dedupe, preserve order
+        }
+
+
+_load_claps()
+
+
+def _save_claps() -> None:
+    try:
+        _save_json("claps.json", _CLAPS)
+    except Exception as e:
+        log.warning("could not persist claps", extra={"error": str(e)})
+
+
+def _claps_for(target_id: str) -> int:
+    entry = _CLAPS.get(target_id)
+    return int(entry["count"]) if entry else 0
 
 
 # ─── Feed aggregation helpers ───────────────────────────────────────────────
@@ -91,19 +129,25 @@ def _build_session_post(session: dict, athlete: dict, viewer_follows: set) -> di
 
     athlete_id = athlete.get("id") or session.get("athlete_id", "")
     name = athlete.get("name") or athlete_id
+    target_id = session["session_id"]
     return {
         "id": f"sess_{session['session_id'][:10]}",
+        "type": "session",
         "kind": "session",
         "author": name,
         "author_id": athlete_id,
+        "athlete_id": athlete_id,
+        "target_id": target_id,
         "handle": f"@{athlete_id}",
         "initials": _initials(name),
         "avatarColor": _avatar_color(athlete_id),
         "sport": sport_label,
         "content": headline,
         "likes": int(summary.get("xp_earned", 0) // 2),
+        "claps": _claps_for(target_id),
         "comments": 0,
         "timeAgo": _time_ago(session.get("ended_at") or session.get("started_at", "")),
+        "created_at": session.get("ended_at") or session.get("started_at", ""),
         "timestamp": session.get("ended_at") or session.get("started_at", ""),
         "isFollowing": athlete_id in viewer_follows,
         "session_id": session.get("session_id"),
@@ -125,19 +169,25 @@ def _build_milestone_post(athlete: dict, viewer_follows: set) -> dict | None:
     if not rank or rank > 3 or bpi <= 0:
         return None
     suffix = {1: "#1", 2: "#2", 3: "#3"}.get(rank, f"#{rank}")
+    target_id = f"milestone_{athlete.get('id')}"
     return {
-        "id": f"milestone_{athlete.get('id')}",
+        "id": target_id,
+        "type": "milestone",
         "kind": "milestone",
         "author": name,
         "author_id": athlete.get("id"),
+        "athlete_id": athlete.get("id"),
+        "target_id": target_id,
         "handle": f"@{athlete.get('id')}",
         "initials": _initials(name),
         "avatarColor": _avatar_color(athlete.get("id", "")),
         "sport": (athlete.get("sport") or "").replace("_", " ").title(),
         "content": f"{suffix} on the national leaderboard · BPI {bpi:,}",
         "likes": int(bpi // 100),
+        "claps": _claps_for(target_id),
         "comments": 0,
         "timeAgo": "today",
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "isFollowing": athlete.get("id") in viewer_follows,
     }
@@ -483,6 +533,43 @@ async def get_playfields(lat: float = 0.0, lng: float = 0.0, radius: float = 50.
 
 
 # ─── Map ────────────────────────────────────────────────────────────────────
+
+
+# ─── Reactions (one-tap claps) ────────────────────────────────────────────
+
+
+class ClapResponse(BaseModel):
+    target_id: str
+    count: int
+    you_clapped: bool
+
+
+@router.post("/athlete/{athlete_id}/clap/{target_id}", tags=["Social"], response_model=ClapResponse)
+async def clap(athlete_id: str, target_id: str):
+    """Record a one-tap clap from `athlete_id` on `target_id`. Idempotent —
+    a second tap from the same athlete returns the same count without double-
+    incrementing. Persists across restarts via db/claps.json."""
+    if not athlete_id or not target_id:
+        return ClapResponse(target_id=target_id, count=_claps_for(target_id), you_clapped=False)
+
+    entry = _CLAPS.setdefault(target_id, {"count": 0, "clapped_by": []})
+    if athlete_id in entry["clapped_by"]:
+        return ClapResponse(target_id=target_id, count=int(entry["count"]), you_clapped=True)
+
+    entry["clapped_by"].append(athlete_id)
+    entry["count"] = int(entry.get("count", 0)) + 1
+    _save_claps()
+    return ClapResponse(target_id=target_id, count=int(entry["count"]), you_clapped=True)
+
+
+@router.get("/claps/{target_id}", tags=["Social"])
+async def get_claps(target_id: str, athlete_id: str = ""):
+    entry = _CLAPS.get(target_id, {"count": 0, "clapped_by": []})
+    return {
+        "target_id": target_id,
+        "count": int(entry.get("count", 0)),
+        "you_clapped": bool(athlete_id and athlete_id in entry.get("clapped_by", [])),
+    }
 
 
 @router.get("/map", tags=["Map"])

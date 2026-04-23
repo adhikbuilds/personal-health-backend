@@ -30,6 +30,14 @@ db/*.db
 db/*.sqlite
 db/*.sqlite3
 
+# Per-session frame buffers — accumulated at runtime, never seeded
+db/frames/
+
+# Generated training plans + reaction/broadcast logs — runtime state
+db/plans.json
+db/claps.json
+db/broadcasts.json
+
 # ─── Docker ──────────────────────────────────────────────────────────────────
 # Docker volumes mounted locally, only relevant in production
 .dockerenv
