@@ -244,8 +244,8 @@ async def advanced_metrics(athlete_id: str, days: int = Query(default=60, ge=7, 
     for s in recent[:15]:
         all_frames.extend(s.get("frames", []) or [])
 
-    latest_summary = recent[0].get("summary") if recent else {}
-    hr_summary = recent[0].get("summary", {}).get("heart_rate") if recent else None
+    latest_summary = (recent[0].get("summary") if recent else {}) or {}
+    hr_summary = latest_summary.get("heart_rate") if recent else None
 
     # Daily load for the chart
     load_map = ms.daily_load(recent)
