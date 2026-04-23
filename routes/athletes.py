@@ -43,7 +43,7 @@ class DailyTrackerUpdate(BaseModel):
 async def list_athletes():
     athletes = list(ATHLETE_DB.values())
     athletes.sort(key=lambda x: x.get("bpi", 0), reverse=True)
-    return {"athletes": athletes, "total": len(athletes)}
+    return {"athletes": athletes, "items": athletes, "total": len(athletes)}
 
 
 @router.post("/athlete", tags=["Athletes"])
@@ -256,4 +256,7 @@ async def daily_tracker_history(athlete_id: str, days: int = 30):
     if not rows:
         legacy = ATHLETE_DB[athlete_id].get("daily_tracker", {}) or {}
         rows = [{"date": k, **v} for k, v in sorted(legacy.items(), reverse=True)[:days]]
-    return {"athlete_id": athlete_id, "days": days, "history": rows, "total": len(rows)}
+    return {
+        "athlete_id": athlete_id, "days": days,
+        "history": rows, "items": rows, "total": len(rows),
+    }

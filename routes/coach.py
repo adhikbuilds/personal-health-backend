@@ -130,7 +130,10 @@ async def list_roster(coach_id: str):
         for a in roster
     ]
     items.sort(key=lambda x: (x.get("name") or "").lower())
-    return {"coach_id": coach_id, "athletes": items, "count": len(items)}
+    return {
+        "coach_id": coach_id, "athletes": items, "items": items,
+        "count": len(items), "total": len(items),
+    }
 
 
 class BroadcastIn(BaseModel):
@@ -175,7 +178,7 @@ async def send_broadcast(coach_id: str, body: BroadcastIn, user: dict = Depends(
 async def coach_inbox(coach_id: str, limit: int = Query(default=10, ge=1, le=100)):
     items = list_broadcasts_by_coach(coach_id, limit)
     total = count_broadcasts_by_coach(coach_id)
-    return {"coach_id": coach_id, "broadcasts": items, "total": total}
+    return {"coach_id": coach_id, "broadcasts": items, "items": items, "total": total}
 
 
 @router.get("/inbox/athlete/{athlete_id}")
