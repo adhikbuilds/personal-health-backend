@@ -968,3 +968,83 @@ async def get_fitness_test_history(athlete_id: str):
     if not athlete:
         return {"athlete_id": athlete_id, "history": []}
     return {"athlete_id": athlete_id, "history": athlete.get("fitness_tests", [])[:5]}
+
+
+# ─── Phase 2: WebSocket JPEG frame ingest ──────────────────────────────────
+# Replaces the per-frame HTTP POST with a single long-lived socket so the
+# client can stream at higher fps without paying TCP+HTTP overhead per frame.
+# Accepts JSON messages of the shape:
+#   { "image_b64": "<jpeg-base64>", "ts": <ms> }
+# Emits, after each frame is analyzed:
+#   { "type": "result", "frame_num": N, "form_score": ..., "form_quality": ...,
+#     "primary_feedback": "...", "phase": "..." }
+# Plus periodic { "type": "ping" } when idle.
+
+@router.websocket("/ws/session/{session_id}/frames-jpeg")
+async def websocket_jpeg_frames(websocket: WebSocket, session_id: str):
+    await websocket.accept()
+    if session_id not in SESSION_DB:
+        await websocket.send_json({"type": "error", "code": "session_not_found"})
+        await websocket.close(code=4404)
+        return
+    if SESSION_DB[session_id].get("status") != "active":
+        await websocket.send_json({"type": "error", "code": "session_not_active"})
+        await websocket.close(code=4400)
+        return
+
+    sport = SESSION_DB[session_id].get("sport", "vertical_jump")
+    log.info("ws-frames-jpeg connected", extra={"session_id": session_id[:8], "sport": sport})
+
+    last_result_ts = 0.0
+    try:
+        while True:
+            try:
+                msg = await asyncio.wait_for(websocket.receive_json(), timeout=30)
+            except asyncio.TimeoutError:
+                await websocket.send_json({"type": "ping", "ts": time.time()})
+                continue
+
+            image_b64 = (msg or {}).get("image_b64")
+            if not image_b64:
+                continue
+
+            # Same per-session rate limit as the HTTP endpoint, applied here so
+            # a misbehaving client can't melt the analyzer queue.
+            now = time.time()
+            if now - _RATE_LIMITS.get(session_id, 0) < 0.05:  # 20 fps cap
+                continue
+            _RATE_LIMITS[session_id] = now
+
+            frame_num = SESSION_DB[session_id].get("frame_count", 0)
+            frame_dict = {
+                "frame_num": frame_num,
+                "timestamp": now,
+                "pose_detected": None,
+                "via": "ws",
+            }
+            FRAME_BUFFER[session_id].append(frame_dict)
+            SESSION_DB[session_id]["frame_count"] = frame_num + 1
+
+            if database.ANALYSIS_QUEUE is not None:
+                try:
+                    database.ANALYSIS_QUEUE.put_nowait((session_id, image_b64, sport, frame_dict))
+                except asyncio.QueueFull:
+                    log.warning("analysis queue full (ws), dropped frame", extra={"session_id": session_id[:8]})
+
+            # Push the latest analyzed result back if it's newer than last sent.
+            latest = RESULT_STORE.get(session_id)
+            if latest and latest.get("timestamp", 0) > last_result_ts:
+                last_result_ts = latest.get("timestamp", 0)
+                await websocket.send_json({
+                    "type": "result",
+                    "frame_num": frame_num,
+                    **{k: latest.get(k) for k in (
+                        "form_score", "form_quality", "primary_feedback",
+                        "phase", "knee_angle_l", "hip_angle_l", "trunk_lean",
+                        "limb_symmetry_idx", "estimated_jump_height",
+                    )},
+                })
+    except WebSocketDisconnect:
+        log.info("ws-frames-jpeg disconnected", extra={"session_id": session_id[:8]})
+    except Exception as e:
+        log.warning("ws-frames-jpeg error", extra={"session_id": session_id[:8], "error": str(e)})
