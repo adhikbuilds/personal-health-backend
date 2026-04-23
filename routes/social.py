@@ -255,7 +255,12 @@ async def get_leaderboard(sport: Optional[str] = None, limit: int = Query(defaul
         athletes = [a for a in athletes if a.get("sport") == sport]
     athletes.sort(key=lambda x: x.get("bpi", 0), reverse=True)
     ranked = [{"rank": i + 1, **{k: v for k, v in a.items() if k != "rank"}} for i, a in enumerate(athletes[:limit])]
-    return {"leaderboard": ranked, "sport": sport or "all", "total": len(athletes)}
+    # Both `leaderboard` (legacy) and `items` (canonical) are populated so
+    # newer clients can read a consistent envelope across all list endpoints.
+    return {
+        "leaderboard": ranked, "items": ranked,
+        "sport": sport or "all", "total": len(athletes),
+    }
 
 
 # ─── Feed ───────────────────────────────────────────────────────────────────
@@ -275,7 +280,7 @@ async def get_feed(
     """
     posts = _aggregate_feed(viewer_id=athlete_id, tab=tab, limit=limit)
     return {
-        "posts": posts,
+        "posts": posts, "items": posts,  # canonical envelope alias
         "page": page,
         "total": len(posts),
         "tab": tab,
@@ -337,7 +342,8 @@ async def get_trending_creators(limit: int = Query(default=8, ge=1, le=20)):
             "score": score,
         })
     scored.sort(key=lambda c: c["score"], reverse=True)
-    return {"creators": scored[:limit]}
+    out = scored[:limit]
+    return {"creators": out, "items": out, "total": len(out)}
 
 
 class FollowRequest(BaseModel):
@@ -424,7 +430,10 @@ async def get_classes(athlete_id: str = "", limit: int = Query(default=10, ge=1,
             "color": sport_color.get(sport, "#06b6d4"),
             "athlete_ids": [s.get("athlete_id")] if s.get("athlete_id") else [],
         })
-    return {"classes": classes, "athlete_id": athlete_id, "total": len(classes)}
+    return {
+        "classes": classes, "items": classes,
+        "athlete_id": athlete_id, "total": len(classes),
+    }
 
 
 # ─── Playfields ─────────────────────────────────────────────────────────────
@@ -586,7 +595,12 @@ async def get_playfields(lat: float = 0.0, lng: float = 0.0, radius: float = 50.
             continue
         results.append({**f, "distance_km": dist, "imageUrl": None})
     results.sort(key=lambda x: x["distance_km"])
-    return {"playfields": results}
+    # `demo: true` makes it explicit to clients that this list is not yet
+    # backed by a real DB — clients can render a "demo data" badge or skip.
+    return {
+        "playfields": results, "items": results,
+        "total": len(results), "demo": True,
+    }
 
 
 # ─── Map ────────────────────────────────────────────────────────────────────
