@@ -49,6 +49,36 @@ def _rid(request: Request) -> str:
 @router.post("/register", status_code=201)
 async def register(req: RegisterRequest, request: Request):
     user = register_user(req.email, req.password, req.name, req.athlete_id)
+
+    # Auto-provision an Athlete record so the new user has a profile to read
+    # from on first launch (HomeScreen, ProfileScreen, etc all expect an
+    # athlete_id). If the caller passed an existing athlete_id we link to it
+    # instead of creating a new one.
+    if not user.get("athlete_id"):
+        from database import ATHLETE_DB, _save_db
+        from sqlite_store import update_user_athlete_id
+
+        existing = sorted(
+            int(k.split("_", 1)[1]) for k in ATHLETE_DB.keys()
+            if k.startswith("athlete_") and k.split("_", 1)[1].isdigit()
+        )
+        next_n = (existing[-1] + 1) if existing else 1
+        new_athlete_id = f"athlete_{next_n:02d}"
+        initials = "".join(p[0].upper() for p in req.name.split() if p)[:2] or "AT"
+        ATHLETE_DB[new_athlete_id] = {
+            "id": new_athlete_id,
+            "name": req.name,
+            "avatar": initials,
+            "sport": "vertical_jump",
+            "tier": "Block",
+            "bpi": 0,
+            "sessions": 0,
+            "rank": next_n + 1000,
+        }
+        _save_db()
+        update_user_athlete_id(user["id"], new_athlete_id)
+        user["athlete_id"] = new_athlete_id
+
     audit("user.register", user_id=user["id"], ip=_ip(request), request_id=_rid(request))
     tokens = issue_token_pair(user["id"], user["role"])
     return {
