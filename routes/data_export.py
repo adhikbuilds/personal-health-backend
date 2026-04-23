@@ -18,9 +18,10 @@ import csv
 import io
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
+from auth import require_athlete_owner, require_role
 from database import ATHLETE_DB, SESSION_DB
 from logging_setup import get_logger
 
@@ -120,13 +121,14 @@ def _completed_sessions(athlete_id: str | None = None) -> list[dict]:
 # ─── Routes ─────────────────────────────────────────────────────────────────
 
 
-@router.get("/admin/export/sessions")
+@router.get("/admin/export/sessions", dependencies=[Depends(require_role("admin"))])
 async def export_all_sessions(
     format: str = Query(default="csv", pattern="^(csv|json)$"),
     sport: str | None = None,
     min_frames: int = Query(default=0, ge=0),
 ):
-    """Export all completed session frame data for model retraining."""
+    """Export all completed session frame data for model retraining.
+    Admin-only — full session data is sensitive (raw frames + biometrics)."""
     sessions = _completed_sessions()
     if sport:
         sessions = [s for s in sessions if s.get("sport") == sport]
@@ -156,12 +158,13 @@ async def export_all_sessions(
     )
 
 
-@router.get("/athlete/{athlete_id}/export")
+@router.get("/athlete/{athlete_id}/export", dependencies=[Depends(require_athlete_owner())])
 async def export_athlete_data(
     athlete_id: str,
     format: str = Query(default="csv", pattern="^(csv|json)$"),
 ):
-    """Export a single athlete's session frame data."""
+    """Export a single athlete's session frame data — owner-only.
+    Admins can export any athlete's data via the admin route."""
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")
 

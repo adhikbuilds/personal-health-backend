@@ -9,10 +9,11 @@ from datetime import datetime, timezone
 from typing import Optional
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from ai_coach import generate_coach_note
+from auth import current_user, require_athlete_owner, verify_athlete_owner
 from cache import coach_cache
 from database import ATHLETE_DB, _FOLLOWS, _load_json
 from logging_setup import get_logger
@@ -66,12 +67,11 @@ _migrate_legacy_broadcasts_once()
 
 
 def _coach_roster(coach_id: str) -> list[dict]:
-    """Return the coach's roster — athletes who follow them. If empty
-    (typical in MVP), fall back to all athletes so the demo isn't blank."""
+    """Return the coach's roster — athletes who follow them. Returns an empty
+    list if no one has explicitly opted in via /follow. Previously fell back
+    to ALL athletes which meant a fresh coach could broadcast to every user
+    in the system unintentionally — that's a security/UX hole."""
     follower_ids = [aid for aid, follows in _FOLLOWS.items() if coach_id in follows]
-    if not follower_ids:
-        # Fallback: every athlete except the coach themselves
-        follower_ids = [aid for aid in ATHLETE_DB.keys() if aid != coach_id]
     return [ATHLETE_DB[aid] for aid in follower_ids if aid in ATHLETE_DB]
 
 
@@ -140,7 +140,10 @@ class BroadcastIn(BaseModel):
 
 
 @router.post("/{coach_id}/broadcast")
-async def send_broadcast(coach_id: str, body: BroadcastIn):
+async def send_broadcast(coach_id: str, body: BroadcastIn, user: dict = Depends(current_user)):
+    """Send a text or voice broadcast to the coach's roster. Caller must own
+    the coach_id — you can't impersonate another coach."""
+    verify_athlete_owner(user, coach_id)
     text = (body.message or "").strip()
     voice = (body.voice_note_url or "").strip()
     if not text and not voice:

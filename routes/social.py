@@ -8,10 +8,11 @@ import math
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
+from auth import current_user, optional_user, verify_athlete_owner
 from database import _FOLLOWS, ATHLETE_DB, SESSION_DB, _save_db, _load_json
 from logging_setup import get_logger
 from sqlite_store import add_clap, clap_count, has_clapped
@@ -601,11 +602,13 @@ class ClapResponse(BaseModel):
 
 
 @router.post("/athlete/{athlete_id}/clap/{target_id}", tags=["Social"], response_model=ClapResponse)
-async def clap(athlete_id: str, target_id: str):
-    """Record a one-tap clap from `athlete_id` on `target_id`. Idempotent —
-    a second tap from the same athlete is a no-op (PK constraint). Backed
-    by SQLite, durable across restarts."""
-    if not athlete_id or not target_id:
+async def clap(athlete_id: str, target_id: str, user: dict = Depends(current_user)):
+    """Record a one-tap clap from `athlete_id` on `target_id`. Caller must
+    own `athlete_id` — you can't clap on behalf of another user. Idempotent:
+    a second tap from the same athlete is a no-op (PK constraint at the
+    storage layer). Backed by SQLite, durable across restarts."""
+    verify_athlete_owner(user, athlete_id)
+    if not target_id:
         return ClapResponse(target_id=target_id, count=clap_count(target_id), you_clapped=False)
     count, you_clapped = add_clap(target_id, athlete_id)
     return ClapResponse(target_id=target_id, count=count, you_clapped=you_clapped)

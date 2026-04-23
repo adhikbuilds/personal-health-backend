@@ -8,7 +8,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+
+from auth import current_user, optional_user, require_athlete_owner, verify_athlete_owner
 from pydantic import BaseModel
 
 from database import ATHLETE_DB, FRAME_BUFFER, SESSION_DB, _save_db
@@ -186,7 +188,11 @@ async def get_athlete_progress(athlete_id: str):
 # ─── Daily Tracker ──────────────────────────────────────────────────────────
 
 
-@router.get("/athlete/{athlete_id}/daily-tracker", tags=["Daily Tracker"])
+@router.get(
+    "/athlete/{athlete_id}/daily-tracker",
+    tags=["Daily Tracker"],
+    dependencies=[Depends(require_athlete_owner())],
+)
 async def get_daily_tracker(athlete_id: str):
     athlete = ATHLETE_DB.get(athlete_id, {})
     today = datetime.now(timezone.utc).date().isoformat()
@@ -194,7 +200,11 @@ async def get_daily_tracker(athlete_id: str):
     return {"athlete_id": athlete_id, "date": today, "tracker": tracker}
 
 
-@router.post("/athlete/{athlete_id}/daily-tracker", tags=["Daily Tracker"])
+@router.post(
+    "/athlete/{athlete_id}/daily-tracker",
+    tags=["Daily Tracker"],
+    dependencies=[Depends(require_athlete_owner())],
+)
 async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
     if athlete_id not in ATHLETE_DB:
         ATHLETE_DB[athlete_id] = {"id": athlete_id, "daily_tracker": {}}
@@ -223,7 +233,11 @@ async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
     return {"athlete_id": athlete_id, "date": date_key, "ok": True}
 
 
-@router.get("/athlete/{athlete_id}/daily-tracker/history", tags=["Daily Tracker"])
+@router.get(
+    "/athlete/{athlete_id}/daily-tracker/history",
+    tags=["Daily Tracker"],
+    dependencies=[Depends(require_athlete_owner())],
+)
 async def daily_tracker_history(athlete_id: str, days: int = 30):
     """Returns up to `days` most recent daily-tracker entries, newest first.
 

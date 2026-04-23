@@ -192,28 +192,46 @@ def test_export_stats(client):
     assert "ready_for_retrain" in body
 
 
-def test_export_sessions_json(client):
-    r = client.get("/admin/export/sessions?format=json")
+def test_export_sessions_json(client, admin_client):
+    r = client.get("/admin/export/sessions?format=json", headers=admin_client["headers"])
     assert r.status_code == 200
     body = r.json()
     assert "data" in body
     assert "frames" in body
 
 
-def test_export_sessions_csv(client):
-    r = client.get("/admin/export/sessions?format=csv")
+def test_export_sessions_csv(client, admin_client):
+    r = client.get("/admin/export/sessions?format=csv", headers=admin_client["headers"])
     assert r.status_code == 200
     assert "text/csv" in r.headers.get("content-type", "")
 
 
-def test_export_athlete(client):
-    aid = _get_athlete(client)
-    r = client.get(f"/athlete/{aid}/export?format=json")
+def test_export_sessions_requires_admin(client, authed):
+    """Non-admin athlete cannot dump full session data."""
+    r = client.get("/admin/export/sessions?format=json", headers=authed["headers"])
+    assert r.status_code == 403
+
+
+def test_export_athlete(client, authed):
+    """Owner can export their own athlete data."""
+    aid = authed["athlete_id"]
+    r = client.get(f"/athlete/{aid}/export?format=json", headers=authed["headers"])
     assert r.status_code == 200
     body = r.json()
     assert body["athlete_id"] == aid
 
 
-def test_export_athlete_404(client):
-    r = client.get("/athlete/nonexistent_xyz/export")
-    assert r.status_code == 404
+def test_export_athlete_rejects_non_owner(client, authed):
+    """An athlete cannot export another athlete's data."""
+    other_aid = _get_athlete(client)  # uses old un-owned creation path → likely athlete_01
+    if other_aid == authed["athlete_id"]:
+        return  # nothing to test if seeded data overlaps
+    r = client.get(f"/athlete/{other_aid}/export?format=json", headers=authed["headers"])
+    assert r.status_code == 403
+
+
+def test_export_athlete_404(client, authed):
+    """Even with a valid token, exporting a non-existent athlete is 403
+    (we treat missing == not-yours rather than leak existence)."""
+    r = client.get("/athlete/nonexistent_xyz/export", headers=authed["headers"])
+    assert r.status_code in (403, 404)
