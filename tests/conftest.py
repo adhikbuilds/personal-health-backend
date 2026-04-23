@@ -45,3 +45,56 @@ def client(app):
 
     with TestClient(app) as c:
         yield c
+
+
+@pytest.fixture()
+def authed(client):
+    """Returns ({athlete_id, user_id, access_token, headers}, client) — a
+    fresh user registered + signed in. Tests that hit ownership-gated
+    endpoints can use `authed['headers']` for the Authorization header
+    or `authed['athlete_id']` to identify the right resource owner."""
+    import uuid
+
+    email = f"t_{uuid.uuid4().hex[:10]}@example.com"
+    r = client.post(
+        "/auth/register",
+        json={"email": email, "name": "Test User", "password": "Sup3rsecret!"},
+    )
+    assert r.status_code == 201, r.text
+    body = r.json()
+    return {
+        "email": email,
+        "user_id": body["user"]["id"],
+        "athlete_id": body["user"]["athlete_id"],
+        "access_token": body["access_token"],
+        "refresh_token": body["refresh_token"],
+        "headers": {"Authorization": f"Bearer {body['access_token']}"},
+    }
+
+
+@pytest.fixture()
+def admin_client(client):
+    """Returns ({headers, ...}) for an admin-role user. We mint by
+    inserting directly into the DB then minting tokens."""
+    import time
+    import uuid as _uuid
+
+    from auth import hash_password, issue_token_pair
+    from sqlite_store import insert_user
+
+    user_id = "admin_" + _uuid.uuid4().hex[:8]
+    email = f"adm_{_uuid.uuid4().hex[:8]}@example.com"
+    insert_user({
+        "id": user_id,
+        "email": email,
+        "name": "Test Admin",
+        "password_hash": hash_password("Sup3rsecret!"),
+        "role": "admin",
+        "athlete_id": None,
+        "created_at": time.time(),
+    })
+    tokens = issue_token_pair(user_id, "admin")
+    return {
+        "user_id": user_id,
+        "headers": {"Authorization": f"Bearer {tokens['access_token']}"},
+    }

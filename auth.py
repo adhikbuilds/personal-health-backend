@@ -257,5 +257,33 @@ def require_role(*roles: str):
         if user["role"] not in roles:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "insufficient role")
         return user
+    return _dep
+
+
+def verify_athlete_owner(user: dict, athlete_id: str) -> None:
+    """Raise 403 if `user` doesn't own `athlete_id`. Admins bypass the check.
+    Use this in any mutation that writes to an athlete's record."""
+    if not user or not athlete_id:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "authentication required")
+    if user.get("role") == "admin":
+        return
+    if user.get("athlete_id") != athlete_id:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            f"signed-in athlete {user.get('athlete_id')} cannot act on {athlete_id}",
+        )
+
+
+def require_athlete_owner(athlete_id_param: str = "athlete_id"):
+    """Returns a FastAPI dependency that pulls athlete_id from a path param
+    and enforces ownership against the bearer-token user. Usage:
+        @router.post("/athlete/{athlete_id}/daily-tracker",
+                     dependencies=[Depends(require_athlete_owner())])"""
+    from fastapi import Path
+
+    def _dep(athlete_id: str = Path(...), user: dict = Depends(current_user)) -> dict:
+        verify_athlete_owner(user, athlete_id)
+        return user
+    return _dep
 
     return _dep
