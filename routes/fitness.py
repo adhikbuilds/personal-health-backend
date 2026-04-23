@@ -334,7 +334,7 @@ async def session_cleanup_worker():
                         last_ts = now
                 if now - last_ts > 7200:
                     session["status"] = "completed"
-                    session["ended_at"] = datetime.utcnow().isoformat()
+                    session["ended_at"] = datetime.now(timezone.utc).isoformat()
                     session["auto_ended"] = True
                     log.info("auto-ended stale session", extra={"session_id": sid[:8]})
             _save_db()
@@ -356,7 +356,7 @@ async def start_session(req: StartSessionRequest):
         "athlete_id": req.athlete_id,
         "sport": req.sport,
         "status": "active",
-        "started_at": datetime.utcnow().isoformat() + "Z",
+        "started_at": datetime.now(timezone.utc).isoformat(),
         "ended_at": None,
         "frame_count": 0,
         "summary": None,
@@ -364,6 +364,7 @@ async def start_session(req: StartSessionRequest):
     }
     SESSION_DB[session_id] = session
     FRAME_BUFFER[session_id] = []
+    _save_db()  # durable handshake — crash before first frame still preserves the session
 
     if req.huddle_id:
         try:
@@ -897,7 +898,7 @@ async def model_stats():
     if not log_path.exists():
         return {"total_predictions": 0, "message": "No predictions logged yet"}
 
-    today = datetime.utcnow().date().isoformat()
+    today = datetime.now(timezone.utc).date().isoformat()
     today_count = 0
     score_sum = 0.0
     quality_dist: dict = {"poor": 0, "average": 0, "good": 0, "elite": 0, "unknown": 0}
@@ -953,7 +954,7 @@ async def save_fitness_test(req: FitnessTestRequest):
         "sit_reach_cm": req.sit_reach_cm,
         "run_600_seconds": req.run_600_seconds,
         "age_group": req.age_group,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     athlete["fitness_tests"].insert(0, record)
     athlete["fitness_tests"] = athlete["fitness_tests"][:10]

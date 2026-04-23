@@ -5,7 +5,7 @@ Athletes domain — CRUD, Progress, Insights, Daily Tracker
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
@@ -57,7 +57,7 @@ async def create_athlete(req: NewAthleteRequest):
         "sessions": 0,
         "avatar": initials,
         "height_cm": req.height_cm or 170,
-        "created_at": datetime.utcnow().isoformat() + "Z",
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     ATHLETE_DB[athlete_id] = athlete
     _save_db()
@@ -148,7 +148,7 @@ async def get_athlete_progress(athlete_id: str):
         second = sum(t["avg_form_score"] for t in form_trend[half:]) / (len(form_trend) - half)
         if first > 0:
             improvement_pct = round((second - first) / first * 100, 1)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     sessions_this_week = sessions_last_week = 0
     for s in athlete_sessions:
         started_str = s.get("started_at", "")
@@ -189,7 +189,7 @@ async def get_athlete_progress(athlete_id: str):
 @router.get("/athlete/{athlete_id}/daily-tracker", tags=["Daily Tracker"])
 async def get_daily_tracker(athlete_id: str):
     athlete = ATHLETE_DB.get(athlete_id, {})
-    today = datetime.utcnow().date().isoformat()
+    today = datetime.now(timezone.utc).date().isoformat()
     tracker = athlete.get("daily_tracker", {}).get(today, {})
     return {"athlete_id": athlete_id, "date": today, "tracker": tracker}
 
@@ -201,7 +201,7 @@ async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
     athlete = ATHLETE_DB[athlete_id]
     if "daily_tracker" not in athlete:
         athlete["daily_tracker"] = {}
-    date_key = data.date or datetime.utcnow().date().isoformat()
+    date_key = data.date or datetime.now(timezone.utc).date().isoformat()
     athlete["daily_tracker"][date_key] = {
         "steps": data.steps,
         "active_minutes": data.active_minutes,
@@ -210,7 +210,7 @@ async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
         "calorie_intake": data.calorie_intake,
         "water_glasses": data.water_glasses,
         "sleep_hours": data.sleep_hours,
-        "updated_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     _save_db()
     # Mirror to SQLite v2 store so the /history endpoint has data even after restart

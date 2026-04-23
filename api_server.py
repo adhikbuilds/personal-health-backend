@@ -66,7 +66,10 @@ if FASTAPI_AVAILABLE:
         database.ANALYSIS_QUEUE = asyncio.Queue(maxsize=200)
         task = asyncio.create_task(analysis_worker())
         cleanup_task = asyncio.create_task(session_cleanup_worker())
-        save_task = asyncio.create_task(database.periodic_save_worker(60))
+        # 5s save window keeps the worst-case data-loss for in-flight frame counts
+        # well under a typical session length, while keeping disk pressure trivial
+        # at MVP scale (~50KB write per cycle for 30 athletes, 500 sessions).
+        save_task = asyncio.create_task(database.periodic_save_worker(5))
         log.info(
             "api startup",
             extra={

@@ -12,49 +12,55 @@ from fastapi import APIRouter, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from database import _FOLLOWS, ATHLETE_DB, SESSION_DB, _save_db, _load_json, _save_json
+from database import _FOLLOWS, ATHLETE_DB, SESSION_DB, _save_db, _load_json
 from logging_setup import get_logger
+from sqlite_store import add_clap, clap_count, has_clapped
 
 router = APIRouter()
 log = get_logger("routes.social")
 
 
 # ─── Claps (one-tap reactions) ─────────────────────────────────────────────
-# Closed-circle, one-tap, no comments. Each athlete may clap a target post
-# (session_id or athlete_id) at most once. Aggregate count is shown on /feed.
+# SQLite-backed via sqlite_store. The (target_id, athlete_id) PK guarantees
+# idempotency at the storage layer — no in-process dedup logic needed.
+#
+# A one-time migration absorbs any legacy db/claps.json file from before the
+# SQLite move and then leaves it alone.
 
-_CLAPS: dict[str, dict] = {}  # target_id -> { "count": int, "clapped_by": list[str] }
+
+_LEGACY_CLAPS_MIGRATED = False
 
 
-def _load_claps() -> None:
-    raw = _load_json("claps.json")
-    if not isinstance(raw, dict):
+def _migrate_legacy_claps_once() -> None:
+    global _LEGACY_CLAPS_MIGRATED
+    if _LEGACY_CLAPS_MIGRATED:
         return
+    _LEGACY_CLAPS_MIGRATED = True
+    try:
+        raw = _load_json("claps.json")
+    except Exception:
+        return
+    if not isinstance(raw, dict) or not raw:
+        return
+    migrated = 0
     for target, payload in raw.items():
         if not isinstance(payload, dict):
             continue
-        clapped_by = payload.get("clapped_by") or []
-        if not isinstance(clapped_by, list):
-            clapped_by = []
-        _CLAPS[target] = {
-            "count": int(payload.get("count", len(clapped_by))),
-            "clapped_by": list(dict.fromkeys(clapped_by)),  # dedupe, preserve order
-        }
+        for athlete_id in payload.get("clapped_by") or []:
+            try:
+                add_clap(target, athlete_id)
+                migrated += 1
+            except Exception:
+                pass
+    if migrated:
+        log.info("migrated legacy claps to sqlite", extra={"count": migrated})
 
 
-_load_claps()
-
-
-def _save_claps() -> None:
-    try:
-        _save_json("claps.json", _CLAPS)
-    except Exception as e:
-        log.warning("could not persist claps", extra={"error": str(e)})
+_migrate_legacy_claps_once()
 
 
 def _claps_for(target_id: str) -> int:
-    entry = _CLAPS.get(target_id)
-    return int(entry["count"]) if entry else 0
+    return clap_count(target_id)
 
 
 # ─── Feed aggregation helpers ───────────────────────────────────────────────
@@ -547,28 +553,20 @@ class ClapResponse(BaseModel):
 @router.post("/athlete/{athlete_id}/clap/{target_id}", tags=["Social"], response_model=ClapResponse)
 async def clap(athlete_id: str, target_id: str):
     """Record a one-tap clap from `athlete_id` on `target_id`. Idempotent —
-    a second tap from the same athlete returns the same count without double-
-    incrementing. Persists across restarts via db/claps.json."""
+    a second tap from the same athlete is a no-op (PK constraint). Backed
+    by SQLite, durable across restarts."""
     if not athlete_id or not target_id:
-        return ClapResponse(target_id=target_id, count=_claps_for(target_id), you_clapped=False)
-
-    entry = _CLAPS.setdefault(target_id, {"count": 0, "clapped_by": []})
-    if athlete_id in entry["clapped_by"]:
-        return ClapResponse(target_id=target_id, count=int(entry["count"]), you_clapped=True)
-
-    entry["clapped_by"].append(athlete_id)
-    entry["count"] = int(entry.get("count", 0)) + 1
-    _save_claps()
-    return ClapResponse(target_id=target_id, count=int(entry["count"]), you_clapped=True)
+        return ClapResponse(target_id=target_id, count=clap_count(target_id), you_clapped=False)
+    count, you_clapped = add_clap(target_id, athlete_id)
+    return ClapResponse(target_id=target_id, count=count, you_clapped=you_clapped)
 
 
 @router.get("/claps/{target_id}", tags=["Social"])
 async def get_claps(target_id: str, athlete_id: str = ""):
-    entry = _CLAPS.get(target_id, {"count": 0, "clapped_by": []})
     return {
         "target_id": target_id,
-        "count": int(entry.get("count", 0)),
-        "you_clapped": bool(athlete_id and athlete_id in entry.get("clapped_by", [])),
+        "count": clap_count(target_id),
+        "you_clapped": has_clapped(target_id, athlete_id) if athlete_id else False,
     }
 
 
