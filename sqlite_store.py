@@ -229,6 +229,11 @@ def touch_login(user_id: str) -> None:
         cur.execute("UPDATE users SET last_login_at = ? WHERE id = ?", (time.time(), user_id))
 
 
+def update_user_athlete_id(user_id: str, athlete_id: str) -> None:
+    with cursor() as cur:
+        cur.execute("UPDATE users SET athlete_id = ? WHERE id = ?", (athlete_id, user_id))
+
+
 # ─── Refresh tokens ─────────────────────────────────────────────────────────
 
 
