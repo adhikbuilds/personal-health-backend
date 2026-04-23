@@ -283,28 +283,60 @@ async def get_feed(
 
 
 @router.get("/creators/trending", tags=["Social"])
-async def get_trending_creators():
-    return {
-        "creators": [
-            {"id": "c1", "name": "Fit India Icons", "handle": "@FitIndiaIcons", "initials": "FI", "color": "#f97316"},
-            {
-                "id": "c2",
-                "name": "Fit India Champions",
-                "handle": "@FitChampions",
-                "initials": "FC",
-                "color": "#22c55e",
-            },
-            {
-                "id": "c3",
-                "name": "Fit India Ambassadors",
-                "handle": "@FitAmbassadors",
-                "initials": "FA",
-                "color": "#8b5cf6",
-            },
-            {"id": "c4", "name": "Rishi Arora", "handle": "@RishiArora", "initials": "RA", "color": "#06b6d4"},
-            {"id": "c5", "name": "Aditi Dixit", "handle": "@AditiDixit", "initials": "AD", "color": "#ec4899"},
+async def get_trending_creators(limit: int = Query(default=8, ge=1, le=20)):
+    """Top athletes by recent quality output. Computed from real session data —
+    we score each athlete by (PBs in last 30d) + (avg form score) so the list
+    is outcome-ranked, not activity-ranked."""
+    from datetime import datetime, timezone, timedelta
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+
+    # Group sessions by athlete and compute score signals
+    by_ath: dict[str, list[dict]] = {}
+    for s in SESSION_DB.values():
+        if s.get("status") != "completed":
+            continue
+        ts = s.get("ended_at") or s.get("started_at") or ""
+        if ts < cutoff:
+            continue
+        aid = s.get("athlete_id")
+        if not aid:
+            continue
+        by_ath.setdefault(aid, []).append(s)
+
+    scored: list[dict] = []
+    for aid, sessions in by_ath.items():
+        athlete = ATHLETE_DB.get(aid)
+        if not athlete or not athlete.get("name"):
+            continue
+        peak_scores = [
+            (s.get("summary") or {}).get("peak_form_score", 0) or 0
+            for s in sessions
         ]
-    }
+        avg_scores = [
+            (s.get("summary") or {}).get("avg_form_score", 0) or 0
+            for s in sessions
+        ]
+        pbs_last_30d = sum(1 for p in peak_scores if p >= 85)
+        avg_form = (sum(avg_scores) / len(avg_scores)) if avg_scores else 0
+        if pbs_last_30d == 0 and avg_form < 50:
+            continue
+        score = pbs_last_30d * 25 + int(avg_form)
+        name = athlete["name"]
+        scored.append({
+            "id": aid,
+            "name": name,
+            "handle": "@" + (name.split()[0].lower() if name else aid),
+            "initials": _initials(name),
+            "color": _avatar_color(aid),
+            "sport": (athlete.get("sport") or "").replace("_", " ").title(),
+            "roster_size": athlete.get("sessions", 0),
+            "athletes": athlete.get("sessions", 0),
+            "pbs_last_30d": pbs_last_30d,
+            "avg_form_score": round(avg_form, 1),
+            "score": score,
+        })
+    scored.sort(key=lambda c: c["score"], reverse=True)
+    return {"creators": scored[:limit]}
 
 
 class FollowRequest(BaseModel):
@@ -328,52 +360,70 @@ async def follow_creator(req: FollowRequest):
 
 
 @router.get("/classes", tags=["Classes"])
-async def get_classes(athlete_id: str = ""):
-    all_classes = [
-        {
-            "id": "cl1",
-            "title": "3 V 3 Bounce Ball",
-            "sport": "Basketball",
-            "date": "19 May 2024",
-            "period": "3rd Period",
-            "teacherName": "Mr. Raj Kumar",
-            "teacherRating": 5,
-            "teacherFeedback": "Puts forth personal best effort.",
-            "studentRating": 0,
-            "thumbnail": "basketball",
-            "color": "#f97316",
-            "athlete_ids": [],
-        },
-        {
-            "id": "cl2",
-            "title": "Kabaddi Fundamentals",
-            "sport": "Kabaddi",
-            "date": "15 May 2024",
-            "period": "2nd Period",
-            "teacherName": "Ms. Priya Singh",
-            "teacherRating": 4,
-            "teacherFeedback": "Shows excellent teamwork.",
-            "studentRating": 4,
-            "thumbnail": "kabaddi",
-            "color": "#ef4444",
-            "athlete_ids": [],
-        },
-        {
-            "id": "cl3",
-            "title": "100m Sprint Drills",
-            "sport": "Athletics",
-            "date": "12 May 2024",
-            "period": "1st Period",
-            "teacherName": "Mr. Arvind Mehta",
-            "teacherRating": 5,
-            "teacherFeedback": "Consistent improvement in stride length.",
-            "studentRating": 5,
-            "thumbnail": "athletics",
-            "color": "#22c55e",
-            "athlete_ids": [],
-        },
+async def get_classes(athlete_id: str = "", limit: int = Query(default=10, ge=1, le=50)):
+    """A 'class' is a recently-completed session presented in a school-period
+    framing: title from sport, date from session, teacher derived from a
+    deterministic athlete-name hash so the list is stable per build but no
+    longer hardcoded fiction. Once huddles are wired to real coaches we'll
+    pull teacherName from the huddle's coach_id."""
+    teachers = [
+        ("Mr. Raj Kumar",     "Puts forth personal best effort."),
+        ("Ms. Priya Singh",   "Shows excellent teamwork."),
+        ("Mr. Arvind Mehta",  "Consistent improvement in stride length."),
+        ("Ms. Aditi Sharma",  "Good control under fatigue."),
+        ("Mr. Vikram Patel",  "Sharp execution; keep refining setup."),
     ]
-    return {"classes": all_classes, "athlete_id": athlete_id}
+    sport_color = {
+        "vertical_jump": "#22c55e",
+        "sprint":        "#06b6d4",
+        "snatch":        "#f97316",
+        "javelin":       "#8b5cf6",
+        "cricket_bat":   "#ef4444",
+        "squat":         "#ec4899",
+        "push_up":       "#facc15",
+        "pull_up":       "#14b8a6",
+    }
+
+    completed = [s for s in SESSION_DB.values() if s.get("status") == "completed"]
+    if athlete_id:
+        completed = [s for s in completed if s.get("athlete_id") == athlete_id]
+    completed.sort(key=lambda s: s.get("ended_at") or s.get("started_at") or "", reverse=True)
+
+    classes: list[dict] = []
+    for i, s in enumerate(completed[:limit]):
+        sport = s.get("sport", "general")
+        sid = s.get("session_id", "")
+        ts  = s.get("ended_at") or s.get("started_at") or ""
+        try:
+            from datetime import datetime
+            d = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+            date_str = d.strftime("%d %b %Y")
+            period = ["1st Period", "2nd Period", "3rd Period", "4th Period"][min(d.hour // 6, 3)]
+        except Exception:
+            date_str = (ts or "")[:10] or "Today"
+            period = "1st Period"
+
+        teacher_idx = sum(ord(c) for c in sid) % len(teachers) if sid else 0
+        teacher_name, teacher_feedback = teachers[teacher_idx]
+        avg_form = (s.get("summary") or {}).get("avg_form_score", 0) or 0
+        teacher_rating = 5 if avg_form >= 85 else 4 if avg_form >= 70 else 3 if avg_form >= 50 else 2
+
+        classes.append({
+            "id": "cl_" + (sid[:10] if sid else f"x{i}"),
+            "session_id": sid,
+            "title": (sport.replace("_", " ").title() + " Session"),
+            "sport": sport.replace("_", " ").title(),
+            "date": date_str,
+            "period": period,
+            "teacherName": teacher_name,
+            "teacherRating": teacher_rating,
+            "teacherFeedback": teacher_feedback,
+            "studentRating": 0,
+            "thumbnail": sport,
+            "color": sport_color.get(sport, "#06b6d4"),
+            "athlete_ids": [s.get("athlete_id")] if s.get("athlete_id") else [],
+        })
+    return {"classes": classes, "athlete_id": athlete_id, "total": len(classes)}
 
 
 # ─── Playfields ─────────────────────────────────────────────────────────────
