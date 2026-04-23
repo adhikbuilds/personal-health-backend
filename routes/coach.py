@@ -14,9 +14,15 @@ from pydantic import BaseModel
 
 from ai_coach import generate_coach_note
 from cache import coach_cache
-from database import ATHLETE_DB, _FOLLOWS, _load_json, _save_json
+from database import ATHLETE_DB, _FOLLOWS, _load_json
 from logging_setup import get_logger
 from routes.progress import _compute_injury_risk, _compute_progress, _compute_weak_joints
+from sqlite_store import (
+    count_broadcasts_by_coach,
+    insert_broadcast,
+    list_broadcasts_by_coach,
+    list_broadcasts_for_athlete,
+)
 
 router = APIRouter(prefix="/coach", tags=["Coach"])
 log = get_logger("routes.coach")
@@ -24,27 +30,39 @@ log = get_logger("routes.coach")
 
 # ─── Broadcast store ──────────────────────────────────────────────────────
 # Coach → athletes one-shot messages (text or short voice note).
-# Persisted to db/broadcasts.json so it survives restarts.
-
-_BROADCASTS: dict[str, list[dict]] = {}
-
-
-def _load_broadcasts() -> None:
-    raw = _load_json("broadcasts.json")
-    if isinstance(raw, dict):
-        for coach_id, items in raw.items():
-            if isinstance(items, list):
-                _BROADCASTS[coach_id] = list(items)
+# Persisted via sqlite_store. A one-time JSON migration absorbs any prior
+# db/broadcasts.json from before the SQLite move.
 
 
-_load_broadcasts()
+_LEGACY_BROADCASTS_MIGRATED = False
 
 
-def _save_broadcasts() -> None:
+def _migrate_legacy_broadcasts_once() -> None:
+    global _LEGACY_BROADCASTS_MIGRATED
+    if _LEGACY_BROADCASTS_MIGRATED:
+        return
+    _LEGACY_BROADCASTS_MIGRATED = True
     try:
-        _save_json("broadcasts.json", _BROADCASTS)
-    except Exception as e:
-        log.warning("could not persist broadcasts", extra={"error": str(e)})
+        raw = _load_json("broadcasts.json")
+    except Exception:
+        return
+    if not isinstance(raw, dict) or not raw:
+        return
+    migrated = 0
+    for _coach_id, items in raw.items():
+        if not isinstance(items, list):
+            continue
+        for b in items:
+            try:
+                insert_broadcast(b)
+                migrated += 1
+            except Exception:
+                pass
+    if migrated:
+        log.info("migrated legacy broadcasts to sqlite", extra={"count": migrated})
+
+
+_migrate_legacy_broadcasts_once()
 
 
 def _coach_roster(coach_id: str) -> list[dict]:
@@ -146,33 +164,20 @@ async def send_broadcast(coach_id: str, body: BroadcastIn):
         "recipient_count": len(recipients),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    _BROADCASTS.setdefault(coach_id, []).append(bcast)
-    if len(_BROADCASTS[coach_id]) > 200:
-        _BROADCASTS[coach_id] = _BROADCASTS[coach_id][-200:]
-    _save_broadcasts()
+    insert_broadcast(bcast)
     return bcast
 
 
 @router.get("/{coach_id}/inbox")
 async def coach_inbox(coach_id: str, limit: int = Query(default=10, ge=1, le=100)):
-    items = list(_BROADCASTS.get(coach_id, []))
-    items.sort(key=lambda b: b.get("created_at") or "", reverse=True)
-    items = items[:limit]
-    return {
-        "coach_id": coach_id,
-        "broadcasts": items,
-        "total": len(_BROADCASTS.get(coach_id, [])),
-    }
+    items = list_broadcasts_by_coach(coach_id, limit)
+    total = count_broadcasts_by_coach(coach_id)
+    return {"coach_id": coach_id, "broadcasts": items, "total": total}
 
 
 @router.get("/inbox/athlete/{athlete_id}")
 async def athlete_inbox(athlete_id: str, limit: int = Query(default=20, ge=1, le=100)):
     """Broadcasts addressed to this athlete across all coaches. Used by the
     Android app to surface coach messages on Home/ScoreCard."""
-    items: list[dict] = []
-    for _coach_id, bcasts in _BROADCASTS.items():
-        for b in bcasts:
-            if athlete_id in (b.get("athlete_ids") or []):
-                items.append(b)
-    items.sort(key=lambda b: b.get("created_at") or "", reverse=True)
-    return {"athlete_id": athlete_id, "broadcasts": items[:limit], "total": len(items)}
+    items = list_broadcasts_for_athlete(athlete_id, limit)
+    return {"athlete_id": athlete_id, "broadcasts": items, "total": len(items)}

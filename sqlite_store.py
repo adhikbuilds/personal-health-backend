@@ -26,7 +26,7 @@ log = get_logger("sqlite_store")
 
 _LOCK = threading.RLock()
 _INITIALIZED = False
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def _connect() -> sqlite3.Connection:
@@ -154,6 +154,34 @@ def init_db() -> None:
             )
             """
         )
+        # ─── v2: claps + broadcasts ─────────────────────────────────────────
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS claps (
+              target_id TEXT NOT NULL,
+              athlete_id TEXT NOT NULL,
+              created_at REAL NOT NULL,
+              PRIMARY KEY(target_id, athlete_id)
+            )
+            """
+        )
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_claps_target ON claps(target_id)")
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS broadcasts (
+              id TEXT PRIMARY KEY,
+              coach_id TEXT NOT NULL,
+              message TEXT,
+              voice_note_url TEXT,
+              athlete_ids TEXT NOT NULL,
+              recipient_count INTEGER NOT NULL DEFAULT 0,
+              created_at REAL NOT NULL
+            )
+            """
+        )
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_broadcasts_coach ON broadcasts(coach_id)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_broadcasts_created ON broadcasts(created_at DESC)")
+
         cur.execute(
             "INSERT OR REPLACE INTO schema_meta(key, value) VALUES(?, ?)",
             ("schema_version", str(SCHEMA_VERSION)),
@@ -367,3 +395,149 @@ def daily_tracker_history(athlete_id: str, days: int = 30) -> list[dict]:
             (athlete_id, days),
         ).fetchall()
         return [dict(r) for r in rows]
+
+
+# ─── Claps (one-tap reactions) ─────────────────────────────────────────────
+
+
+def add_clap(target_id: str, athlete_id: str) -> tuple[int, bool]:
+    """Idempotent. Returns (count, you_clapped). The PK on (target_id,
+    athlete_id) makes a duplicate INSERT a no-op."""
+    if not target_id or not athlete_id:
+        return clap_count(target_id), False
+    with cursor() as cur:
+        before = cur.execute(
+            "SELECT 1 FROM claps WHERE target_id = ? AND athlete_id = ?",
+            (target_id, athlete_id),
+        ).fetchone()
+        if before is None:
+            cur.execute(
+                "INSERT INTO claps(target_id, athlete_id, created_at) VALUES(?, ?, ?)",
+                (target_id, athlete_id, time.time()),
+            )
+        row = cur.execute(
+            "SELECT COUNT(*) AS n FROM claps WHERE target_id = ?", (target_id,)
+        ).fetchone()
+        return int(row["n"] if row else 0), True
+
+
+def clap_count(target_id: str) -> int:
+    with cursor() as cur:
+        row = cur.execute(
+            "SELECT COUNT(*) AS n FROM claps WHERE target_id = ?", (target_id,)
+        ).fetchone()
+        return int(row["n"] if row else 0)
+
+
+def has_clapped(target_id: str, athlete_id: str) -> bool:
+    if not target_id or not athlete_id:
+        return False
+    with cursor() as cur:
+        row = cur.execute(
+            "SELECT 1 FROM claps WHERE target_id = ? AND athlete_id = ?",
+            (target_id, athlete_id),
+        ).fetchone()
+        return row is not None
+
+
+def claps_for_targets(target_ids: list[str]) -> dict[str, int]:
+    """Batch lookup — single query, returns {target_id: count}."""
+    if not target_ids:
+        return {}
+    placeholders = ",".join("?" * len(target_ids))
+    with cursor() as cur:
+        rows = cur.execute(
+            f"SELECT target_id, COUNT(*) AS n FROM claps WHERE target_id IN ({placeholders}) GROUP BY target_id",
+            tuple(target_ids),
+        ).fetchall()
+        out = {tid: 0 for tid in target_ids}
+        for r in rows:
+            out[r["target_id"]] = int(r["n"])
+        return out
+
+
+# ─── Broadcasts (coach → athletes) ─────────────────────────────────────────
+
+
+def insert_broadcast(bcast: dict) -> None:
+    with cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO broadcasts(id, coach_id, message, voice_note_url, athlete_ids, recipient_count, created_at)
+            VALUES(?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                bcast["id"],
+                bcast["coach_id"],
+                bcast.get("message"),
+                bcast.get("voice_note_url"),
+                json.dumps(bcast.get("athlete_ids") or []),
+                int(bcast.get("recipient_count", 0)),
+                _epoch(bcast.get("created_at")),
+            ),
+        )
+
+
+def list_broadcasts_by_coach(coach_id: str, limit: int = 10) -> list[dict]:
+    with cursor() as cur:
+        rows = cur.execute(
+            "SELECT * FROM broadcasts WHERE coach_id = ? ORDER BY created_at DESC LIMIT ?",
+            (coach_id, limit),
+        ).fetchall()
+        return [_decode_broadcast(r) for r in rows]
+
+
+def count_broadcasts_by_coach(coach_id: str) -> int:
+    with cursor() as cur:
+        row = cur.execute(
+            "SELECT COUNT(*) AS n FROM broadcasts WHERE coach_id = ?", (coach_id,)
+        ).fetchone()
+        return int(row["n"] if row else 0)
+
+
+def list_broadcasts_for_athlete(athlete_id: str, limit: int = 20) -> list[dict]:
+    """Broadcasts where athlete_id appears in the recipient list. SQLite
+    doesn't have JSON1 in every distro, but LIKE on the JSON-encoded list
+    is good enough for the MVP scale (a few hundred broadcasts)."""
+    needle = f'"{athlete_id}"'
+    with cursor() as cur:
+        rows = cur.execute(
+            """
+            SELECT * FROM broadcasts
+            WHERE athlete_ids LIKE ?
+            ORDER BY created_at DESC
+            LIMIT ?
+            """,
+            (f"%{needle}%", limit),
+        ).fetchall()
+        return [_decode_broadcast(r) for r in rows]
+
+
+def _decode_broadcast(row) -> dict:
+    d = dict(row)
+    try:
+        d["athlete_ids"] = json.loads(d.get("athlete_ids") or "[]")
+    except Exception:
+        d["athlete_ids"] = []
+    # Convert epoch back to ISO for API consistency
+    ts = d.pop("created_at", None)
+    if isinstance(ts, (int, float)):
+        from datetime import datetime, timezone
+        d["created_at"] = datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+    else:
+        d["created_at"] = ts
+    return d
+
+
+def _epoch(ts) -> float:
+    """Coerce ISO8601 string or epoch number to epoch seconds."""
+    if ts is None:
+        return time.time()
+    if isinstance(ts, (int, float)):
+        return float(ts)
+    try:
+        from datetime import datetime
+        s = str(ts).replace("Z", "+00:00")
+        return datetime.fromisoformat(s).timestamp()
+    except Exception:
+        return time.time()
