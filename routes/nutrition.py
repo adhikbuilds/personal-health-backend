@@ -38,7 +38,7 @@ import asyncio
 import re
 import uuid
 from datetime import date as Date
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -97,6 +97,22 @@ def _sum_macros(items: list[dict]) -> dict:
             totals[key] += item.get("macros", {}).get(key, 0.0)
     return {k: round(v, 2) for k, v in totals.items()}
 
+def _get_date_range(period: str):
+    today = datetime.now().date()
+
+    if period == "day":
+        return today, today
+
+    if period == "week":
+        start = today - timedelta(days=6)
+        return start, today
+
+    if period == "month":
+        start = today - timedelta(days=29)
+        return start, today
+
+    raise HTTPException(400, "invalid period: use day/week/month")
+
 
 # ─── Pydantic models ─────────────────────────────────────────────────────────
 
@@ -148,7 +164,7 @@ async def set_goals(
         data = _load_json("nutrition.json") or {}
         data.setdefault(athlete_id, {})
         data[athlete_id]["goals"] = payload.model_dump()
-        data[athlete_id]["goals"]["updated_at"] = datetime.now(timezone.utc).isoformat()
+        data[athlete_id]["goals"]["updated_at"] = datetime.now().isoformat()
         _save_json("nutrition.json", data)
     log.info("nutrition goals updated", extra={"athlete_id": athlete_id})
     return {"status": "success", "data": data[athlete_id]["goals"]}
@@ -167,7 +183,7 @@ async def get_goals(
         return {"status": "success", "data": data[athlete_id]["goals"]}
     chosen_sport = sport or ATHLETE_DB[athlete_id].get("sport", "sprint")
     default = get_default_goals(chosen_sport)
-    default["updated_at"] = datetime.now(timezone.utc).isoformat()
+    default["updated_at"] = datetime.now().isoformat()
     return {"status": "default", "data": default}
 
 
@@ -322,7 +338,7 @@ async def delete_meal(
 @router.get("/nutrition/team-summary")
 async def get_team_nutrition_summary():
     """Return today's nutrition compliance for all athletes. (WN-27)"""
-    today = datetime.now(timezone.utc).date().isoformat()
+    today = datetime.now().date().isoformat()
     data = _load_json("nutrition.json") or {}
     results = []
     for athlete_id, athlete in ATHLETE_DB.items():
@@ -364,21 +380,34 @@ async def get_team_nutrition_summary():
 async def get_nutrition_summary(
     athlete_id: str,
     on_date: Date | None = Query(default=None),
+    period: str | None = Query(default=None, description="day | week | month"),
     _: dict = Depends(require_athlete_or_admin("athlete_id")),
 ):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")
 
-    today = datetime.now(timezone.utc).date()
+    today = datetime.now().date()
     if on_date is None:
         on_date = today
     if on_date > today:
         raise HTTPException(status_code=400, detail="Date cannot be in the future")
+    
+    if period:
+        start_date, end_date = _get_date_range(period)
+    else:
+        start_date = end_date = on_date
 
     data = _load_json("nutrition.json") or {}
-    date_str = on_date.strftime("%Y-%m-%d")
     athlete_data = data.get(athlete_id, {})
-    day_log = (athlete_data.get("logs") or {}).get(date_str, {})
+    logs = athlete_data.get("logs") or {}
+
+    current_date = start_date
+    day_logs = []
+
+    while current_date <= end_date:
+        ds = current_date.strftime("%Y-%m-%d")
+        day_logs.append(logs.get(ds, {}))
+        current_date += timedelta(days=1)
 
     total_calories = 0.0
     protein = 0.0
@@ -387,27 +416,35 @@ async def get_nutrition_summary(
     fiber = 0.0
     slots: dict[str, dict] = {}
 
-    for slot, slot_data in day_log.items():
-        if not isinstance(slot_data, dict):
-            continue
-        total = slot_data.get("total") or {}
-        cals = total.get("calories", 0) or 0
-        prot = total.get("protein_g", 0) or 0
-        carb = total.get("carbs_g", 0) or 0
-        fat_g = total.get("fat_g", 0) or 0
-        fib = total.get("fiber_g", 0) or 0
-        total_calories += cals
-        protein += prot
-        carbs += carb
-        fat += fat_g
-        fiber += fib
-        slots[slot] = {
-            "calories": cals,
-            "protein_g": prot,
-            "carbs_g": carb,
-            "fat_g": fat_g,
-            "fiber_g": fib,
-        }
+    for day_log in day_logs:
+        for slot, slot_data in day_log.items():
+            if not isinstance(slot_data, dict):
+                continue
+            total = slot_data.get("total") or {}
+            cals = total.get("calories", 0) or 0
+            prot = total.get("protein_g", 0) or 0
+            carb = total.get("carbs_g", 0) or 0
+            fat_g = total.get("fat_g", 0) or 0
+            fib = total.get("fiber_g", 0) or 0
+            total_calories += cals
+            protein += prot
+            carbs += carb
+            fat += fat_g
+            fiber += fib
+            if slot not in slots:
+                slots[slot] = {
+                    "calories": 0,
+                    "protein_g": 0,
+                    "carbs_g": 0,
+                    "fat_g": 0,
+                    "fiber_g": 0,
+                }
+
+            slots[slot]["calories"] += cals
+            slots[slot]["protein_g"] += prot
+            slots[slot]["carbs_g"] += carb
+            slots[slot]["fat_g"] += fat_g
+            slots[slot]["fiber_g"] += fib
 
     raw_goals = athlete_data.get("goals") or {}
     if not raw_goals:
@@ -430,16 +467,26 @@ async def get_nutrition_summary(
         "fiber_g": round((fiber / max(athlete_goals["fiber_g"], 1)) * 100),
     }
 
+    goal_delta = {
+        "calories": total_calories - athlete_goals["calories"],
+        "protein_g": protein - athlete_goals["protein_g"],
+        "carbs_g": carbs - athlete_goals["carbs_g"],
+        "fat_g": fat - athlete_goals["fat_g"],
+        "fiber_g": fiber - athlete_goals["fiber_g"],
+}
+
     return {
-        "date": date_str,
+        "start_date": start_date.strftime("%Y-%m-%d"),
+        "end_date": end_date.strftime("%Y-%m-%d"),
         "athlete_id": athlete_id,
         "calories": total_calories,
         "protein_g": protein,
         "carbs_g": carbs,
         "fat_g": fat,
         "fiber_g": fiber,
-        "meals_logged": len(day_log),
+        "meals_logged": sum(len(d) for d in day_logs),
         "slots": slots,
         "goals": athlete_goals,
         "pct_of_goal": pct_of_goal,
+        "goal_delta": goal_delta,
     }
