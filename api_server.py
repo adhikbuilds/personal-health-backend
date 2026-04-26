@@ -121,6 +121,7 @@ if FASTAPI_AVAILABLE:
 
     # ─── Static Files ────────────────────────────────────────────────────────
     import os
+
     public_path = os.path.join(os.path.dirname(__file__), "public")
     if os.path.exists(public_path):
         app.mount("/public", StaticFiles(directory=public_path), name="public")
