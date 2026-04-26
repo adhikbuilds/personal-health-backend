@@ -15,8 +15,8 @@ Max: 50 MB video, 10 MB image.
 import json
 import os
 import uuid
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
@@ -81,7 +81,7 @@ async def upload_session_media(
     data = await file.read()
     max_bytes = _MAX_VIDEO_BYTES if is_video else _MAX_IMAGE_BYTES
     if len(data) > max_bytes:
-        raise HTTPException(413, f"file exceeds {max_bytes // (1024*1024)} MB limit")
+        raise HTTPException(413, f"file exceeds {max_bytes // (1024 * 1024)} MB limit")
     if len(data) == 0:
         raise HTTPException(400, "empty file")
 
