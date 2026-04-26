@@ -25,6 +25,8 @@ router = APIRouter(tags=["Realtime"])
 log = get_logger("routes.realtime")
 
 
+# DEPRECATED: No active consumers as of 2026-04-26. Candidate for removal.
+# Was intended for: high-frequency landmark pipeline from on-device MediaPipe to server-side scoring
 @router.websocket("/realtime/{session_id}/landmarks")
 async def realtime_landmarks(websocket: WebSocket, session_id: str):
     """
