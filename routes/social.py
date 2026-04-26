@@ -12,8 +12,8 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
-from auth import current_user, optional_user, verify_athlete_owner
-from database import _FOLLOWS, ATHLETE_DB, SESSION_DB, _save_db, _load_json
+from auth import current_user, verify_athlete_owner
+from database import _FOLLOWS, ATHLETE_DB, SESSION_DB, _load_json, _save_db
 from logging_setup import get_logger
 from sqlite_store import add_clap, clap_count, has_clapped
 
@@ -68,8 +68,14 @@ def _claps_for(target_id: str) -> int:
 
 
 _AVATAR_PALETTE = [
-    "#06b6d4", "#ec4899", "#f97316", "#22c55e",
-    "#8b5cf6", "#eab308", "#14b8a6", "#ef4444",
+    "#06b6d4",
+    "#ec4899",
+    "#f97316",
+    "#22c55e",
+    "#8b5cf6",
+    "#eab308",
+    "#14b8a6",
+    "#ef4444",
 ]
 
 
@@ -258,8 +264,10 @@ async def get_leaderboard(sport: Optional[str] = None, limit: int = Query(defaul
     # Both `leaderboard` (legacy) and `items` (canonical) are populated so
     # newer clients can read a consistent envelope across all list endpoints.
     return {
-        "leaderboard": ranked, "items": ranked,
-        "sport": sport or "all", "total": len(athletes),
+        "leaderboard": ranked,
+        "items": ranked,
+        "sport": sport or "all",
+        "total": len(athletes),
     }
 
 
@@ -280,7 +288,8 @@ async def get_feed(
     """
     posts = _aggregate_feed(viewer_id=athlete_id, tab=tab, limit=limit)
     return {
-        "posts": posts, "items": posts,  # canonical envelope alias
+        "posts": posts,
+        "items": posts,  # canonical envelope alias
         "page": page,
         "total": len(posts),
         "tab": tab,
@@ -293,7 +302,8 @@ async def get_trending_creators(limit: int = Query(default=8, ge=1, le=20)):
     """Top athletes by recent quality output. Computed from real session data —
     we score each athlete by (PBs in last 30d) + (avg form score) so the list
     is outcome-ranked, not activity-ranked."""
-    from datetime import datetime, timezone, timedelta
+    from datetime import datetime, timedelta, timezone
+
     cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
 
     # Group sessions by athlete and compute score signals
@@ -314,33 +324,29 @@ async def get_trending_creators(limit: int = Query(default=8, ge=1, le=20)):
         athlete = ATHLETE_DB.get(aid)
         if not athlete or not athlete.get("name"):
             continue
-        peak_scores = [
-            (s.get("summary") or {}).get("peak_form_score", 0) or 0
-            for s in sessions
-        ]
-        avg_scores = [
-            (s.get("summary") or {}).get("avg_form_score", 0) or 0
-            for s in sessions
-        ]
+        peak_scores = [(s.get("summary") or {}).get("peak_form_score", 0) or 0 for s in sessions]
+        avg_scores = [(s.get("summary") or {}).get("avg_form_score", 0) or 0 for s in sessions]
         pbs_last_30d = sum(1 for p in peak_scores if p >= 85)
         avg_form = (sum(avg_scores) / len(avg_scores)) if avg_scores else 0
         if pbs_last_30d == 0 and avg_form < 50:
             continue
         score = pbs_last_30d * 25 + int(avg_form)
         name = athlete["name"]
-        scored.append({
-            "id": aid,
-            "name": name,
-            "handle": "@" + (name.split()[0].lower() if name else aid),
-            "initials": _initials(name),
-            "color": _avatar_color(aid),
-            "sport": (athlete.get("sport") or "").replace("_", " ").title(),
-            "roster_size": athlete.get("sessions", 0),
-            "athletes": athlete.get("sessions", 0),
-            "pbs_last_30d": pbs_last_30d,
-            "avg_form_score": round(avg_form, 1),
-            "score": score,
-        })
+        scored.append(
+            {
+                "id": aid,
+                "name": name,
+                "handle": "@" + (name.split()[0].lower() if name else aid),
+                "initials": _initials(name),
+                "color": _avatar_color(aid),
+                "sport": (athlete.get("sport") or "").replace("_", " ").title(),
+                "roster_size": athlete.get("sessions", 0),
+                "athletes": athlete.get("sessions", 0),
+                "pbs_last_30d": pbs_last_30d,
+                "avg_form_score": round(avg_form, 1),
+                "score": score,
+            }
+        )
     scored.sort(key=lambda c: c["score"], reverse=True)
     out = scored[:limit]
     return {"creators": out, "items": out, "total": len(out)}
@@ -374,21 +380,21 @@ async def get_classes(athlete_id: str = "", limit: int = Query(default=10, ge=1,
     longer hardcoded fiction. Once huddles are wired to real coaches we'll
     pull teacherName from the huddle's coach_id."""
     teachers = [
-        ("Mr. Raj Kumar",     "Puts forth personal best effort."),
-        ("Ms. Priya Singh",   "Shows excellent teamwork."),
-        ("Mr. Arvind Mehta",  "Consistent improvement in stride length."),
-        ("Ms. Aditi Sharma",  "Good control under fatigue."),
-        ("Mr. Vikram Patel",  "Sharp execution; keep refining setup."),
+        ("Mr. Raj Kumar", "Puts forth personal best effort."),
+        ("Ms. Priya Singh", "Shows excellent teamwork."),
+        ("Mr. Arvind Mehta", "Consistent improvement in stride length."),
+        ("Ms. Aditi Sharma", "Good control under fatigue."),
+        ("Mr. Vikram Patel", "Sharp execution; keep refining setup."),
     ]
     sport_color = {
         "vertical_jump": "#22c55e",
-        "sprint":        "#06b6d4",
-        "snatch":        "#f97316",
-        "javelin":       "#8b5cf6",
-        "cricket_bat":   "#ef4444",
-        "squat":         "#ec4899",
-        "push_up":       "#facc15",
-        "pull_up":       "#14b8a6",
+        "sprint": "#06b6d4",
+        "snatch": "#f97316",
+        "javelin": "#8b5cf6",
+        "cricket_bat": "#ef4444",
+        "squat": "#ec4899",
+        "push_up": "#facc15",
+        "pull_up": "#14b8a6",
     }
 
     completed = [s for s in SESSION_DB.values() if s.get("status") == "completed"]
@@ -400,9 +406,10 @@ async def get_classes(athlete_id: str = "", limit: int = Query(default=10, ge=1,
     for i, s in enumerate(completed[:limit]):
         sport = s.get("sport", "general")
         sid = s.get("session_id", "")
-        ts  = s.get("ended_at") or s.get("started_at") or ""
+        ts = s.get("ended_at") or s.get("started_at") or ""
         try:
             from datetime import datetime
+
             d = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
             date_str = d.strftime("%d %b %Y")
             period = ["1st Period", "2nd Period", "3rd Period", "4th Period"][min(d.hour // 6, 3)]
@@ -415,24 +422,28 @@ async def get_classes(athlete_id: str = "", limit: int = Query(default=10, ge=1,
         avg_form = (s.get("summary") or {}).get("avg_form_score", 0) or 0
         teacher_rating = 5 if avg_form >= 85 else 4 if avg_form >= 70 else 3 if avg_form >= 50 else 2
 
-        classes.append({
-            "id": "cl_" + (sid[:10] if sid else f"x{i}"),
-            "session_id": sid,
-            "title": (sport.replace("_", " ").title() + " Session"),
-            "sport": sport.replace("_", " ").title(),
-            "date": date_str,
-            "period": period,
-            "teacherName": teacher_name,
-            "teacherRating": teacher_rating,
-            "teacherFeedback": teacher_feedback,
-            "studentRating": 0,
-            "thumbnail": sport,
-            "color": sport_color.get(sport, "#06b6d4"),
-            "athlete_ids": [s.get("athlete_id")] if s.get("athlete_id") else [],
-        })
+        classes.append(
+            {
+                "id": "cl_" + (sid[:10] if sid else f"x{i}"),
+                "session_id": sid,
+                "title": (sport.replace("_", " ").title() + " Session"),
+                "sport": sport.replace("_", " ").title(),
+                "date": date_str,
+                "period": period,
+                "teacherName": teacher_name,
+                "teacherRating": teacher_rating,
+                "teacherFeedback": teacher_feedback,
+                "studentRating": 0,
+                "thumbnail": sport,
+                "color": sport_color.get(sport, "#06b6d4"),
+                "athlete_ids": [s.get("athlete_id")] if s.get("athlete_id") else [],
+            }
+        )
     return {
-        "classes": classes, "items": classes,
-        "athlete_id": athlete_id, "total": len(classes),
+        "classes": classes,
+        "items": classes,
+        "athlete_id": athlete_id,
+        "total": len(classes),
     }
 
 
@@ -598,8 +609,10 @@ async def get_playfields(lat: float = 0.0, lng: float = 0.0, radius: float = 50.
     # `demo: true` makes it explicit to clients that this list is not yet
     # backed by a real DB — clients can render a "demo data" badge or skip.
     return {
-        "playfields": results, "items": results,
-        "total": len(results), "demo": True,
+        "playfields": results,
+        "items": results,
+        "total": len(results),
+        "demo": True,
     }
 
 

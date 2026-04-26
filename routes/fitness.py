@@ -575,6 +575,7 @@ async def end_session(session_id: str):
     # Enrich summary with coaching + data quality stats
     try:
         from services.data_pipeline import enrich_session_summary
+
         summary = enrich_session_summary(session_id, summary)
     except Exception as enrich_err:
         summary["coaching"] = {"patterns": [], "summary": f"Analysis unavailable: {enrich_err}"}
@@ -692,15 +693,18 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
                     ih, iw = _img_np.shape[:2]
 
                     # Face detection: run every 10th frame, cache bbox
-                    if not hasattr(proc, '_face_bbox'):
+                    if not hasattr(proc, "_face_bbox"):
                         proc._face_bbox = None
                         proc._face_det_counter = 0
                         # Init face detector once
                         try:
+                            from pathlib import Path
+
                             import mediapipe as _mp
                             from mediapipe.tasks.python import BaseOptions as _BO
-                            from mediapipe.tasks.python.vision import FaceDetector as _FD, FaceDetectorOptions as _FDO
-                            from pathlib import Path
+                            from mediapipe.tasks.python.vision import FaceDetector as _FD
+                            from mediapipe.tasks.python.vision import FaceDetectorOptions as _FDO
+
                             _model = Path(__file__).parent.parent / "models" / "face_detector.tflite"
                             if _model.exists():
                                 proc._face_det = _FD.create_from_options(
@@ -712,10 +716,11 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
                             proc._face_det = None
 
                     # Run face detection every 10 frames (expensive), cache result
-                    proc._face_det_counter = getattr(proc, '_face_det_counter', 0) + 1
+                    proc._face_det_counter = getattr(proc, "_face_det_counter", 0) + 1
                     if proc._face_det and (proc._face_bbox is None or proc._face_det_counter % 10 == 0):
                         try:
                             import mediapipe as _mp
+
                             mp_img = _mp.Image(image_format=_mp.ImageFormat.SRGB, data=_img_np)
                             det = proc._face_det.detect(mp_img)
                             if det.detections:
@@ -734,18 +739,18 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
                         fy = max(0, by + int(bh * 0.1))
                         fw = min(iw - fx, int(bw * 0.6))
                         fh = min(ih - fy, int(bh * 0.5))
-                        roi = _img_np[fy:fy+fh, fx:fx+fw] if fw > 0 and fh > 0 else None
+                        roi = _img_np[fy : fy + fh, fx : fx + fw] if fw > 0 and fh > 0 else None
                     else:
                         roi = None
 
                     if roi is not None and roi.size > 0:
-                        r, g, b = float(roi[:,:,0].mean()), float(roi[:,:,1].mean()), float(roi[:,:,2].mean())
+                        r, g, b = float(roi[:, :, 0].mean()), float(roi[:, :, 1].mean()), float(roi[:, :, 2].mean())
                     else:
                         # No face — center crop fallback
                         cy, cx = ih // 2, iw // 2
                         ch, cw = ih // 5, iw // 5
-                        crop = _img_np[max(0,cy-ch):cy+ch, max(0,cx-cw):cx+cw]
-                        r, g, b = float(crop[:,:,0].mean()), float(crop[:,:,1].mean()), float(crop[:,:,2].mean())
+                        crop = _img_np[max(0, cy - ch) : cy + ch, max(0, cx - cw) : cx + cw]
+                        r, g, b = float(crop[:, :, 0].mean()), float(crop[:, :, 1].mean()), float(crop[:, :, 2].mean())
 
                     # Send face status back to client
                     result_extra = {"face_detected": proc._face_bbox is not None}
@@ -993,6 +998,7 @@ async def get_fitness_test_history(athlete_id: str):
 #     "primary_feedback": "...", "phase": "..." }
 # Plus periodic { "type": "ping" } when idle.
 
+
 @router.websocket("/ws/session/{session_id}/frames-jpeg")
 async def websocket_jpeg_frames(websocket: WebSocket, session_id: str):
     await websocket.accept()
@@ -1036,9 +1042,9 @@ async def websocket_jpeg_frames(websocket: WebSocket, session_id: str):
                 break
 
             image_b64 = None
-            if "bytes" in raw and raw["bytes"]:
+            if raw.get("bytes"):
                 image_b64 = base64.b64encode(raw["bytes"]).decode("ascii")
-            elif "text" in raw and raw["text"]:
+            elif raw.get("text"):
                 try:
                     msg = json.loads(raw["text"])
                 except (json.JSONDecodeError, TypeError):

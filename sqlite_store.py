@@ -420,17 +420,13 @@ def add_clap(target_id: str, athlete_id: str) -> tuple[int, bool]:
                 "INSERT INTO claps(target_id, athlete_id, created_at) VALUES(?, ?, ?)",
                 (target_id, athlete_id, time.time()),
             )
-        row = cur.execute(
-            "SELECT COUNT(*) AS n FROM claps WHERE target_id = ?", (target_id,)
-        ).fetchone()
+        row = cur.execute("SELECT COUNT(*) AS n FROM claps WHERE target_id = ?", (target_id,)).fetchone()
         return int(row["n"] if row else 0), True
 
 
 def clap_count(target_id: str) -> int:
     with cursor() as cur:
-        row = cur.execute(
-            "SELECT COUNT(*) AS n FROM claps WHERE target_id = ?", (target_id,)
-        ).fetchone()
+        row = cur.execute("SELECT COUNT(*) AS n FROM claps WHERE target_id = ?", (target_id,)).fetchone()
         return int(row["n"] if row else 0)
 
 
@@ -494,9 +490,7 @@ def list_broadcasts_by_coach(coach_id: str, limit: int = 10) -> list[dict]:
 
 def count_broadcasts_by_coach(coach_id: str) -> int:
     with cursor() as cur:
-        row = cur.execute(
-            "SELECT COUNT(*) AS n FROM broadcasts WHERE coach_id = ?", (coach_id,)
-        ).fetchone()
+        row = cur.execute("SELECT COUNT(*) AS n FROM broadcasts WHERE coach_id = ?", (coach_id,)).fetchone()
         return int(row["n"] if row else 0)
 
 
@@ -528,6 +522,7 @@ def _decode_broadcast(row) -> dict:
     ts = d.pop("created_at", None)
     if isinstance(ts, (int, float)):
         from datetime import datetime, timezone
+
         d["created_at"] = datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
     else:
         d["created_at"] = ts
@@ -542,6 +537,7 @@ def _epoch(ts) -> float:
         return float(ts)
     try:
         from datetime import datetime
+
         s = str(ts).replace("Z", "+00:00")
         return datetime.fromisoformat(s).timestamp()
     except Exception:

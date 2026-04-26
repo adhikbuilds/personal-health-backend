@@ -27,7 +27,7 @@ async def list_foods(
         q_lower = q.lower()
         results = [f for f in results if q_lower in f["name"].lower()]
     total = len(results)
-    results = results[offset: offset + limit]
+    results = results[offset : offset + limit]
     return {"count": total, "limit": limit, "offset": offset, "foods": results}
 
 

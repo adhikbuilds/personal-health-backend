@@ -15,9 +15,14 @@ import uuid
 def _new_athlete(client) -> dict:
     """Register a fresh user, return {athlete_id, headers}."""
     email = f"a_{uuid.uuid4().hex[:10]}@example.com"
-    r = client.post("/auth/register", json={
-        "email": email, "name": "Roster", "password": "Sup3rsecret!",
-    })
+    r = client.post(
+        "/auth/register",
+        json={
+            "email": email,
+            "name": "Roster",
+            "password": "Sup3rsecret!",
+        },
+    )
     assert r.status_code == 201, r.text
     body = r.json()
     return {

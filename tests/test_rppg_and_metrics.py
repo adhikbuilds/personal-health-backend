@@ -74,7 +74,7 @@ def test_sports_catalog_index_matches_model_registry():
 def test_sports_catalog_rep_transition_has_all_sports():
     from services import sports_catalog
 
-    for key in sports_catalog.keys():
+    for key in sports_catalog:
         frm, to = sports_catalog.rep_transition(key)
         assert frm and to
         assert isinstance(frm, str) and isinstance(to, str)
@@ -138,12 +138,21 @@ def test_advanced_metrics_endpoint_returns_bundle(client):
     r = client.get(f"/athlete/{athlete_id}/advanced-metrics?days=60")
     assert r.status_code == 200
     body = r.json()
-    for key in ("aggregate", "trend_pct", "momentum", "acwr", "monotony", "asymmetry",
-                "latest_intensity", "fatigue", "readiness", "load_series", "form_trend_series"):
+    for key in (
+        "aggregate",
+        "trend_pct",
+        "momentum",
+        "acwr",
+        "monotony",
+        "asymmetry",
+        "latest_intensity",
+        "fatigue",
+        "readiness",
+        "load_series",
+        "form_trend_series",
+    ):
         assert key in body
-    assert body["acwr"]["band"] in (
-        "unknown", "under-loaded", "sweet spot", "high", "spike — injury risk"
-    )
+    assert body["acwr"]["band"] in ("unknown", "under-loaded", "sweet spot", "high", "spike — injury risk")
 
 
 def test_huddle_create_and_leave(client):

@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Query
 
-from database import ATHLETE_DB, SESSION_DB
+from database import ATHLETE_DB
 from logging_setup import get_logger
 from routes.progress import _athlete_sessions, _compute_injury_risk, _compute_progress
 from routes.weekly_summary import _session_volume
@@ -158,9 +158,10 @@ async def weekly_digest(token: str):
     }
 
 
-from pydantic import BaseModel
-from uuid import uuid4
 import time
+from uuid import uuid4
+
+from pydantic import BaseModel
 
 
 class ConsentCreate(BaseModel):

@@ -6,7 +6,6 @@ Wraps ai_coach module which uses Anthropic with deterministic fallback.
 """
 
 import os
-import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -16,9 +15,9 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 
 from ai_coach import generate_coach_note
-from auth import current_user, require_athlete_owner, verify_athlete_owner
+from auth import current_user, verify_athlete_owner
 from cache import coach_cache
-from database import ATHLETE_DB, _FOLLOWS, _load_json
+from database import _FOLLOWS, ATHLETE_DB, _load_json
 from logging_setup import get_logger
 from routes.progress import _compute_injury_risk, _compute_progress, _compute_weak_joints
 from sqlite_store import (
@@ -134,8 +133,11 @@ async def list_roster(coach_id: str):
     ]
     items.sort(key=lambda x: (x.get("name") or "").lower())
     return {
-        "coach_id": coach_id, "athletes": items, "items": items,
-        "count": len(items), "total": len(items),
+        "coach_id": coach_id,
+        "athletes": items,
+        "items": items,
+        "count": len(items),
+        "total": len(items),
     }
 
 
@@ -200,7 +202,6 @@ billing_router = APIRouter(tags=["Billing"])
 
 @billing_router.get("/billing/coach/{coach_id}")
 async def coach_billing(coach_id: str):
-    from database import SESSION_DB
     from routes.progress import _athlete_sessions
 
     roster = _coach_roster(coach_id)

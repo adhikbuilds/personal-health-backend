@@ -59,8 +59,7 @@ async def register(req: RegisterRequest, request: Request):
         from sqlite_store import update_user_athlete_id
 
         existing = sorted(
-            int(k.split("_", 1)[1]) for k in ATHLETE_DB.keys()
-            if k.startswith("athlete_") and k.split("_", 1)[1].isdigit()
+            int(k.split("_", 1)[1]) for k in ATHLETE_DB if k.startswith("athlete_") and k.split("_", 1)[1].isdigit()
         )
         next_n = (existing[-1] + 1) if existing else 1
         new_athlete_id = f"athlete_{next_n:02d}"

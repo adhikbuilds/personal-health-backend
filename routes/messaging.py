@@ -75,13 +75,15 @@ async def list_threads(coach_id: str):
                 (coach_id, aid),
             ).fetchone()
         preview = (last["body"][:60] if last else "") if last else ""
-        threads.append({
-            "athlete_id": aid,
-            "athlete_name": athlete.get("name", aid),
-            "last_msg_preview": preview,
-            "last_msg_at": _iso(r["last_at"]),
-            "msg_count": r["msg_count"],
-        })
+        threads.append(
+            {
+                "athlete_id": aid,
+                "athlete_name": athlete.get("name", aid),
+                "last_msg_preview": preview,
+                "last_msg_at": _iso(r["last_at"]),
+                "msg_count": r["msg_count"],
+            }
+        )
 
     return {"coach_id": coach_id, "threads": threads}
 
@@ -105,12 +107,14 @@ async def get_thread(
 
     msgs = []
     for r in rows:
-        msgs.append({
-            "id": r["id"],
-            "sender": r["sender"],
-            "text": r["body"],
-            "sent_at": _iso(r["created_at"]),
-        })
+        msgs.append(
+            {
+                "id": r["id"],
+                "sender": r["sender"],
+                "text": r["body"],
+                "sent_at": _iso(r["created_at"]),
+            }
+        )
 
     return {"coach_id": coach_id, "athlete_id": athlete_id, "msgs": msgs}
 
