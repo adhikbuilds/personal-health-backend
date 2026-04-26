@@ -26,5 +26,709 @@
     "leaderboard": [],
     "started_at": null,
     "ended_at": null
+  },
+  "huddle_88e2ba065a": {
+    "huddle_id": "huddle_88e2ba065a",
+    "name": "Test",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-17T06:26:46.881454+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_94da77ffc6": {
+    "huddle_id": "huddle_94da77ffc6",
+    "name": "Test",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-17T06:27:25.922152+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_76b5a9bf5a": {
+    "huddle_id": "huddle_76b5a9bf5a",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:47:34.466268+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T07:47:34.469666+00:00",
+    "ended_at": "2026-04-23T07:47:34.472118+00:00"
+  },
+  "huddle_eeccdb4620": {
+    "huddle_id": "huddle_eeccdb4620",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:47:34.494358+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_a13fbe9954": {
+    "huddle_id": "huddle_a13fbe9954",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:47:37.948551+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_4647e283a5": {
+    "huddle_id": "huddle_4647e283a5",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:49:59.231529+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T07:49:59.234531+00:00",
+    "ended_at": "2026-04-23T07:49:59.237396+00:00"
+  },
+  "huddle_39ec8f9bbd": {
+    "huddle_id": "huddle_39ec8f9bbd",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:49:59.263504+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_ab280462f7": {
+    "huddle_id": "huddle_ab280462f7",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:50:02.495507+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_fb749d1e52": {
+    "huddle_id": "huddle_fb749d1e52",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:52:07.829871+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T07:52:07.832830+00:00",
+    "ended_at": "2026-04-23T07:52:07.835762+00:00"
+  },
+  "huddle_9028ca05d6": {
+    "huddle_id": "huddle_9028ca05d6",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:52:07.864759+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_bed8e9c2e8": {
+    "huddle_id": "huddle_bed8e9c2e8",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:52:22.289363+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 100,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T07:52:22.292235+00:00",
+    "ended_at": "2026-04-23T07:52:22.294462+00:00"
+  },
+  "huddle_534d438ce3": {
+    "huddle_id": "huddle_534d438ce3",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:52:22.316062+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_3bbeefdd2b": {
+    "huddle_id": "huddle_3bbeefdd2b",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:52:25.566300+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_40af1da94e": {
+    "huddle_id": "huddle_40af1da94e",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:52:41.266352+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 150,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T07:52:41.269183+00:00",
+    "ended_at": "2026-04-23T07:52:41.273092+00:00"
+  },
+  "huddle_fb3b35719c": {
+    "huddle_id": "huddle_fb3b35719c",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:52:41.295517+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_bebc389380": {
+    "huddle_id": "huddle_bebc389380",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:52:44.470991+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_a738d72ac9": {
+    "huddle_id": "huddle_a738d72ac9",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:54:08.861506+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T07:54:08.864578+00:00",
+    "ended_at": "2026-04-23T07:54:08.867131+00:00"
+  },
+  "huddle_27eeb9555e": {
+    "huddle_id": "huddle_27eeb9555e",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:54:08.895124+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_2236707c1c": {
+    "huddle_id": "huddle_2236707c1c",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T07:54:12.119405+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_c520c0f604": {
+    "huddle_id": "huddle_c520c0f604",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T08:17:11.451355+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T08:17:11.454403+00:00",
+    "ended_at": "2026-04-23T08:17:11.456712+00:00"
+  },
+  "huddle_d9a3315d3c": {
+    "huddle_id": "huddle_d9a3315d3c",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T08:17:11.477851+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_49b3f0b1a0": {
+    "huddle_id": "huddle_49b3f0b1a0",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T08:17:14.617846+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_25d139de9b": {
+    "huddle_id": "huddle_25d139de9b",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T08:18:02.093096+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T08:18:02.096075+00:00",
+    "ended_at": "2026-04-23T08:18:02.098421+00:00"
+  },
+  "huddle_4fe7931361": {
+    "huddle_id": "huddle_4fe7931361",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T08:18:02.119345+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_60fae78da9": {
+    "huddle_id": "huddle_60fae78da9",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T08:18:05.210985+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_8cf3145cf9": {
+    "huddle_id": "huddle_8cf3145cf9",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:05:17.174725+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T18:05:17.187316+00:00",
+    "ended_at": "2026-04-23T18:05:17.193437+00:00"
+  },
+  "huddle_9f5523d8ca": {
+    "huddle_id": "huddle_9f5523d8ca",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:05:17.248518+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_5564407683": {
+    "huddle_id": "huddle_5564407683",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:05:31.762756+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_c816b55f73": {
+    "huddle_id": "huddle_c816b55f73",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:07:36.587503+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T18:07:36.595339+00:00",
+    "ended_at": "2026-04-23T18:07:36.599318+00:00"
+  },
+  "huddle_28d5c98acc": {
+    "huddle_id": "huddle_28d5c98acc",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:07:36.635232+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_8a2c0de492": {
+    "huddle_id": "huddle_8a2c0de492",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:07:45.074209+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_cb15dda8db": {
+    "huddle_id": "huddle_cb15dda8db",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:08:39.249210+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T18:08:39.258318+00:00",
+    "ended_at": "2026-04-23T18:08:39.264460+00:00"
+  },
+  "huddle_b423ed3c3e": {
+    "huddle_id": "huddle_b423ed3c3e",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:08:39.321673+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_17f7af3661": {
+    "huddle_id": "huddle_17f7af3661",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:08:48.852722+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_8030e92e2d": {
+    "huddle_id": "huddle_8030e92e2d",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:17:01.303615+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T18:17:01.311947+00:00",
+    "ended_at": "2026-04-23T18:17:01.318302+00:00"
+  },
+  "huddle_45e5fcd540": {
+    "huddle_id": "huddle_45e5fcd540",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:17:01.356892+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_6779b9d223": {
+    "huddle_id": "huddle_6779b9d223",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:17:09.494107+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_3e986e2508": {
+    "huddle_id": "huddle_3e986e2508",
+    "name": "E2E Huddle",
+    "sport": "vertical_jump",
+    "coach_id": "athlete_35",
+    "created_at": "2026-04-23T18:36:12.320503+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_3c2033e814": {
+    "huddle_id": "huddle_3c2033e814",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:36:36.842976+00:00",
+    "status": "ended",
+    "max_athletes": 20,
+    "athletes": [
+      "athlete_30"
+    ],
+    "sessions": {},
+    "leaderboard": [
+      {
+        "athlete_id": "athlete_30",
+        "name": "Urvi Trivedi",
+        "avg_form_score": 89.5,
+        "xp": 50,
+        "rank": 1
+      }
+    ],
+    "started_at": "2026-04-23T18:36:36.849763+00:00",
+    "ended_at": "2026-04-23T18:36:36.853776+00:00"
+  },
+  "huddle_8461252d2a": {
+    "huddle_id": "huddle_8461252d2a",
+    "name": "T",
+    "sport": "sprint",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:36:36.887573+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
+  },
+  "huddle_4a391b76ee": {
+    "huddle_id": "huddle_4a391b76ee",
+    "name": "Test Huddle",
+    "sport": "vertical_jump",
+    "coach_id": null,
+    "created_at": "2026-04-23T18:36:45.866655+00:00",
+    "status": "waiting",
+    "max_athletes": 20,
+    "athletes": [],
+    "sessions": {},
+    "leaderboard": [],
+    "started_at": null,
+    "ended_at": null
   }
 }

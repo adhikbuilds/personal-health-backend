@@ -868,11 +868,18 @@ class PoseAnalyzer:
                     "TRUNK": round(bio.trunk_lean, 1),
                     "ELBOW_L": round(bio.elbow_angle_l, 1),
                     "ELBOW_R": round(bio.elbow_angle_r, 1),
+                    "SHOULDER_L": round(bio.shoulder_angle_l, 1),
+                    "SHOULDER_R": round(bio.shoulder_angle_r, 1),
+                    "ANKLE_L": round(bio.ankle_dorsiflexion_l, 1),
+                    "ANKLE_R": round(bio.ankle_dorsiflexion_r, 1),
                 },
                 "symmetry_score": round(bio.limb_symmetry_idx, 3),
                 "trunk_lean": round(bio.trunk_lean, 1),
                 "estimated_jump_height": round(bio.estimated_jump_height, 1),
                 "com_height_norm": round(bio.com_height_norm, 3),
+                "spine_deviation": round(bio.spine_deviation, 1),
+                "shoulder_hip_sep": round(bio.shoulder_hip_sep, 1),
+                "head_forward_pos": round(bio.head_forward_pos, 2),
                 "injury_flags": bio.injury_flags,
             }
             if multi_person_warning:
