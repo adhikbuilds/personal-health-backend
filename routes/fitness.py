@@ -759,7 +759,8 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
                     continue
             else:
                 r, g, b = data.get("r", 0.0), data.get("g", 0.0), data.get("b", 0.0)
-                result_extra = {}
+                finger_on = r > 100 and (r > g * 1.3)
+                result_extra = {"face_detected": finger_on}
             t = data.get("ts", time.time())
             proc.add_rgb(r, g, b, t)
             result = proc.compute()
