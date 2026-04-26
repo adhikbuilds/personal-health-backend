@@ -3,8 +3,15 @@ from __future__ import annotations
 """
 Personal Health — AI Nutrition Analysis.
 
-Take a photo of your food → Claude analyzes it → returns nutrient breakdown.
-Falls back to a template response when API key is missing.
+Pipeline (in order, first hit wins):
+  1. Local pretrained classifier (services.food_classifier) — works offline
+     against the FOOD_DB (210 Indian/global foods). Backend selectable via
+     env NUTRITION_MODEL=mock|clip|tflite.
+  2. Anthropic Claude vision (if ANTHROPIC_API_KEY set) — richer recommendations.
+  3. Static fallback template.
+
+The local classifier is now the DEFAULT (was Anthropic). It always returns
+something useful — no API key required to demo.
 """
 
 import json
@@ -15,6 +22,7 @@ from pydantic import BaseModel
 
 from config import settings
 from logging_setup import get_logger
+from services.food_classifier import classify_food, get_classifier_status
 
 router = APIRouter(tags=["Nutrition"])
 log = get_logger("routes.nutrition_ai")
@@ -100,16 +108,40 @@ def _fallback_analysis() -> dict:
     }
 
 
+@router.get("/nutrition/classifier/status")
+async def classifier_status():
+    """Health check — which classifier backend is active + which are installable."""
+    return get_classifier_status()
+
+
 @router.post("/nutrition/analyze")
 async def analyze_food(req: FoodAnalysisRequest):
-    """Analyze a food photo and return nutrient breakdown."""
+    """Analyze a food photo and return nutrient breakdown.
+
+    Order: local classifier (FOOD_DB) → Anthropic Claude → static fallback.
+    """
     if not req.image_b64:
         raise HTTPException(400, "image_b64 required")
 
     start = time.time()
-    result = _call_anthropic(req.image_b64)
-    source = "anthropic"
+    source = "local"
+    result = None
 
+    # 1. Local pretrained classifier (default — works offline)
+    try:
+        result = classify_food(req.image_b64)
+    except Exception as e:
+        log.warning("local food classifier failed: %s", e)
+        result = None
+
+    # 2. Anthropic Claude vision (if API key available and local was too low confidence)
+    if ANTHROPIC_OK and settings.anthropic_api_key and (result is None or result.get("confidence", 1.0) < 0.20):
+        anthropic_result = _call_anthropic(req.image_b64)
+        if anthropic_result:
+            result = anthropic_result
+            source = "anthropic"
+
+    # 3. Static fallback
     if result is None:
         result = _fallback_analysis()
         source = "fallback"
@@ -125,6 +157,7 @@ async def analyze_food(req: FoodAnalysisRequest):
         "nutrition analysis",
         extra={
             "source": source,
+            "backend": result.get("backend"),
             "latency_ms": latency,
             "meal_score": meal_score,
             "items": len(food_items),
@@ -133,6 +166,8 @@ async def analyze_food(req: FoodAnalysisRequest):
 
     return {
         "source": source,
+        "backend": result.get("backend"),  # mock | clip | tflite | anthropic
+        "confidence": result.get("confidence"),
         "food_items": food_items,
         "nutrients": {
             "calories": nutrients.get("calories", 0),
