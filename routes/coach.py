@@ -192,6 +192,83 @@ async def athlete_inbox(athlete_id: str, limit: int = Query(default=20, ge=1, le
     return {"athlete_id": athlete_id, "broadcasts": items, "total": len(items)}
 
 
+# ─── Billing (read-only, activity-derived) ───────────────────────────────
+
+
+billing_router = APIRouter(tags=["Billing"])
+
+
+@billing_router.get("/billing/coach/{coach_id}")
+async def coach_billing(coach_id: str):
+    from database import SESSION_DB
+    from routes.progress import _athlete_sessions
+
+    roster = _coach_roster(coach_id)
+    overdue, paused, paid = [], [], []
+    now = datetime.now(timezone.utc)
+
+    for a in roster:
+        aid = a.get("id", "")
+        sessions_14d = _athlete_sessions(aid, 14)
+        sessions_30d = _athlete_sessions(aid, 30)
+        last_date = None
+        if sessions_30d:
+            last_s = max(sessions_30d, key=lambda s: s.get("started_at", ""))
+            last_date = last_s.get("started_at", "")[:10]
+
+        entry = {
+            "athlete_id": aid,
+            "athlete_name": a.get("name", aid),
+            "amount_inr": 500,
+            "due_date": now.strftime("%Y-%m-01"),
+            "sessions_this_month": len(sessions_30d),
+            "last_session_date": last_date,
+        }
+        if len(sessions_14d) > 0:
+            entry["status"] = "active"
+            paid.append(entry)
+        elif len(sessions_30d) > 0:
+            entry["status"] = "paused"
+            paused.append(entry)
+        else:
+            entry["status"] = "overdue"
+            overdue.append(entry)
+
+    total = len(roster)
+    return {
+        "coach_id": coach_id,
+        "summary": {
+            "total": total,
+            "paid": len(paid),
+            "overdue": len(overdue),
+            "paused": len(paused),
+            "total_revenue": len(paid) * 500,
+        },
+        "overdue": overdue,
+        "paused": paused,
+        "paid": paid,
+    }
+
+
+@billing_router.post("/billing/override/{athlete_id}")
+async def billing_override(athlete_id: str, coach_id: str = Query("")):
+    # TODO: actual payment system needed — this is a placeholder
+    return {"ok": True, "athlete_id": athlete_id, "action": "override", "note": "No billing system yet"}
+
+
+@router.post("/{coach_id}/invite-link")
+async def generate_invite_link(coach_id: str):
+    token = uuid4().hex[:12]
+    url = f"https://activebharat.in/join/{coach_id}/{token}"
+    return {
+        "invite_url": url,
+        "coach_id": coach_id,
+        "token": token,
+        "expires_in": "7d",
+        "whatsapp_share_text": f"Join my training roster on ActiveBharat: {url}",
+    }
+
+
 VOICE_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent / "db" / "voice_notes"
 VOICE_DIR.mkdir(parents=True, exist_ok=True)
 

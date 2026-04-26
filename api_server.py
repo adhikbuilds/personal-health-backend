@@ -38,7 +38,7 @@ if FASTAPI_AVAILABLE:
     from routes.analytics import router as analytics_router
     from routes.athletes import router as athletes_router
     from routes.auth import router as auth_router
-    from routes.coach import router as coach_router, voice_router
+    from routes.coach import router as coach_router, voice_router, billing_router
     from routes.data_export import router as export_router
     from routes.fitness import analysis_worker, session_cleanup_worker
     from routes.fitness import router as fitness_router
@@ -141,6 +141,9 @@ if FASTAPI_AVAILABLE:
     app.include_router(nutrition_ai_router)
     app.include_router(realtime_router)
     app.include_router(voice_router)
+    app.include_router(billing_router)
+    from routes.messaging import router as messaging_router
+    app.include_router(messaging_router)
 
     # ─── Static: serve uploaded voice notes ─────────────────────────────────
     from fastapi.staticfiles import StaticFiles

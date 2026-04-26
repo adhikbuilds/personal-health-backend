@@ -793,6 +793,8 @@ async def rppg_get_result(session_id: str):
 # ─── Biomechanics WebSockets ────────────────────────────────────────────────
 
 
+# DEPRECATED: No active consumers as of 2026-04-26. Candidate for removal.
+# Was intended for: dashboard live metrics feed — relays form scores to web observers
 @router.websocket("/metrics/live/{session_id}")
 async def websocket_live(websocket: WebSocket, session_id: str):
     await websocket.accept()
@@ -814,6 +816,8 @@ async def websocket_live(websocket: WebSocket, session_id: str):
             conns.remove(websocket)
 
 
+# DEPRECATED: No active consumers as of 2026-04-26. Candidate for removal.
+# Was intended for: Android native landmark stream — api.connectLiveStream() exists but no screen calls it
 @router.websocket("/session/{session_id}/live-stream")
 async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
     await websocket.accept()

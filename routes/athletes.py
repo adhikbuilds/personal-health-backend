@@ -79,6 +79,30 @@ async def get_athlete(athlete_id: str):
     return athlete
 
 
+class AthleteUpdate(BaseModel):
+    name: Optional[str] = None
+    sport: Optional[str] = None
+    height_cm: Optional[float] = None
+
+
+@router.patch("/athlete/{athlete_id}", tags=["Athletes"])
+async def update_athlete(athlete_id: str, body: AthleteUpdate):
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(404, "Athlete not found")
+    athlete = ATHLETE_DB[athlete_id]
+    if body.name is not None:
+        athlete["name"] = body.name.strip()
+        initials = "".join(w[0].upper() for w in body.name.strip().split()[:2])
+        athlete["avatar"] = initials
+    if body.sport is not None:
+        athlete["sport"] = body.sport
+    if body.height_cm is not None:
+        athlete["height_cm"] = body.height_cm
+    athlete["updated_at"] = datetime.now(timezone.utc).isoformat()
+    _save_db()
+    return athlete
+
+
 # ─── Intelligence ───────────────────────────────────────────────────────────
 
 
