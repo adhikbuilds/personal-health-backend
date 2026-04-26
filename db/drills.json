@@ -1,0 +1,108 @@
+{
+  "drills": [
+    {
+      "key": "a_skip",
+      "label": "A-skip",
+      "sport": "sprint",
+      "video_url": "/public/drill-videos/a-skip.webm",
+      "thumbnail_url": "/public/drill-videos/a-skip-thumb.webm",
+      "duration_ms": 3000,
+      "cues": [
+        "Drive knee to 90°",
+        "Land on ball of foot",
+        "Short ground contact"
+      ]
+    },
+    {
+      "key": "high_knees",
+      "label": "High knees",
+      "sport": "sprint",
+      "video_url": "/public/drill-videos/high-knees.webm",
+      "thumbnail_url": "/public/drill-videos/high-knees-thumb.webm",
+      "duration_ms": 3000,
+      "cues": [
+        "Knees to hip height",
+        "Quick turnover",
+        "Maintain posture"
+      ]
+    },
+    {
+      "key": "box_jump",
+      "label": "Box jump",
+      "sport": "vertical_jump",
+      "video_url": "/public/drill-videos/box-jump.webm",
+      "thumbnail_url": "/public/drill-videos/box-jump-thumb.webm",
+      "duration_ms": 3000,
+      "cues": [
+        "Feet shoulder-width apart",
+        "Explosive extension",
+        "Land softly on platform"
+      ]
+    },
+    {
+      "key": "squat",
+      "label": "Squat",
+      "sport": "vertical_jump",
+      "video_url": "/public/drill-videos/squat.webm",
+      "thumbnail_url": "/public/drill-videos/squat-thumb.webm",
+      "duration_ms": 3000,
+      "cues": [
+        "Chest up, core braced",
+        "Knees track over toes",
+        "Depth to parallel or below"
+      ]
+    },
+    {
+      "key": "push_up",
+      "label": "Push-up",
+      "sport": "push_up",
+      "video_url": "/public/drill-videos/push-up.webm",
+      "thumbnail_url": "/public/drill-videos/push-up-thumb.webm",
+      "duration_ms": 3000,
+      "cues": [
+        "Elbows at 45° to body",
+        "Lower until chest near ground",
+        "Press through palms"
+      ]
+    },
+    {
+      "key": "plank",
+      "label": "Plank",
+      "sport": "push_up",
+      "video_url": "/public/drill-videos/plank.webm",
+      "thumbnail_url": "/public/drill-videos/plank-thumb.webm",
+      "duration_ms": 3000,
+      "cues": [
+        "Straight line head to heels",
+        "Engage core",
+        "Shoulders over hands"
+      ]
+    },
+    {
+      "key": "cricket_bat_swing",
+      "label": "Cricket bat swing",
+      "sport": "cricket_bat",
+      "video_url": "/public/drill-videos/cricket-bat-swing.webm",
+      "thumbnail_url": "/public/drill-videos/cricket-bat-swing-thumb.webm",
+      "duration_ms": 3000,
+      "cues": [
+        "Feet shoulder-width apart",
+        "Rotate through hips",
+        "Follow through straight"
+      ]
+    },
+    {
+      "key": "javelin_throw",
+      "label": "Javelin throw",
+      "sport": "javelin",
+      "video_url": "/public/drill-videos/javelin-throw.webm",
+      "thumbnail_url": "/public/drill-videos/javelin-throw-thumb.webm",
+      "duration_ms": 3000,
+      "cues": [
+        "Long approach stride",
+        "Plant front foot",
+        "Extend through release"
+      ]
+    }
+  ]
+}
