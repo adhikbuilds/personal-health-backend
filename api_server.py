@@ -21,6 +21,7 @@ try:
     from fastapi import FastAPI
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.openapi.utils import get_openapi
+    from fastapi.staticfiles import StaticFiles
 
     FASTAPI_AVAILABLE = True
 except ImportError:
@@ -41,6 +42,7 @@ if FASTAPI_AVAILABLE:
     from routes.coach import billing_router, voice_router
     from routes.coach import router as coach_router
     from routes.data_export import router as export_router
+    from routes.drills import router as drills_router
     from routes.fitness import analysis_worker, session_cleanup_worker
     from routes.fitness import router as fitness_router
     from routes.health import router as health_router
@@ -52,6 +54,7 @@ if FASTAPI_AVAILABLE:
     from routes.progress import router as progress_router
     from routes.realtime import router as realtime_router
     from routes.scorecard import router as scorecard_router
+    from routes.session_media import router as session_media_router
     from routes.social import router as social_router
     from routes.weekly_summary import router as summary_router
     from sqlite_store import init_db
@@ -116,10 +119,17 @@ if FASTAPI_AVAILABLE:
         expose_headers=["X-Request-ID", "X-RateLimit-Remaining", "Retry-After"],
     )
 
+    # ─── Static Files ────────────────────────────────────────────────────────
+    import os
+    public_path = os.path.join(os.path.dirname(__file__), "public")
+    if os.path.exists(public_path):
+        app.mount("/public", StaticFiles(directory=public_path), name="public")
+
     # ─── Routers ────────────────────────────────────────────────────────────
     app.include_router(health_router)
     app.include_router(admin_router)
     app.include_router(auth_router)
+    app.include_router(drills_router)
     app.include_router(fitness_router)
     app.include_router(athletes_router)
     app.include_router(social_router)
@@ -149,6 +159,7 @@ if FASTAPI_AVAILABLE:
     from routes.messaging import router as messaging_router
 
     app.include_router(messaging_router)
+    app.include_router(session_media_router)
 
     # ─── Static: serve uploaded voice notes ─────────────────────────────────
     from fastapi.staticfiles import StaticFiles
