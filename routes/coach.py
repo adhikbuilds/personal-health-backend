@@ -5,11 +5,14 @@ Personal Health — AI Coach route (/coach/*).
 Wraps ai_coach module which uses Anthropic with deterministic fallback.
 """
 
+import os
+import shutil
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 
 from ai_coach import generate_coach_note
@@ -187,3 +190,44 @@ async def athlete_inbox(athlete_id: str, limit: int = Query(default=20, ge=1, le
     Android app to surface coach messages on Home/ScoreCard."""
     items = list_broadcasts_for_athlete(athlete_id, limit)
     return {"athlete_id": athlete_id, "broadcasts": items, "total": len(items)}
+
+
+VOICE_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent / "db" / "voice_notes"
+VOICE_DIR.mkdir(parents=True, exist_ok=True)
+
+ALLOWED_AUDIO = {"audio/webm", "audio/ogg", "audio/mp4", "audio/mpeg", "audio/wav", "audio/x-wav"}
+MAX_VOICE_BYTES = 10 * 1024 * 1024
+
+voice_router = APIRouter(tags=["Voice"])
+
+
+@voice_router.post("/voice-note/upload")
+async def upload_voice_note(file: UploadFile = File(...)):
+    content_type = (file.content_type or "").lower()
+    if content_type and content_type not in ALLOWED_AUDIO:
+        raise HTTPException(400, f"unsupported audio type: {content_type}")
+
+    file_id = uuid4().hex[:12]
+    ext = ".webm"
+    if content_type == "audio/ogg":
+        ext = ".ogg"
+    elif content_type in ("audio/mp4", "audio/mpeg"):
+        ext = ".mp4"
+    elif content_type in ("audio/wav", "audio/x-wav"):
+        ext = ".wav"
+
+    filename = f"{file_id}{ext}"
+    dest = VOICE_DIR / filename
+
+    size = 0
+    with open(dest, "wb") as out:
+        while chunk := await file.read(64 * 1024):
+            size += len(chunk)
+            if size > MAX_VOICE_BYTES:
+                out.close()
+                dest.unlink(missing_ok=True)
+                raise HTTPException(413, "voice note too large (10MB max)")
+            out.write(chunk)
+
+    url = f"/voice-notes/{filename}"
+    return {"url": url, "voice_url": url, "size_bytes": size}

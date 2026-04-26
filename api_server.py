@@ -38,7 +38,7 @@ if FASTAPI_AVAILABLE:
     from routes.analytics import router as analytics_router
     from routes.athletes import router as athletes_router
     from routes.auth import router as auth_router
-    from routes.coach import router as coach_router
+    from routes.coach import router as coach_router, voice_router
     from routes.data_export import router as export_router
     from routes.fitness import analysis_worker, session_cleanup_worker
     from routes.fitness import router as fitness_router
@@ -127,6 +127,10 @@ if FASTAPI_AVAILABLE:
     app.include_router(coach_router)
     from routes.nutrition import router as nutrition_router
     app.include_router(nutrition_router)
+    from routes.parent import router as parent_router
+    app.include_router(parent_router)
+    from routes.notifications import router as notif_router
+    app.include_router(notif_router)
     app.include_router(plan_router)
     app.include_router(summary_router)
     app.include_router(load_router)
@@ -136,6 +140,13 @@ if FASTAPI_AVAILABLE:
     app.include_router(export_router)
     app.include_router(nutrition_ai_router)
     app.include_router(realtime_router)
+    app.include_router(voice_router)
+
+    # ─── Static: serve uploaded voice notes ─────────────────────────────────
+    from fastapi.staticfiles import StaticFiles
+    _voice_dir = database.DB_PATH / "voice_notes"
+    _voice_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/voice-notes", StaticFiles(directory=str(_voice_dir)), name="voice-notes")
 
     # ─── OpenAPI: advertise bearer scheme ───────────────────────────────────
     def _custom_openapi():
