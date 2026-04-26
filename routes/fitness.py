@@ -6,6 +6,7 @@ All biomechanics-related endpoints live here.
 """
 
 import asyncio
+import base64
 import csv
 import json
 import time
@@ -214,6 +215,14 @@ async def analysis_worker():
                         "hip_angle_r": angles.get("HIP_R", 0.0),
                         "elbow_angle_l": angles.get("ELBOW_L", 0.0),
                         "elbow_angle_r": angles.get("ELBOW_R", 0.0),
+                        "shoulder_angle_l": angles.get("SHOULDER_L", 0.0),
+                        "shoulder_angle_r": angles.get("SHOULDER_R", 0.0),
+                        "ankle_dorsiflexion_l": angles.get("ANKLE_L", 0.0),
+                        "ankle_dorsiflexion_r": angles.get("ANKLE_R", 0.0),
+                        "spine_deviation": result.get("spine_deviation", 0.0),
+                        "shoulder_hip_sep": result.get("shoulder_hip_sep", 0.0),
+                        "head_forward_pos": result.get("head_forward_pos", 0.0),
+                        "com_height_norm": result.get("com_height_norm", 0.5),
                         "pose_detected": True,
                     }
                     frame_dict.update(update)
@@ -999,23 +1008,50 @@ async def websocket_jpeg_frames(websocket: WebSocket, session_id: str):
     sport = SESSION_DB[session_id].get("sport", "vertical_jump")
     log.info("ws-frames-jpeg connected", extra={"session_id": session_id[:8], "sport": sport})
 
-    last_result_ts = 0.0
+    last_pushed_ts = [0.0]
+    _exclude_keys = {"keypoints", "data_source"}
+
+    async def result_pusher():
+        while True:
+            await asyncio.sleep(0.1)
+            latest = RESULT_STORE.get(session_id)
+            if latest and latest.get("analyzed_at", 0) > last_pushed_ts[0]:
+                last_pushed_ts[0] = latest["analyzed_at"]
+                payload = {"type": "result", **{k: v for k, v in latest.items() if k not in _exclude_keys}}
+                try:
+                    await websocket.send_json(payload)
+                except Exception:
+                    return
+
+    pusher_task = asyncio.create_task(result_pusher())
     try:
         while True:
             try:
-                msg = await asyncio.wait_for(websocket.receive_json(), timeout=30)
+                raw = await asyncio.wait_for(websocket.receive(), timeout=30)
             except asyncio.TimeoutError:
                 await websocket.send_json({"type": "ping", "ts": time.time()})
                 continue
 
-            image_b64 = (msg or {}).get("image_b64")
+            if raw.get("type") == "websocket.disconnect":
+                break
+
+            image_b64 = None
+            if "bytes" in raw and raw["bytes"]:
+                image_b64 = base64.b64encode(raw["bytes"]).decode("ascii")
+            elif "text" in raw and raw["text"]:
+                try:
+                    msg = json.loads(raw["text"])
+                except (json.JSONDecodeError, TypeError):
+                    continue
+                image_b64 = (msg or {}).get("image_b64")
+            else:
+                continue
+
             if not image_b64:
                 continue
 
-            # Same per-session rate limit as the HTTP endpoint, applied here so
-            # a misbehaving client can't melt the analyzer queue.
             now = time.time()
-            if now - _RATE_LIMITS.get(session_id, 0) < 0.05:  # 20 fps cap
+            if now - _RATE_LIMITS.get(session_id, 0) < 0.05:
                 continue
             _RATE_LIMITS[session_id] = now
 
@@ -1034,21 +1070,9 @@ async def websocket_jpeg_frames(websocket: WebSocket, session_id: str):
                     database.ANALYSIS_QUEUE.put_nowait((session_id, image_b64, sport, frame_dict))
                 except asyncio.QueueFull:
                     log.warning("analysis queue full (ws), dropped frame", extra={"session_id": session_id[:8]})
-
-            # Push the latest analyzed result back if it's newer than last sent.
-            latest = RESULT_STORE.get(session_id)
-            if latest and latest.get("timestamp", 0) > last_result_ts:
-                last_result_ts = latest.get("timestamp", 0)
-                await websocket.send_json({
-                    "type": "result",
-                    "frame_num": frame_num,
-                    **{k: latest.get(k) for k in (
-                        "form_score", "form_quality", "primary_feedback",
-                        "phase", "knee_angle_l", "hip_angle_l", "trunk_lean",
-                        "limb_symmetry_idx", "estimated_jump_height",
-                    )},
-                })
     except WebSocketDisconnect:
         log.info("ws-frames-jpeg disconnected", extra={"session_id": session_id[:8]})
     except Exception as e:
         log.warning("ws-frames-jpeg error", extra={"session_id": session_id[:8], "error": str(e)})
+    finally:
+        pusher_task.cancel()

@@ -157,7 +157,7 @@ class RPPGProcessor:
         ts_arr = np.array(self._ts)
         elapsed = ts_arr[-1] - ts_arr[0]
         fs = (n - 1) / (elapsed + 1e-9)
-        fs = float(np.clip(fs, 5.0, 60.0))
+        fs = float(np.clip(fs, 1.5, 60.0))
 
         r = np.array(self._r)
         g = np.array(self._g)
@@ -181,10 +181,12 @@ class RPPGProcessor:
         # Bandpass
         bvp_f = _bandpass(bvp, fs, 0.67, 3.0)
 
-        # FFT
+        # FFT with Hann window to reduce spectral leakage
         n_fft = len(bvp_f)
+        window = np.hanning(n_fft)
+        bvp_windowed = bvp_f * window
         freqs = np.fft.rfftfreq(n_fft, d=1.0 / fs)
-        power = np.abs(np.fft.rfft(bvp_f)) ** 2
+        power = np.abs(np.fft.rfft(bvp_windowed)) ** 2
 
         # Restrict to BPM range
         mask = (freqs >= self.BPM_LOW / 60.0) & (freqs <= self.BPM_HIGH / 60.0)
@@ -222,10 +224,10 @@ class RPPGProcessor:
         # Heavy temporal smoothing — rPPG from phone camera is noisy
         # 0.85/0.15 means it takes ~5 readings to converge to a new value
         if self.last_bpm > 0:
-            if abs(bpm_raw - self.last_bpm) > 15:
-                bpm = self.last_bpm * 0.92 + bpm_raw * 0.08  # very slow for big jumps
+            if abs(bpm_raw - self.last_bpm) > 12:
+                bpm = self.last_bpm * 0.85 + bpm_raw * 0.15
             else:
-                bpm = self.last_bpm * 0.85 + bpm_raw * 0.15  # slow convergence
+                bpm = self.last_bpm * 0.70 + bpm_raw * 0.30
         else:
             bpm = bpm_raw
 
@@ -249,7 +251,7 @@ class RPPGProcessor:
 
         # Smooth HRV
         if self.last_hrv > 0 and hrv_ms_raw > 0:
-            hrv_ms = self.last_hrv * 0.80 + hrv_ms_raw * 0.20
+            hrv_ms = self.last_hrv * 0.65 + hrv_ms_raw * 0.35
         else:
             hrv_ms = hrv_ms_raw
 
