@@ -74,7 +74,8 @@ def test_sports_catalog_index_matches_model_registry():
 def test_sports_catalog_rep_transition_has_all_sports():
     from services import sports_catalog
 
-    for key in sports_catalog:
+    all_keys = sports_catalog.keys()
+    for key in all_keys:
         frm, to = sports_catalog.rep_transition(key)
         assert frm and to
         assert isinstance(frm, str) and isinstance(to, str)
