@@ -69,18 +69,25 @@ def test_daily_tracker_rejects_non_owner(client, authed):
     aid = authed["athlete_id"]
     # Create a second user
     import uuid as _uuid
+
     other_email = f"o_{_uuid.uuid4().hex[:8]}@example.com"
-    r2 = client.post("/auth/register", json={
-        "email": other_email, "name": "Other", "password": "Sup3rsecret!"})
+    r2 = client.post("/auth/register", json={"email": other_email, "name": "Other", "password": "Sup3rsecret!"})
     other_token = r2.json()["access_token"]
     other_headers = {"Authorization": f"Bearer {other_token}"}
 
     # Other athlete can't write to ours
     w = client.post(
         f"/athlete/{aid}/daily-tracker",
-        json={"steps": 1000, "active_minutes": 5, "distance_km": 0,
-              "calories_burned": 0, "calorie_intake": 0, "water_glasses": 0,
-              "sleep_hours": 0, "date": "2026-04-02"},
+        json={
+            "steps": 1000,
+            "active_minutes": 5,
+            "distance_km": 0,
+            "calories_burned": 0,
+            "calorie_intake": 0,
+            "water_glasses": 0,
+            "sleep_hours": 0,
+            "date": "2026-04-02",
+        },
         headers=other_headers,
     )
     assert w.status_code == 403

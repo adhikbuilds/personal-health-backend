@@ -35,6 +35,7 @@ def test_start_session_is_immediately_durable(client, tmp_path, monkeypatch):
     assert database.SESSION_DB[sid]["status"] == "active"
     # On disk: sessions.json must already contain the new session
     import json
+
     sessions_file = database.DB_PATH / "sessions.json"
     assert sessions_file.exists(), "sessions.json should exist after start_session"
     raw = json.loads(sessions_file.read_text(encoding="utf-8"))
@@ -54,6 +55,7 @@ def test_session_can_be_fetched_via_api(client):
 def test_end_session_persists_summary(client):
     """End the session and verify the summary fields land on disk."""
     import json
+
     import database
 
     sid = _start_session(client)
@@ -72,6 +74,7 @@ def test_session_simulates_reload_from_disk(client):
     """Simulate a server restart: clear in-memory dicts, reload from JSON,
     verify the session is recovered with status + summary intact."""
     import json
+
     import database
 
     sid = _start_session(client)

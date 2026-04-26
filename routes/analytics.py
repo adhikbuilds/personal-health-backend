@@ -216,7 +216,8 @@ async def advanced_metrics(athlete_id: str, days: int = Query(default=60, ge=7, 
     can hit to render every chart.
     """
     from services import metrics_service as ms
-    from services.repositories import athletes, sessions as session_repo
+    from services.repositories import athletes
+    from services.repositories import sessions as session_repo
 
     if not athletes.exists(athlete_id):
         raise HTTPException(404, "athlete not found")

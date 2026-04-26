@@ -13,7 +13,7 @@ checks and inserts new notifications; the frontend polls GET.
 """
 
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
@@ -119,7 +119,6 @@ async def generate_notifications(athlete_id: str):
         raise HTTPException(404, "athlete not found")
 
     athlete = ATHLETE_DB[athlete_id]
-    name = athlete.get("name", "Athlete")
     sport = (athlete.get("sport") or "training").replace("_", " ")
     recent_types = _recent_notif_types(athlete_id, hours=24)
     created = []
@@ -133,11 +132,14 @@ async def generate_notifications(athlete_id: str):
         sessions_2d = _athlete_sessions(athlete_id, 2)
         sessions_5d = _athlete_sessions(athlete_id, 5)
         if len(sessions_5d) >= 3 and len(sessions_2d) == 0:
-            created.append(_insert_notif(
-                athlete_id, "streak_risk",
-                "Your training streak is at risk",
-                f"You trained {len(sessions_5d)} times in the last 5 days but nothing in the last 2. A short session keeps the streak alive.",
-            ))
+            created.append(
+                _insert_notif(
+                    athlete_id,
+                    "streak_risk",
+                    "Your training streak is at risk",
+                    f"You trained {len(sessions_5d)} times in the last 5 days but nothing in the last 2. A short session keeps the streak alive.",
+                )
+            )
 
     # Personal best: check if latest session has a PB
     if "personal_best" not in recent_types and sessions_7d:
@@ -145,46 +147,64 @@ async def generate_notifications(athlete_id: str):
         latest_score = latest.get("avg_form_score") or latest.get("summary", {}).get("avg_form_score", 0) or 0
         if latest_score > 0 and sessions_28d:
             prev_best = max(
-                (s.get("avg_form_score") or s.get("summary", {}).get("avg_form_score", 0) or 0
-                 for s in sessions_28d if s.get("session_id") != latest.get("session_id")),
+                (
+                    s.get("avg_form_score") or s.get("summary", {}).get("avg_form_score", 0) or 0
+                    for s in sessions_28d
+                    if s.get("session_id") != latest.get("session_id")
+                ),
                 default=0,
             )
             if latest_score > prev_best and prev_best > 0:
-                created.append(_insert_notif(
-                    athlete_id, "personal_best",
-                    f"New personal best: {latest_score:.1f}",
-                    f"Your latest {sport} session scored {latest_score:.1f}, beating your previous best of {prev_best:.1f}.",
-                ))
+                created.append(
+                    _insert_notif(
+                        athlete_id,
+                        "personal_best",
+                        f"New personal best: {latest_score:.1f}",
+                        f"Your latest {sport} session scored {latest_score:.1f}, beating your previous best of {prev_best:.1f}.",
+                    )
+                )
 
     # Milestone: session count hits 10, 25, 50, 100
     if "milestone" not in recent_types:
-        total_sessions = sum(1 for s in SESSION_DB.values()
-                            if s.get("athlete_id") == athlete_id and s.get("status") == "completed")
+        total_sessions = sum(
+            1 for s in SESSION_DB.values() if s.get("athlete_id") == athlete_id and s.get("status") == "completed"
+        )
         for threshold in [10, 25, 50, 100, 200, 500]:
             if total_sessions >= threshold and total_sessions < threshold + 3:
-                created.append(_insert_notif(
-                    athlete_id, "milestone",
-                    f"{threshold} sessions completed",
-                    f"You've completed {total_sessions} {sport} sessions. Consistency builds champions.",
-                ))
+                created.append(
+                    _insert_notif(
+                        athlete_id,
+                        "milestone",
+                        f"{threshold} sessions completed",
+                        f"You've completed {total_sessions} {sport} sessions. Consistency builds champions.",
+                    )
+                )
                 break
 
     # Injury warning: elevated risk
     if "injury_warning" not in recent_types:
         risk_level = risk.get("risk", "low")
         if risk_level in ("medium", "high"):
-            created.append(_insert_notif(
-                athlete_id, "injury_warning",
-                f"Injury risk: {risk_level}",
-                risk.get("reason", "Biomechanical patterns suggest elevated injury risk. Consider a recovery session."),
-            ))
+            created.append(
+                _insert_notif(
+                    athlete_id,
+                    "injury_warning",
+                    f"Injury risk: {risk_level}",
+                    risk.get(
+                        "reason", "Biomechanical patterns suggest elevated injury risk. Consider a recovery session."
+                    ),
+                )
+            )
 
     # Re-engagement: no sessions in 7+ days
     if "reengage" not in recent_types and len(sessions_7d) == 0:
-        created.append(_insert_notif(
-            athlete_id, "reengage",
-            "Time to get back to training",
-            f"It's been over a week since your last {sport} session. Even a light session keeps you progressing.",
-        ))
+        created.append(
+            _insert_notif(
+                athlete_id,
+                "reengage",
+                "Time to get back to training",
+                f"It's been over a week since your last {sport} session. Even a light session keeps you progressing.",
+            )
+        )
 
     return {"athlete_id": athlete_id, "generated": len(created), "notifications": created}

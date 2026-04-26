@@ -9,13 +9,11 @@ Falls back to a template response when API key is missing.
 
 import json
 import time
-from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from config import settings
-from database import ATHLETE_DB
 from logging_setup import get_logger
 
 router = APIRouter(tags=["Nutrition"])
@@ -23,6 +21,7 @@ log = get_logger("routes.nutrition_ai")
 
 try:
     from anthropic import Anthropic
+
     ANTHROPIC_OK = True
 except ImportError:
     ANTHROPIC_OK = False
@@ -55,26 +54,27 @@ def _call_anthropic(image_b64: str) -> dict | None:
             model=settings.anthropic_model,
             max_tokens=500,
             system=SYSTEM_PROMPT,
-            messages=[{
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": "image/jpeg",
-                            "data": image_b64,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/jpeg",
+                                "data": image_b64,
+                            },
                         },
-                    },
-                    {"type": "text", "text": "Analyze this meal."},
-                ],
-            }],
+                        {"type": "text", "text": "Analyze this meal."},
+                    ],
+                }
+            ],
         )
-        text = "".join(
-            b.text for b in msg.content if getattr(b, "type", None) == "text"
-        ).strip()
+        text = "".join(b.text for b in msg.content if getattr(b, "type", None) == "text").strip()
         # Extract JSON from response
         import re
+
         match = re.search(r"\{.*\}", text, re.DOTALL)
         if match:
             return json.loads(match.group(0))
@@ -121,10 +121,15 @@ async def analyze_food(req: FoodAnalysisRequest):
     recommendation = result.get("recommendation", "")
 
     latency = round((time.time() - start) * 1000)
-    log.info("nutrition analysis", extra={
-        "source": source, "latency_ms": latency,
-        "meal_score": meal_score, "items": len(food_items),
-    })
+    log.info(
+        "nutrition analysis",
+        extra={
+            "source": source,
+            "latency_ms": latency,
+            "meal_score": meal_score,
+            "items": len(food_items),
+        },
+    )
 
     return {
         "source": source,

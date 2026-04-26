@@ -257,6 +257,7 @@ def require_role(*roles: str):
         if user["role"] not in roles:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "insufficient role")
         return user
+
     return _dep
 
 
@@ -284,6 +285,7 @@ def require_athlete_owner(athlete_id_param: str = "athlete_id"):
     def _dep(athlete_id: str = Path(...), user: dict = Depends(current_user)) -> dict:
         verify_athlete_owner(user, athlete_id)
         return user
+
     return _dep
 
     return _dep

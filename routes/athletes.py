@@ -9,10 +9,9 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-
-from auth import current_user, optional_user, require_athlete_owner, verify_athlete_owner
 from pydantic import BaseModel
 
+from auth import require_athlete_owner
 from database import ATHLETE_DB, FRAME_BUFFER, SESSION_DB, _save_db
 
 router = APIRouter()
@@ -281,6 +280,9 @@ async def daily_tracker_history(athlete_id: str, days: int = 30):
         legacy = ATHLETE_DB[athlete_id].get("daily_tracker", {}) or {}
         rows = [{"date": k, **v} for k, v in sorted(legacy.items(), reverse=True)[:days]]
     return {
-        "athlete_id": athlete_id, "days": days,
-        "history": rows, "items": rows, "total": len(rows),
+        "athlete_id": athlete_id,
+        "days": days,
+        "history": rows,
+        "items": rows,
+        "total": len(rows),
     }

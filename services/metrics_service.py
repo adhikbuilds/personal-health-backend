@@ -95,7 +95,7 @@ def form_score_trend_pct(sessions: list[dict], split: int = 3) -> float:
     if len(sessions) < split * 2:
         return 0.0
     recent = [_safe_score(s) for s in sessions[:split] if _safe_score(s) > 0]
-    prior = [_safe_score(s) for s in sessions[split:split * 2] if _safe_score(s) > 0]
+    prior = [_safe_score(s) for s in sessions[split : split * 2] if _safe_score(s) > 0]
     if not recent or not prior:
         return 0.0
     rm, pm = statistics.mean(recent), statistics.mean(prior)
@@ -212,8 +212,7 @@ def asymmetry_index(frames: list[dict]) -> dict[str, float]:
     Non-symmetric joint angles are injury predictors. Returns % difference
     averaged across frames. >10% on a single joint = watch; >15% = flag.
     """
-    pairs = [("knee_angle_l", "knee_angle_r"), ("hip_angle_l", "hip_angle_r"),
-             ("shoulder_angle_l", "shoulder_angle_r")]
+    pairs = [("knee_angle_l", "knee_angle_r"), ("hip_angle_l", "hip_angle_r"), ("shoulder_angle_l", "shoulder_angle_r")]
     out: dict[str, float] = {}
     for l_key, r_key in pairs:
         diffs: list[float] = []
@@ -294,12 +293,7 @@ def readiness_score(
     components["soreness"] = max(0.0, 10.0 - soreness)
 
     total = round(sum(components.values()), 1)
-    band = (
-        "elite" if total >= 85
-        else "ready" if total >= 70
-        else "caution" if total >= 50
-        else "recover"
-    )
+    band = "elite" if total >= 85 else "ready" if total >= 70 else "caution" if total >= 50 else "recover"
     return {"score": total, "band": band, "components": {k: round(v, 1) for k, v in components.items()}}
 
 
@@ -323,13 +317,20 @@ def session_intensity(summary: dict, hr_summary: Optional[dict] = None) -> float
     if hr_summary:
         zone_dist = hr_summary.get("zone_distribution", {}) or {}
         total = sum(zone_dist.values()) or 1
-        zone_score = sum(
-            {
-                "recovery": 20, "endurance": 40, "tempo": 60,
-                "threshold": 80, "anaerobic": 100,
-            }.get(z, 0) * c
-            for z, c in zone_dist.items()
-        ) / total
+        zone_score = (
+            sum(
+                {
+                    "recovery": 20,
+                    "endurance": 40,
+                    "tempo": 60,
+                    "threshold": 80,
+                    "anaerobic": 100,
+                }.get(z, 0)
+                * c
+                for z, c in zone_dist.items()
+            )
+            / total
+        )
         hr_weight = zone_score * 0.30
     else:
         hr_weight = form_weight * 0.30 / 0.55  # fall back to form-proportional estimate

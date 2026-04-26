@@ -38,7 +38,8 @@ if FASTAPI_AVAILABLE:
     from routes.analytics import router as analytics_router
     from routes.athletes import router as athletes_router
     from routes.auth import router as auth_router
-    from routes.coach import router as coach_router, voice_router, billing_router
+    from routes.coach import billing_router, voice_router
+    from routes.coach import router as coach_router
     from routes.data_export import router as export_router
     from routes.fitness import analysis_worker, session_cleanup_worker
     from routes.fitness import router as fitness_router
@@ -47,9 +48,9 @@ if FASTAPI_AVAILABLE:
     from routes.huddle import router as huddle_router
     from routes.load import router as load_router
     from routes.nutrition_ai import router as nutrition_ai_router
-    from routes.realtime import router as realtime_router
     from routes.plan import router as plan_router
     from routes.progress import router as progress_router
+    from routes.realtime import router as realtime_router
     from routes.scorecard import router as scorecard_router
     from routes.social import router as social_router
     from routes.weekly_summary import router as summary_router
@@ -126,10 +127,13 @@ if FASTAPI_AVAILABLE:
     app.include_router(analytics_router)
     app.include_router(coach_router)
     from routes.nutrition import router as nutrition_router
+
     app.include_router(nutrition_router)
     from routes.parent import router as parent_router
+
     app.include_router(parent_router)
     from routes.notifications import router as notif_router
+
     app.include_router(notif_router)
     app.include_router(plan_router)
     app.include_router(summary_router)
@@ -143,10 +147,12 @@ if FASTAPI_AVAILABLE:
     app.include_router(voice_router)
     app.include_router(billing_router)
     from routes.messaging import router as messaging_router
+
     app.include_router(messaging_router)
 
     # ─── Static: serve uploaded voice notes ─────────────────────────────────
     from fastapi.staticfiles import StaticFiles
+
     _voice_dir = database.DB_PATH / "voice_notes"
     _voice_dir.mkdir(parents=True, exist_ok=True)
     app.mount("/voice-notes", StaticFiles(directory=str(_voice_dir)), name="voice-notes")

@@ -28,6 +28,7 @@ class SportMeta:
     display label, ML feature normalisation hints, and a default body-height
     scaling for jump-height-style calculations.
     """
+
     key: str
     label: str
     sport_index: int
@@ -45,63 +46,90 @@ class SportMeta:
 
 _CATALOG: dict[str, SportMeta] = {
     "general": SportMeta(
-        key="general", label="General", sport_index=0,
-        rep_from="descent", rep_to="setup",
+        key="general",
+        label="General",
+        sport_index=0,
+        rep_from="descent",
+        rep_to="setup",
         has_jump_height=False,
     ),
     "vertical_jump": SportMeta(
-        key="vertical_jump", label="Vertical Jump", sport_index=0,
-        rep_from="descent", rep_to="takeoff",
+        key="vertical_jump",
+        label="Vertical Jump",
+        sport_index=0,
+        rep_from="descent",
+        rep_to="takeoff",
         has_jump_height=True,
         typical_knee_range=(85, 110),
         typical_hip_range=(80, 110),
         typical_trunk_range=(8, 18),
     ),
     "snatch": SportMeta(
-        key="snatch", label="Snatch", sport_index=1,
-        rep_from="descent", rep_to="catch",
+        key="snatch",
+        label="Snatch",
+        sport_index=1,
+        rep_from="descent",
+        rep_to="catch",
         typical_knee_range=(95, 125),
         typical_hip_range=(85, 100),
         typical_trunk_range=(18, 30),
     ),
     "sprint": SportMeta(
-        key="sprint", label="Sprint", sport_index=2,
-        rep_from="drive", rep_to="flight",
+        key="sprint",
+        label="Sprint",
+        sport_index=2,
+        rep_from="drive",
+        rep_to="flight",
         typical_knee_range=(85, 115),
         typical_hip_range=(42, 62),
         typical_trunk_range=(12, 22),
     ),
     "javelin": SportMeta(
-        key="javelin", label="Javelin", sport_index=3,
-        rep_from="wind_up", rep_to="release",
+        key="javelin",
+        label="Javelin",
+        sport_index=3,
+        rep_from="wind_up",
+        rep_to="release",
         typical_knee_range=(140, 165),
         typical_hip_range=(105, 125),
         typical_trunk_range=(28, 45),
     ),
     "cricket_bat": SportMeta(
-        key="cricket_bat", label="Cricket Bat", sport_index=4,
-        rep_from="backswing", rep_to="contact",
+        key="cricket_bat",
+        label="Cricket Bat",
+        sport_index=4,
+        rep_from="backswing",
+        rep_to="contact",
         typical_knee_range=(132, 158),
         typical_hip_range=(118, 145),
         typical_trunk_range=(18, 30),
     ),
     "squat": SportMeta(
-        key="squat", label="Squat", sport_index=0,
-        rep_from="descent", rep_to="setup",
+        key="squat",
+        label="Squat",
+        sport_index=0,
+        rep_from="descent",
+        rep_to="setup",
         typical_knee_range=(75, 110),
         typical_hip_range=(75, 105),
         typical_trunk_range=(0, 25),
     ),
     "push_up": SportMeta(
-        key="push_up", label="Push-up", sport_index=0,
-        rep_from="descent", rep_to="setup",
+        key="push_up",
+        label="Push-up",
+        sport_index=0,
+        rep_from="descent",
+        rep_to="setup",
         typical_knee_range=(165, 180),
         typical_hip_range=(165, 180),
         typical_trunk_range=(0, 8),
     ),
     "pull_up": SportMeta(
-        key="pull_up", label="Pull-up", sport_index=0,
-        rep_from="descent", rep_to="setup",
+        key="pull_up",
+        label="Pull-up",
+        sport_index=0,
+        rep_from="descent",
+        rep_to="setup",
         typical_knee_range=(140, 180),
         typical_hip_range=(140, 180),
         typical_trunk_range=(0, 15),
@@ -146,6 +174,7 @@ def register(sport: SportMeta) -> None:
 # ─── Backward-compatibility shims ──────────────────────────────────────────
 # Other modules can still import these names; migrate callers when touching
 # the respective file, but leave the shims so the tree keeps building.
+
 
 def build_sport_index_map() -> dict[str, int]:
     return {k: v.sport_index for k, v in _CATALOG.items() if k != "general"}

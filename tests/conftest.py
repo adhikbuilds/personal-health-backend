@@ -84,15 +84,17 @@ def admin_client(client):
 
     user_id = "admin_" + _uuid.uuid4().hex[:8]
     email = f"adm_{_uuid.uuid4().hex[:8]}@example.com"
-    insert_user({
-        "id": user_id,
-        "email": email,
-        "name": "Test Admin",
-        "password_hash": hash_password("Sup3rsecret!"),
-        "role": "admin",
-        "athlete_id": None,
-        "created_at": time.time(),
-    })
+    insert_user(
+        {
+            "id": user_id,
+            "email": email,
+            "name": "Test Admin",
+            "password_hash": hash_password("Sup3rsecret!"),
+            "role": "admin",
+            "athlete_id": None,
+            "created_at": time.time(),
+        }
+    )
     tokens = issue_token_pair(user_id, "admin")
     return {
         "user_id": user_id,

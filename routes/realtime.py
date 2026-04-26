@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import contextlib
+
 """
 Personal Health — Real-time Video Pipeline endpoint.
 
@@ -82,10 +84,8 @@ async def realtime_landmarks(websocket: WebSocket, session_id: str):
                     default=str,
                 )
                 for ws in list(WS_CONNECTIONS.get(session_id, [])):
-                    try:
+                    with contextlib.suppress(Exception):
                         await ws.send_text(text)
-                    except Exception:
-                        pass
 
             # Respond to client
             response = {

@@ -5,6 +5,7 @@ Huddle Mode — REST endpoints for group training sessions.
 """
 
 import asyncio
+import contextlib
 import json
 from collections import defaultdict
 from typing import Optional
@@ -193,10 +194,8 @@ async def api_watch_huddle(websocket: WebSocket, huddle_id: str):
     logger.info("huddle watcher connected", extra={"huddle_id": huddle_id})
     try:
         # Immediate snapshot
-        try:
+        with contextlib.suppress(Exception):
             await websocket.send_json({"event": "snapshot", "live": get_huddle_live(huddle_id)})
-        except Exception:
-            pass
         while True:
             await asyncio.sleep(5)
             try:
