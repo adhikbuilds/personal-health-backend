@@ -285,6 +285,9 @@ async def upload_voice_note(file: UploadFile = File(...)):
     if content_type and content_type not in ALLOWED_AUDIO:
         raise HTTPException(400, f"unsupported audio type: {content_type}")
 
+    if file.size and file.size > MAX_VOICE_BYTES:
+        raise HTTPException(413, "voice note too large (10MB max)")
+
     file_id = uuid4().hex[:12]
     ext = ".webm"
     if content_type == "audio/ogg":

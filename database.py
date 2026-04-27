@@ -235,16 +235,32 @@ def athlete_lock(athlete_id: str) -> asyncio.Lock:
 # ─── Periodic save worker ───────────────────────────────────────────────────
 
 
+_CLEANUP_COUNTER = 0
+
+
 async def periodic_save_worker(interval_seconds: int = 60) -> None:
     """Flush in-memory DB to disk every `interval_seconds`.
 
     Without this, a crashed server loses every session started since the last
     shutdown. Saves are atomic via _save_db's temp-rename pattern.
+    Every 60 cycles (~5 min at 5s interval) evict stale idempotency rows.
     """
+    global _CLEANUP_COUNTER
     while True:
         try:
             await asyncio.sleep(interval_seconds)
             _save_db()
+            _CLEANUP_COUNTER += 1
+            if _CLEANUP_COUNTER >= 60:
+                _CLEANUP_COUNTER = 0
+                try:
+                    from sqlite_store import idempotency_cleanup
+
+                    deleted = idempotency_cleanup()
+                    if deleted:
+                        _log.info("idempotency cache evicted", extra={"deleted": deleted})
+                except Exception as e:
+                    _log.warning("idempotency cleanup error", extra={"error": str(e)})
             _log.debug("periodic db save", extra={"sessions": len(SESSION_DB)})
         except asyncio.CancelledError:
             break

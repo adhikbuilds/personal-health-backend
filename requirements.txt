@@ -22,6 +22,7 @@ pandas>=2.2.0
 # -- REST + WebSocket API ----------------------------------------------------
 fastapi>=0.111.0
 uvicorn[standard]>=0.29.0
+gunicorn>=22.0.0
 python-multipart>=0.0.9
 pydantic>=2.7.0
 websockets>=12.0

@@ -25,13 +25,24 @@ async def livez():
 
 @router.get("/readyz")
 async def readyz():
-    """Readiness — DB loaded, analysis queue ready, queue not saturated."""
+    """Readiness — DB loaded, analysis queue ready, queue not saturated, SQLite OK."""
     queue_ready = database.ANALYSIS_QUEUE is not None
     queue_depth = database.ANALYSIS_QUEUE.qsize() if queue_ready else -1
     queue_max = database.ANALYSIS_QUEUE.maxsize if queue_ready else 0
     saturated = queue_ready and queue_max and (queue_depth / queue_max) > 0.9
     db_loaded = len(database.ATHLETE_DB) > 0
-    ok = queue_ready and db_loaded and not saturated
+
+    sqlite_ok = False
+    try:
+        from sqlite_store import cursor
+
+        with cursor() as cur:
+            row = cur.execute("PRAGMA integrity_check(1)").fetchone()
+            sqlite_ok = row and row[0] == "ok"
+    except Exception:
+        pass
+
+    ok = queue_ready and db_loaded and not saturated and sqlite_ok
     return {
         "status": "ready" if ok else "not_ready",
         "queue_ready": queue_ready,
@@ -39,6 +50,7 @@ async def readyz():
         "queue_max": queue_max,
         "db_loaded": db_loaded,
         "saturated": saturated,
+        "sqlite_ok": sqlite_ok,
     }
 
 
