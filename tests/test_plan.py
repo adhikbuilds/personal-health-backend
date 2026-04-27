@@ -142,9 +142,9 @@ def test_mark_day_complete_returns_none_for_missing_date():
 # ─── HTTP endpoint tests ─────────────────────────────────────────────────────
 
 
-def _seed_athlete(client) -> str:
+def _seed_athlete(client, headers=None) -> str:
     """Return an existing seeded athlete id (seed_athletes creates athlete_01..30)."""
-    r = client.get("/athletes")
+    r = client.get("/athletes", headers=headers)
     if r.status_code == 200:
         data = r.json()
         athletes = data if isinstance(data, list) else data.get("athletes", [])
@@ -152,15 +152,15 @@ def _seed_athlete(client) -> str:
             first = athletes[0]
             return first.get("id") or first.get("athlete_id")
     # Fallback — register a fresh one.
-    r = client.post("/athlete", json={"name": "Plan Tester", "sport": "vertical_jump"})
+    r = client.post("/athlete", json={"name": "Plan Tester", "sport": "vertical_jump"}, headers=headers)
     assert r.status_code in (200, 201)
     body = r.json()
     return body.get("id") or body.get("athlete_id")
 
 
-def test_weekly_plan_endpoint_happy_path(client):
-    aid = _seed_athlete(client)
-    r = client.get(f"/plan/{aid}/weekly")
+def test_weekly_plan_endpoint_happy_path(client, admin_client):
+    aid = _seed_athlete(client, admin_client["headers"])
+    r = client.get(f"/plan/{aid}/weekly", headers=admin_client["headers"])
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["athlete_id"] == aid
@@ -168,39 +168,37 @@ def test_weekly_plan_endpoint_happy_path(client):
     assert body["source"] in {"deterministic", "anthropic", "anthropic-fallback"}
     assert "week_start" in body and "week_end" in body
     # Cached second read should be identical.
-    r2 = client.get(f"/plan/{aid}/weekly")
+    r2 = client.get(f"/plan/{aid}/weekly", headers=admin_client["headers"])
     assert r2.status_code == 200
     assert r2.json()["generated_at"] == body["generated_at"]
 
 
-def test_weekly_plan_404_for_unknown_athlete(client):
-    r = client.get("/plan/definitely_not_a_real_athlete/weekly")
+def test_weekly_plan_404_for_unknown_athlete(client, admin_client):
+    r = client.get("/plan/definitely_not_a_real_athlete/weekly", headers=admin_client["headers"])
     assert r.status_code == 404
 
 
-def test_weekly_plan_rejects_bad_week_start(client):
-    aid = _seed_athlete(client)
-    r = client.get(f"/plan/{aid}/weekly", params={"week_start": "not-a-date"})
+def test_weekly_plan_rejects_bad_week_start(client, admin_client):
+    aid = _seed_athlete(client, admin_client["headers"])
+    r = client.get(f"/plan/{aid}/weekly", params={"week_start": "not-a-date"}, headers=admin_client["headers"])
     assert r.status_code == 400
 
 
-def test_regenerate_produces_new_plan(client):
-    aid = _seed_athlete(client)
-    r1 = client.get(f"/plan/{aid}/weekly")
+def test_regenerate_produces_new_plan(client, admin_client):
+    aid = _seed_athlete(client, admin_client["headers"])
+    r1 = client.get(f"/plan/{aid}/weekly", headers=admin_client["headers"])
     ts1 = r1.json()["generated_at"]
 
-    r2 = client.post(f"/plan/{aid}/regenerate")
+    r2 = client.post(f"/plan/{aid}/regenerate", headers=admin_client["headers"])
     assert r2.status_code == 200
     ts2 = r2.json()["generated_at"]
-    # The timestamps may be identical if the two calls happen in the same
-    # wall-clock second — just assert the regenerate succeeded and returned a valid plan.
     assert len(r2.json()["days"]) == 7
     assert ts2 >= ts1
 
 
-def test_day_complete_updates_adherence(client):
-    aid = _seed_athlete(client)
-    r = client.get(f"/plan/{aid}/weekly")
+def test_day_complete_updates_adherence(client, admin_client):
+    aid = _seed_athlete(client, admin_client["headers"])
+    r = client.get(f"/plan/{aid}/weekly", headers=admin_client["headers"])
     assert r.status_code == 200
     plan = r.json()
 
@@ -209,14 +207,14 @@ def test_day_complete_updates_adherence(client):
     assert workable, "plan should have at least one workable day"
     target = workable[0]
 
-    r2 = client.post(f"/plan/{aid}/day/{target['date']}/complete")
+    r2 = client.post(f"/plan/{aid}/day/{target['date']}/complete", headers=admin_client["headers"])
     assert r2.status_code == 200
     body = r2.json()
     assert body["completed"] is True
     assert body["adherence_pct"] > 0
 
     # Read back — the day should be marked complete.
-    r3 = client.get(f"/plan/{aid}/weekly")
+    r3 = client.get(f"/plan/{aid}/weekly", headers=admin_client["headers"])
     assert r3.status_code == 200
     for day in r3.json()["days"]:
         if day["date"] == target["date"]:
@@ -226,18 +224,18 @@ def test_day_complete_updates_adherence(client):
         pytest.fail(f"target date {target['date']} missing from plan after completion")
 
 
-def test_day_complete_404_without_plan(client):
-    aid = _seed_athlete(client)
+def test_day_complete_404_without_plan(client, admin_client):
+    aid = _seed_athlete(client, admin_client["headers"])
     # Use a date in a week we've never generated a plan for.
     future = (date.today() + timedelta(days=60)).isoformat()
-    r = client.post(f"/plan/{aid}/day/{future}/complete")
+    r = client.post(f"/plan/{aid}/day/{future}/complete", headers=admin_client["headers"])
     assert r.status_code == 404
 
 
-def test_plan_history_returns_generated_week(client):
-    aid = _seed_athlete(client)
-    client.get(f"/plan/{aid}/weekly")
-    r = client.get(f"/plan/{aid}/history")
+def test_plan_history_returns_generated_week(client, admin_client):
+    aid = _seed_athlete(client, admin_client["headers"])
+    client.get(f"/plan/{aid}/weekly", headers=admin_client["headers"])
+    r = client.get(f"/plan/{aid}/history", headers=admin_client["headers"])
     assert r.status_code == 200
     body = r.json()
     assert body["count"] >= 1

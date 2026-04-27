@@ -58,14 +58,12 @@ def test_readiness_band_thresholds():
 # ─── HTTP integration tests ────────────────────────────────────────────────
 
 
-def test_rep_count_404_for_unknown_session(client):
-    r = client.get(f"/sessions/{uuid.uuid4()}/rep-count")
+def test_rep_count_404_for_unknown_session(client, authed):
+    r = client.get(f"/sessions/{uuid.uuid4()}/rep-count", headers=authed["headers"])
     assert r.status_code == 404
 
 
-def test_rep_count_on_real_session(client):
-    # Inject a synthetic session straight into SESSION_DB so we don't depend
-    # on the full pose pipeline.
+def test_rep_count_on_real_session(client, authed):
     from database import SESSION_DB
 
     sid = f"test_sess_{uuid.uuid4().hex[:8]}"
@@ -83,7 +81,7 @@ def test_rep_count_on_real_session(client):
         ],
     }
     try:
-        r = client.get(f"/sessions/{sid}/rep-count")
+        r = client.get(f"/sessions/{sid}/rep-count", headers=authed["headers"])
         assert r.status_code == 200
         body = r.json()
         assert body["session_id"] == sid
@@ -93,13 +91,13 @@ def test_rep_count_on_real_session(client):
         SESSION_DB.pop(sid, None)
 
 
-def test_readiness_404_for_unknown_athlete(client):
-    r = client.get("/readiness/does_not_exist")
+def test_readiness_404_for_unknown_athlete(client, admin_client):
+    r = client.get("/readiness/does_not_exist", headers=admin_client["headers"])
     assert r.status_code == 404
 
 
-def test_readiness_returns_score_and_components(client):
-    r = client.get("/readiness/athlete_01?days=14")
+def test_readiness_returns_score_and_components(client, admin_client):
+    r = client.get("/readiness/athlete_01?days=14", headers=admin_client["headers"])
     if r.status_code == 404:
         pytest.skip("athlete_01 not seeded in this run")
     assert r.status_code == 200

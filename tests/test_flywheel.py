@@ -147,16 +147,16 @@ def test_compute_form_score_still_works():
 # ─── Admin Endpoints ─────────────────────────────────────────────────────────
 
 
-def test_model_status_endpoint(client):
-    r = client.get("/admin/model")
+def test_model_status_endpoint(client, admin_client):
+    r = client.get("/admin/model", headers=admin_client["headers"])
     assert r.status_code == 200
     body = r.json()
     assert "active_version" in body
     assert "model_loaded" in body
 
 
-def test_retrain_status_endpoint(client):
-    r = client.get("/admin/retrain-status")
+def test_retrain_status_endpoint(client, admin_client):
+    r = client.get("/admin/retrain-status", headers=admin_client["headers"])
     assert r.status_code == 200
     body = r.json()
     assert "total_real_frames" in body

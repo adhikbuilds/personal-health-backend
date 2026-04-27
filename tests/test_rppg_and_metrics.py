@@ -128,15 +128,15 @@ def test_metrics_service_aggregate_counts_quality():
     assert agg["total_reps"] == 180
 
 
-def test_advanced_metrics_endpoint_returns_bundle(client):
+def test_advanced_metrics_endpoint_returns_bundle(client, admin_client):
     # Use any seeded athlete
-    resp = client.get("/athletes")
+    resp = client.get("/athletes", headers=admin_client["headers"])
     athletes = resp.json().get("athletes", resp.json() if isinstance(resp.json(), list) else [])
     if not athletes:
         pytest.skip("no athletes seeded")
     athlete_id = athletes[0]["id"]
 
-    r = client.get(f"/athlete/{athlete_id}/advanced-metrics?days=60")
+    r = client.get(f"/athlete/{athlete_id}/advanced-metrics?days=60", headers=admin_client["headers"])
     assert r.status_code == 200
     body = r.json()
     for key in (
@@ -156,22 +156,19 @@ def test_advanced_metrics_endpoint_returns_bundle(client):
     assert body["acwr"]["band"] in ("unknown", "under-loaded", "sweet spot", "high", "spike — injury risk")
 
 
-def test_huddle_create_and_leave(client):
-    # This also smoke-tests the new leave endpoint wired in routes/huddle.py.
-    resp = client.get("/athletes")
-    athletes = resp.json().get("athletes") or []
-    if not athletes:
-        pytest.skip("no athletes seeded")
-    aid = athletes[0]["id"]
+def test_huddle_create_and_leave(client, authed):
+    aid = authed["athlete_id"]
 
-    create = client.post("/huddle/create", json={"name": "Test Huddle", "sport": "vertical_jump"})
+    create = client.post(
+        "/huddle/create", json={"name": "Test Huddle", "sport": "vertical_jump"}, headers=authed["headers"]
+    )
     assert create.status_code == 200
     hid = create.json()["huddle"]["huddle_id"]
 
-    join = client.post(f"/huddle/{hid}/join", json={"athlete_id": aid})
+    join = client.post(f"/huddle/{hid}/join", json={"athlete_id": aid}, headers=authed["headers"])
     assert join.status_code == 200
 
-    leave = client.post(f"/huddle/{hid}/leave", json={"athlete_id": aid})
+    leave = client.post(f"/huddle/{hid}/leave", json={"athlete_id": aid}, headers=authed["headers"])
     assert leave.status_code == 200
     assert leave.json()["remaining"] == 0
 
@@ -185,8 +182,8 @@ def test_health_endpoint_surfaces_model_info(client):
         assert key in body["models"]
 
 
-def test_social_feed_now_aggregates_real_data(client):
-    r = client.get("/feed?athlete_id=athlete_01&limit=10")
+def test_social_feed_now_aggregates_real_data(client, authed):
+    r = client.get("/feed?athlete_id=athlete_01&limit=10", headers=authed["headers"])
     assert r.status_code == 200
     body = r.json()
     assert "posts" in body
