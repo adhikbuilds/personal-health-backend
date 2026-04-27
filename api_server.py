@@ -62,18 +62,30 @@ if FASTAPI_AVAILABLE:
     configure_logging("INFO")
     log = get_logger("api_server")
 
+    async def _guarded(coro, name: str):
+        """Wrap a long-running worker so an unhandled exception logs + restarts."""
+        while True:
+            try:
+                await coro()
+                break
+            except asyncio.CancelledError:
+                break
+            except Exception:
+                log.exception("worker crashed — restarting in 5s", extra={"worker": name})
+                await asyncio.sleep(5)
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         # Startup
         init_db()
         _load_db()
         database.ANALYSIS_QUEUE = asyncio.Queue(maxsize=200)
-        task = asyncio.create_task(analysis_worker())
-        cleanup_task = asyncio.create_task(session_cleanup_worker())
+        task = asyncio.create_task(_guarded(analysis_worker, "analysis"))
+        cleanup_task = asyncio.create_task(_guarded(session_cleanup_worker, "cleanup"))
         # 5s save window keeps the worst-case data-loss for in-flight frame counts
         # well under a typical session length, while keeping disk pressure trivial
         # at MVP scale (~50KB write per cycle for 30 athletes, 500 sessions).
-        save_task = asyncio.create_task(database.periodic_save_worker(5))
+        save_task = asyncio.create_task(_guarded(lambda: database.periodic_save_worker(5), "save"))
         log.info(
             "api startup",
             extra={
@@ -107,15 +119,13 @@ if FASTAPI_AVAILABLE:
     # ─── Middleware ──────────────────────────────────────────────────────────
     install_middleware(app)
 
-    _allow_credentials = False if "*" in settings.cors_origins else True
-    if settings.is_prod and "*" in settings.cors_origins:
-        log.warning("CORS wildcard in prod — set CORS_ORIGINS env explicitly")
+    _allow_credentials = "*" not in settings.cors_origins
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
         allow_credentials=_allow_credentials,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Idempotency-Key"],
         expose_headers=["X-Request-ID", "X-RateLimit-Remaining", "Retry-After"],
     )
 

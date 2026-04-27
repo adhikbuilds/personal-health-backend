@@ -373,6 +373,14 @@ def idempotency_set(key: str, response: dict) -> None:
         )
 
 
+def idempotency_cleanup(max_age_seconds: int = 86400) -> int:
+    """Delete idempotency cache entries older than max_age_seconds. Returns rows deleted."""
+    cutoff = time.time() - max_age_seconds
+    with cursor() as cur:
+        cur.execute("DELETE FROM idempotency_cache WHERE created_at < ?", (cutoff,))
+        return cur.rowcount
+
+
 # ─── API keys ───────────────────────────────────────────────────────────────
 
 

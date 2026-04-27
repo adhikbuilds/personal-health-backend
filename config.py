@@ -40,7 +40,11 @@ class Settings:
     anthropic_model: str = field(default_factory=lambda: os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"))
 
     # ── paths ──────────────────────────────────────────────────────────────
-    db_path: Path = field(default_factory=lambda: Path(os.path.dirname(os.path.abspath(__file__))) / "db")
+    db_path: Path = field(
+        default_factory=lambda: Path(os.environ["DB_PATH"])
+        if os.environ.get("DB_PATH")
+        else Path(os.path.dirname(os.path.abspath(__file__))) / "db"
+    )
 
     @property
     def is_prod(self) -> bool:
@@ -52,3 +56,12 @@ class Settings:
 
 
 settings = Settings()
+
+if settings.is_prod:
+    _errors: list[str] = []
+    if settings.jwt_secret == "dev-only-insecure-secret-change-me":
+        _errors.append("JWT_SECRET must be changed from the insecure default in production")
+    if "*" in settings.cors_origins:
+        _errors.append("CORS_ORIGINS='*' is not allowed in production — set explicit origins")
+    if _errors:
+        raise SystemExit("FATAL — production config errors:\n  • " + "\n  • ".join(_errors))
