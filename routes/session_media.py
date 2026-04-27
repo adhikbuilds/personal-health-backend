@@ -18,9 +18,10 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
+from auth import current_user
 from logging_setup import get_logger
 
 router = APIRouter(tags=["Session Media"])
@@ -61,7 +62,7 @@ def _write_manifest(session_id: str, items: list) -> None:
     _manifest_path(session_id).write_text(json.dumps(items, indent=2))
 
 
-@router.post("/session/{session_id}/media/upload")
+@router.post("/session/{session_id}/media/upload", dependencies=[Depends(current_user)])
 async def upload_session_media(
     session_id: str,
     file: UploadFile = File(...),
@@ -113,7 +114,7 @@ async def upload_session_media(
     return item
 
 
-@router.get("/session/{session_id}/media")
+@router.get("/session/{session_id}/media", dependencies=[Depends(current_user)])
 async def list_session_media(session_id: str):
     """Return all media items uploaded for the session."""
     if not _safe_id(session_id):
@@ -121,7 +122,7 @@ async def list_session_media(session_id: str):
     return {"session_id": session_id, "media": _read_manifest(session_id)}
 
 
-@router.get("/session/{session_id}/media/{file_id}")
+@router.get("/session/{session_id}/media/{file_id}", dependencies=[Depends(current_user)])
 async def serve_session_media(session_id: str, file_id: str):
     """Serve a previously uploaded media file by file_id."""
     if not _safe_id(session_id) or not _safe_id(file_id):
@@ -136,7 +137,7 @@ async def serve_session_media(session_id: str, file_id: str):
     return FileResponse(str(path), media_type=media_type)
 
 
-@router.delete("/session/{session_id}/media/{file_id}")
+@router.delete("/session/{session_id}/media/{file_id}", dependencies=[Depends(current_user)])
 async def delete_session_media(session_id: str, file_id: str):
     """Remove a media file and its manifest entry."""
     if not _safe_id(session_id) or not _safe_id(file_id):

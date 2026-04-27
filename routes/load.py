@@ -8,8 +8,9 @@ VISION.md Layer 2 Item 5: volume/intensity recommendation based on ACWR.
   GET /athlete/{id}/load-recommendation
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from auth import require_athlete_owner
 from cache import progress_cache
 from database import ATHLETE_DB, SESSION_DB
 from logging_setup import get_logger
@@ -19,7 +20,7 @@ router = APIRouter(tags=["Load"])
 log = get_logger("routes.load")
 
 
-@router.get("/athlete/{athlete_id}/load-recommendation")
+@router.get("/athlete/{athlete_id}/load-recommendation", dependencies=[Depends(require_athlete_owner())])
 async def get_load_recommendation(athlete_id: str):
     """ACWR-based training load recommendation."""
     if athlete_id not in ATHLETE_DB:

@@ -16,8 +16,9 @@ import time
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from auth import require_athlete_owner
 from database import ATHLETE_DB, SESSION_DB
 from logging_setup import get_logger
 from routes.progress import _athlete_sessions, _compute_injury_risk
@@ -77,7 +78,7 @@ def _recent_notif_types(athlete_id: str, hours: int = 24) -> set[str]:
         return {r["type"] for r in rows}
 
 
-@router.get("/athlete/{athlete_id}/notifications")
+@router.get("/athlete/{athlete_id}/notifications", dependencies=[Depends(require_athlete_owner())])
 async def list_notifications(
     athlete_id: str,
     limit: int = Query(default=50, ge=1, le=200),
@@ -101,7 +102,7 @@ async def list_notifications(
     return {"athlete_id": athlete_id, "notifications": items, "total": len(items), "unread": unread}
 
 
-@router.post("/athlete/{athlete_id}/notifications/read")
+@router.post("/athlete/{athlete_id}/notifications/read", dependencies=[Depends(require_athlete_owner())])
 async def mark_all_read(athlete_id: str):
     with cursor() as cur:
         cur.execute(
@@ -113,7 +114,7 @@ async def mark_all_read(athlete_id: str):
     return {"ok": True, "marked": count}
 
 
-@router.post("/notifications/generate/{athlete_id}")
+@router.post("/notifications/generate/{athlete_id}", dependencies=[Depends(require_athlete_owner())])
 async def generate_notifications(athlete_id: str):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")

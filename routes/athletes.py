@@ -11,7 +11,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from auth import require_athlete_owner
+from auth import current_user, require_athlete_owner
 from database import ATHLETE_DB, FRAME_BUFFER, SESSION_DB, _save_db
 
 router = APIRouter()
@@ -38,14 +38,14 @@ class DailyTrackerUpdate(BaseModel):
 # ─── CRUD ───────────────────────────────────────────────────────────────────
 
 
-@router.get("/athletes", tags=["Athletes"])
+@router.get("/athletes", tags=["Athletes"], dependencies=[Depends(current_user)])
 async def list_athletes():
     athletes = list(ATHLETE_DB.values())
     athletes.sort(key=lambda x: x.get("bpi", 0), reverse=True)
     return {"athletes": athletes, "items": athletes, "total": len(athletes)}
 
 
-@router.post("/athlete", tags=["Athletes"])
+@router.post("/athlete", tags=["Athletes"], dependencies=[Depends(current_user)])
 async def create_athlete(req: NewAthleteRequest):
     athlete_id = f"athlete_{uuid.uuid4().hex[:8]}"
     initials = "".join(w[0].upper() for w in req.name.strip().split()[:2])
@@ -65,7 +65,7 @@ async def create_athlete(req: NewAthleteRequest):
     return athlete
 
 
-@router.get("/athlete/{athlete_id}", tags=["Athletes"])
+@router.get("/athlete/{athlete_id}", tags=["Athletes"], dependencies=[Depends(current_user)])
 async def get_athlete(athlete_id: str):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "Athlete not found")
@@ -84,7 +84,7 @@ class AthleteUpdate(BaseModel):
     height_cm: Optional[float] = None
 
 
-@router.patch("/athlete/{athlete_id}", tags=["Athletes"])
+@router.patch("/athlete/{athlete_id}", tags=["Athletes"], dependencies=[Depends(require_athlete_owner())])
 async def update_athlete(athlete_id: str, body: AthleteUpdate):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "Athlete not found")
@@ -105,7 +105,7 @@ async def update_athlete(athlete_id: str, body: AthleteUpdate):
 # ─── Intelligence ───────────────────────────────────────────────────────────
 
 
-@router.get("/athlete/{athlete_id}/insights", tags=["Intelligence"])
+@router.get("/athlete/{athlete_id}/insights", tags=["Intelligence"], dependencies=[Depends(require_athlete_owner())])
 async def athlete_insights(athlete_id: str):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "Athlete not found")
@@ -121,7 +121,7 @@ async def athlete_insights(athlete_id: str):
     return generate_insights(athlete, sessions)
 
 
-@router.get("/session/{session_id}/coaching", tags=["Intelligence"])
+@router.get("/session/{session_id}/coaching", tags=["Intelligence"], dependencies=[Depends(current_user)])
 async def session_coaching(session_id: str):
     if session_id not in SESSION_DB:
         raise HTTPException(404, "Session not found")
@@ -149,7 +149,7 @@ async def session_coaching(session_id: str):
 # ─── Progress ───────────────────────────────────────────────────────────────
 
 
-@router.get("/athlete/{athlete_id}/progress", tags=["Athletes"])
+@router.get("/athlete/{athlete_id}/progress", tags=["Athletes"], dependencies=[Depends(require_athlete_owner())])
 async def get_athlete_progress(athlete_id: str):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")

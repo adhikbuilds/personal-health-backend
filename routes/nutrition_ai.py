@@ -17,9 +17,10 @@ something useful — no API key required to demo.
 import json
 import time
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from auth import current_user
 from config import settings
 from logging_setup import get_logger
 from services.food_classifier import classify_food, get_classifier_status
@@ -114,7 +115,7 @@ async def classifier_status():
     return get_classifier_status()
 
 
-@router.post("/nutrition/analyze")
+@router.post("/nutrition/analyze", dependencies=[Depends(current_user)])
 async def analyze_food(req: FoodAnalysisRequest):
     """Analyze a food photo and return nutrient breakdown.
 

@@ -11,8 +11,9 @@ import statistics
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from auth import require_athlete_owner
 from cache import progress_cache
 from database import ATHLETE_DB, SESSION_DB
 from logging_setup import get_logger
@@ -265,7 +266,7 @@ def _compute_injury_risk(athlete_id: str, days: int) -> dict:
 # ─── Routes ─────────────────────────────────────────────────────────────────
 
 
-@router.get("/progress/{athlete_id}")
+@router.get("/progress/{athlete_id}", dependencies=[Depends(require_athlete_owner())])
 async def get_progress(athlete_id: str, days: int = Query(default=30, ge=1, le=365)):
     key = f"progress:{athlete_id}:{days}"
     cached = progress_cache.get(key)
@@ -276,7 +277,7 @@ async def get_progress(athlete_id: str, days: int = Query(default=30, ge=1, le=3
     return payload
 
 
-@router.get("/injury-risk/{athlete_id}")
+@router.get("/injury-risk/{athlete_id}", dependencies=[Depends(require_athlete_owner())])
 async def get_injury_risk(athlete_id: str, days: int = Query(default=14, ge=1, le=90)):
     key = f"risk:{athlete_id}:{days}"
     cached = progress_cache.get(key)
@@ -287,7 +288,7 @@ async def get_injury_risk(athlete_id: str, days: int = Query(default=14, ge=1, l
     return payload
 
 
-@router.get("/weak-joints/{athlete_id}")
+@router.get("/weak-joints/{athlete_id}", dependencies=[Depends(require_athlete_owner())])
 async def get_weak_joints(athlete_id: str, days: int = Query(default=30, ge=1, le=180)):
     key = f"weak:{athlete_id}:{days}"
     cached = progress_cache.get(key)

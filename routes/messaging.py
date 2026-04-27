@@ -14,9 +14,10 @@ import time
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
+from auth import current_user
 from database import ATHLETE_DB
 from logging_setup import get_logger
 from sqlite_store import cursor
@@ -49,7 +50,7 @@ def _iso(epoch: float) -> str:
     return datetime.fromtimestamp(epoch, tz=timezone.utc).isoformat()
 
 
-@router.get("/coach/{coach_id}/messages")
+@router.get("/coach/{coach_id}/messages", dependencies=[Depends(current_user)])
 async def list_threads(coach_id: str):
     with cursor() as cur:
         rows = cur.execute(
@@ -88,7 +89,7 @@ async def list_threads(coach_id: str):
     return {"coach_id": coach_id, "threads": threads}
 
 
-@router.get("/messages/{coach_id}/{athlete_id}")
+@router.get("/messages/{coach_id}/{athlete_id}", dependencies=[Depends(current_user)])
 async def get_thread(
     coach_id: str,
     athlete_id: str,
@@ -124,7 +125,7 @@ class SendMessage(BaseModel):
     text: str
 
 
-@router.post("/messages/{coach_id}/{athlete_id}")
+@router.post("/messages/{coach_id}/{athlete_id}", dependencies=[Depends(current_user)])
 async def send_message(coach_id: str, athlete_id: str, body: SendMessage):
     if not body.text.strip():
         raise HTTPException(400, "message body is required")

@@ -19,8 +19,9 @@ Two endpoints both called out as next-up in VISION.md:
 import statistics
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from auth import current_user, require_athlete_owner
 from cache import progress_cache
 from database import ATHLETE_DB, SESSION_DB
 from logging_setup import get_logger
@@ -92,7 +93,7 @@ def _count_reps_from_frames(frames: list[dict], sport: str) -> dict:
     }
 
 
-@router.get("/sessions/{session_id}/rep-count")
+@router.get("/sessions/{session_id}/rep-count", dependencies=[Depends(current_user)])
 async def rep_count(session_id: str):
     if session_id not in SESSION_DB:
         raise HTTPException(404, "session not found")
@@ -195,7 +196,7 @@ def _compute_readiness(athlete_id: str, days: int) -> dict:
     }
 
 
-@router.get("/readiness/{athlete_id}")
+@router.get("/readiness/{athlete_id}", dependencies=[Depends(require_athlete_owner())])
 async def readiness(athlete_id: str, days: int = Query(default=14, ge=3, le=90)):
     key = f"readiness:{athlete_id}:{days}"
     cached = progress_cache.get(key)
@@ -206,7 +207,7 @@ async def readiness(athlete_id: str, days: int = Query(default=14, ge=3, le=90))
     return payload
 
 
-@router.get("/athlete/{athlete_id}/advanced-metrics")
+@router.get("/athlete/{athlete_id}/advanced-metrics", dependencies=[Depends(require_athlete_owner())])
 async def advanced_metrics(athlete_id: str, days: int = Query(default=60, ge=7, le=180)):
     """Bundle of derived training metrics computed by services.metrics_service.
 

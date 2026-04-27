@@ -274,7 +274,7 @@ async def get_leaderboard(sport: Optional[str] = None, limit: int = Query(defaul
 # ─── Feed ───────────────────────────────────────────────────────────────────
 
 
-@router.get("/feed", tags=["Social"])
+@router.get("/feed", tags=["Social"], dependencies=[Depends(current_user)])
 async def get_feed(
     athlete_id: str = "",
     tab: str = "for_you",
@@ -297,7 +297,7 @@ async def get_feed(
     }
 
 
-@router.get("/creators/trending", tags=["Social"])
+@router.get("/creators/trending", tags=["Social"], dependencies=[Depends(current_user)])
 async def get_trending_creators(limit: int = Query(default=8, ge=1, le=20)):
     """Top athletes by recent quality output. Computed from real session data —
     we score each athlete by (PBs in last 30d) + (avg form score) so the list
@@ -357,7 +357,7 @@ class FollowRequest(BaseModel):
     following: str
 
 
-@router.post("/follow", tags=["Social"])
+@router.post("/follow", tags=["Social"], dependencies=[Depends(current_user)])
 async def follow_creator(req: FollowRequest):
     if req.following in _FOLLOWS[req.follower]:
         _FOLLOWS[req.follower].discard(req.following)
