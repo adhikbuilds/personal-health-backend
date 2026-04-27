@@ -13,10 +13,11 @@ _save_db() at the end of start_session, plus a 5s periodic safety net.
 """
 
 
-def _start_session(client, athlete_id: str = "athlete_01", sport: str = "vertical_jump") -> str:
+def _start_session(client, headers, athlete_id: str = "athlete_01", sport: str = "vertical_jump") -> str:
     r = client.post(
         "/session/start",
         json={"athlete_id": athlete_id, "sport": sport},
+        headers=headers,
     )
     assert r.status_code == 200, r.text
     sid = r.json()["session_id"]
@@ -24,12 +25,12 @@ def _start_session(client, athlete_id: str = "athlete_01", sport: str = "vertica
     return sid
 
 
-def test_start_session_is_immediately_durable(client, tmp_path, monkeypatch):
+def test_start_session_is_immediately_durable(client, authed, tmp_path, monkeypatch):
     """After /session/start returns, the session must be in SESSION_DB
     AND on disk — not waiting on the periodic save worker."""
     import database
 
-    sid = _start_session(client)
+    sid = _start_session(client, authed["headers"])
     # In-memory: session exists
     assert sid in database.SESSION_DB
     assert database.SESSION_DB[sid]["status"] == "active"
@@ -43,23 +44,23 @@ def test_start_session_is_immediately_durable(client, tmp_path, monkeypatch):
     assert raw[sid]["status"] == "active"
 
 
-def test_session_can_be_fetched_via_api(client):
-    sid = _start_session(client)
-    r = client.get(f"/session/{sid}")
+def test_session_can_be_fetched_via_api(client, authed):
+    sid = _start_session(client, authed["headers"])
+    r = client.get(f"/session/{sid}", headers=authed["headers"])
     assert r.status_code == 200
     body = r.json()
     assert body["session_id"] == sid
     assert body["status"] == "active"
 
 
-def test_end_session_persists_summary(client):
+def test_end_session_persists_summary(client, authed):
     """End the session and verify the summary fields land on disk."""
     import json
 
     import database
 
-    sid = _start_session(client)
-    r = client.post(f"/session/{sid}/end")
+    sid = _start_session(client, authed["headers"])
+    r = client.post(f"/session/{sid}/end", headers=authed["headers"])
     assert r.status_code == 200
     summary = r.json()
     assert "avg_form_score" in summary or "total_frames" in summary or summary == {} or "xp_earned" in summary
@@ -70,15 +71,15 @@ def test_end_session_persists_summary(client):
     assert raw[sid].get("ended_at"), "ended_at must be set after end_session"
 
 
-def test_session_simulates_reload_from_disk(client):
+def test_session_simulates_reload_from_disk(client, authed):
     """Simulate a server restart: clear in-memory dicts, reload from JSON,
     verify the session is recovered with status + summary intact."""
     import json
 
     import database
 
-    sid = _start_session(client)
-    client.post(f"/session/{sid}/end")
+    sid = _start_session(client, authed["headers"])
+    client.post(f"/session/{sid}/end", headers=authed["headers"])
 
     # Snapshot disk state
     saved_sessions = json.loads((database.DB_PATH / "sessions.json").read_text(encoding="utf-8"))

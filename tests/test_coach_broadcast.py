@@ -45,7 +45,7 @@ def _follow(client, follower, coach_id: str) -> None:
 def test_roster_returns_athletes(client, authed):
     coach_id = authed["athlete_id"]
     # Roster starts empty in production-mode (no fallback to all athletes)
-    r = client.get(f"/coach/{coach_id}/athletes")
+    r = client.get(f"/coach/{coach_id}/athletes", headers=authed["headers"])
     assert r.status_code == 200
     body = r.json()
     assert body["coach_id"] == coach_id
@@ -110,7 +110,7 @@ def test_coach_inbox_lists_recent_broadcasts(client, authed):
             headers=authed["headers"],
         )
         assert r.status_code == 200, r.text
-    r = client.get(f"/coach/{coach_id}/inbox?limit=2")
+    r = client.get(f"/coach/{coach_id}/inbox?limit=2", headers=authed["headers"])
     assert r.status_code == 200
     body = r.json()
     assert body["coach_id"] == coach_id
@@ -129,7 +129,7 @@ def test_athlete_inbox_returns_addressed_messages(client, authed):
         json={"message": msg, "athlete_ids": [target["athlete_id"]]},
         headers=authed["headers"],
     )
-    r = client.get(f"/coach/inbox/athlete/{target['athlete_id']}")
+    r = client.get(f"/coach/inbox/athlete/{target['athlete_id']}", headers=authed["headers"])
     assert r.status_code == 200
     body = r.json()
     assert body["athlete_id"] == target["athlete_id"]
@@ -146,6 +146,6 @@ def test_athlete_inbox_excludes_other_recipients(client, authed):
         json={"message": msg, "athlete_ids": [a["athlete_id"]]},
         headers=authed["headers"],
     )
-    r = client.get(f"/coach/inbox/athlete/{b['athlete_id']}")
+    r = client.get(f"/coach/inbox/athlete/{b['athlete_id']}", headers=authed["headers"])
     body = r.json()
     assert not any(b.get("message") == msg for b in body["broadcasts"])

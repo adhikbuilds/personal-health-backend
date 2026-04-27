@@ -24,51 +24,50 @@ MINIMAL_JPEG_B64 = base64.b64encode(
 ).decode()
 
 
-def _start_session(client) -> str:
-    r = client.post("/session/start", json={"athlete_id": "athlete_01", "sport": "vertical_jump"})
+def _start_session(client, headers) -> str:
+    r = client.post("/session/start", json={"athlete_id": "athlete_01", "sport": "vertical_jump"}, headers=headers)
     assert r.status_code == 200
     return r.json()["session_id"]
 
 
-def test_ws_refuses_unknown_session(client):
-    with client.websocket_connect("/ws/session/totally_fake/frames-jpeg") as ws:
+def test_ws_refuses_unknown_session(client, authed):
+    token = authed["access_token"]
+    with client.websocket_connect(f"/ws/session/totally_fake/frames-jpeg?token={token}") as ws:
         msg = ws.receive_json()
         assert msg["type"] == "error"
         assert msg["code"] == "session_not_found"
 
 
-def test_ws_refuses_completed_session(client):
-    sid = _start_session(client)
-    client.post(f"/session/{sid}/end")
-    with client.websocket_connect(f"/ws/session/{sid}/frames-jpeg") as ws:
+def test_ws_refuses_completed_session(client, authed):
+    token = authed["access_token"]
+    sid = _start_session(client, authed["headers"])
+    client.post(f"/session/{sid}/end", headers=authed["headers"])
+    with client.websocket_connect(f"/ws/session/{sid}/frames-jpeg?token={token}") as ws:
         msg = ws.receive_json()
         assert msg["type"] == "error"
         assert msg["code"] == "session_not_active"
 
 
-def test_ws_accepts_valid_session_and_processes_frame(client):
-    sid = _start_session(client)
-    with client.websocket_connect(f"/ws/session/{sid}/frames-jpeg") as ws:
-        # Send a frame; the server queues it for analysis. Even if the
-        # analyzer can't detect anything in our 1x1 test image, the queue
-        # accept + frame_count increment is what we're verifying here.
+def test_ws_accepts_valid_session_and_processes_frame(client, authed):
+    token = authed["access_token"]
+    sid = _start_session(client, authed["headers"])
+    with client.websocket_connect(f"/ws/session/{sid}/frames-jpeg?token={token}") as ws:
         ws.send_text(json.dumps({"image_b64": MINIMAL_JPEG_B64, "ts": 0}))
-        # No error reply within first cycle is the contract; close cleanly
-        # so the test exits in well under the 30s server-side ping window.
 
     # frame_count should have been bumped on the session record
-    r = client.get(f"/session/{sid}")
+    r = client.get(f"/session/{sid}", headers=authed["headers"])
     assert r.status_code == 200
     body = r.json()
     assert body.get("frame_count", 0) >= 1
 
 
-def test_ws_drops_empty_messages(client):
-    sid = _start_session(client)
-    with client.websocket_connect(f"/ws/session/{sid}/frames-jpeg") as ws:
+def test_ws_drops_empty_messages(client, authed):
+    token = authed["access_token"]
+    sid = _start_session(client, authed["headers"])
+    with client.websocket_connect(f"/ws/session/{sid}/frames-jpeg?token={token}") as ws:
         # Empty payload → should NOT crash, NOT increment frame count.
         ws.send_text(json.dumps({"ts": 0}))
         ws.send_text(json.dumps({}))
 
-    r = client.get(f"/session/{sid}")
+    r = client.get(f"/session/{sid}", headers=authed["headers"])
     assert r.json().get("frame_count", 0) == 0

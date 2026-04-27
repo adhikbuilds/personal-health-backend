@@ -2,11 +2,7 @@ from __future__ import annotations
 
 """Tests for the SQLite-backed clap reaction endpoints (POST /athlete/{id}/clap/{tid},
 GET /claps/{tid}). Covers idempotency, count, batch consistency, and the
-ownership check on the caller's athlete_id.
-
-Each clap-write test must register a fresh user so the bearer-token user
-matches the {athlete_id} path param. The GET /claps endpoints are public —
-counts are not sensitive PII."""
+ownership check on the caller's athlete_id."""
 
 import uuid
 
@@ -52,14 +48,14 @@ def test_clap_distinct_callers_each_count_once(client):
     for c in callers:
         r = client.post(f"/athlete/{c['athlete_id']}/clap/post_z", headers=c["headers"])
         assert r.status_code == 200, r.text
-    g = client.get("/claps/post_z")
+    g = client.get("/claps/post_z", headers=callers[0]["headers"])
     assert g.status_code == 200
     body = g.json()
     assert body["count"] == 5
     # Caller-specific you_clapped check
-    g2 = client.get(f"/claps/post_z?athlete_id={callers[2]['athlete_id']}")
+    g2 = client.get(f"/claps/post_z?athlete_id={callers[2]['athlete_id']}", headers=callers[2]["headers"])
     assert g2.json()["you_clapped"] is True
-    g3 = client.get("/claps/post_z?athlete_id=athlete_never_clapped_xyz")
+    g3 = client.get("/claps/post_z?athlete_id=athlete_never_clapped_xyz", headers=callers[0]["headers"])
     assert g3.json()["you_clapped"] is False
 
 
@@ -80,7 +76,8 @@ def test_clap_requires_auth(client):
 
 
 def test_get_claps_for_unknown_target(client):
-    r = client.get("/claps/never_exists_post")
+    me = _new_user(client)
+    r = client.get("/claps/never_exists_post", headers=me["headers"])
     assert r.status_code == 200
     body = r.json()
     assert body["count"] == 0
@@ -88,8 +85,8 @@ def test_get_claps_for_unknown_target(client):
 
 
 def test_clap_with_empty_inputs_is_safe(client):
-    # GET path is unauthenticated — clap counts are public.
-    r = client.get("/claps/some_target?athlete_id=")
+    me = _new_user(client)
+    r = client.get("/claps/some_target?athlete_id=", headers=me["headers"])
     assert r.status_code == 200
     assert r.json()["you_clapped"] is False
 
@@ -99,5 +96,5 @@ def test_claps_persist_in_feed(client):
     b = _new_user(client)
     client.post(f"/athlete/{a['athlete_id']}/clap/feed_target_42", headers=a["headers"])
     client.post(f"/athlete/{b['athlete_id']}/clap/feed_target_42", headers=b["headers"])
-    g = client.get("/claps/feed_target_42")
+    g = client.get("/claps/feed_target_42", headers=a["headers"])
     assert g.json()["count"] == 2

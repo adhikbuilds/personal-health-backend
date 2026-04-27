@@ -1,6 +1,6 @@
-def test_weekly_note_fallback_works_without_api_key(client):
+def test_weekly_note_fallback_works_without_api_key(client, authed):
     # ANTHROPIC_API_KEY is unset by conftest, so this MUST hit fallback path
-    r = client.get("/coach/athlete_01/weekly-note?days=7")
+    r = client.get("/coach/athlete_01/weekly-note?days=7", headers=authed["headers"])
     if r.status_code == 404:
         return
     assert r.status_code == 200
