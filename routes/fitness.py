@@ -14,11 +14,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
 import database
+from auth import _decode as _decode_access
+from auth import current_user, require_athlete_owner, require_role
 from database import (
     _POSE_ANALYZERS,
     _RATE_LIMITS,
@@ -357,7 +359,7 @@ async def session_cleanup_worker():
 # ─── Session Endpoints ──────────────────────────────────────────────────────
 
 
-@router.post("/session/start", tags=["Sessions"])
+@router.post("/session/start", tags=["Sessions"], dependencies=[Depends(current_user)])
 async def start_session(req: StartSessionRequest):
     session_id = str(uuid.uuid4())
     session = {
@@ -389,7 +391,7 @@ async def start_session(req: StartSessionRequest):
     return {"session_id": session_id, "sport": req.sport, "athlete_id": req.athlete_id, "message": "Session started"}
 
 
-@router.post("/session/{session_id}/frame", tags=["Sessions"])
+@router.post("/session/{session_id}/frame", tags=["Sessions"], dependencies=[Depends(current_user)])
 async def add_frame(session_id: str, frame: FrameData):
     if session_id not in SESSION_DB:
         raise HTTPException(404, "Session not found")
@@ -439,7 +441,7 @@ async def add_frame(session_id: str, frame: FrameData):
     }
 
 
-@router.get("/session/{session_id}/latest-result", tags=["Sessions"])
+@router.get("/session/{session_id}/latest-result", tags=["Sessions"], dependencies=[Depends(current_user)])
 async def latest_result(session_id: str):
     if session_id not in SESSION_DB:
         raise HTTPException(404, "Session not found")
@@ -453,7 +455,7 @@ async def latest_result(session_id: str):
     return {"session_id": session_id, **result}
 
 
-@router.post("/session/calibrate", tags=["Sessions"])
+@router.post("/session/calibrate", tags=["Sessions"], dependencies=[Depends(current_user)])
 async def calibrate_pose(frame: FrameData, sport: str = Query(default="vertical_jump")):
     if not frame.image_b64:
         raise HTTPException(400, "image_b64 required for calibration")
@@ -498,7 +500,7 @@ async def calibrate_pose(frame: FrameData, sport: str = Query(default="vertical_
         }
 
 
-@router.post("/session/{session_id}/end", tags=["Sessions"])
+@router.post("/session/{session_id}/end", tags=["Sessions"], dependencies=[Depends(current_user)])
 async def end_session(session_id: str):
     if session_id not in SESSION_DB:
         raise HTTPException(404, "Session not found")
@@ -598,14 +600,14 @@ async def end_session(session_id: str):
     return summary
 
 
-@router.get("/session/{session_id}", tags=["Sessions"])
+@router.get("/session/{session_id}", tags=["Sessions"], dependencies=[Depends(current_user)])
 async def get_session(session_id: str):
     if session_id not in SESSION_DB:
         raise HTTPException(404, "Session not found")
     return SESSION_DB[session_id]
 
 
-@router.get("/sessions", tags=["Sessions"])
+@router.get("/sessions", tags=["Sessions"], dependencies=[Depends(current_user)])
 async def list_sessions(
     athlete_id: Optional[str] = None,
     sport: Optional[str] = None,
@@ -624,7 +626,7 @@ async def list_sessions(
     return {"total": len(sessions), "offset": offset, "limit": limit, "sessions": sessions[offset : offset + limit]}
 
 
-@router.get("/sessions/active", tags=["Sessions"])
+@router.get("/sessions/active", tags=["Sessions"], dependencies=[Depends(current_user)])
 async def get_active_sessions():
     active = [
         {
@@ -647,6 +649,15 @@ async def get_active_sessions():
 @router.websocket("/rppg/live-stream/{session_id}")
 async def rppg_live_stream(websocket: WebSocket, session_id: str):
     await websocket.accept()
+    _token = websocket.query_params.get("token")
+    if not _token:
+        await websocket.close(code=4401, reason="missing token")
+        return
+    try:
+        _decode_access(_token)
+    except Exception:
+        await websocket.close(code=4403, reason="invalid token")
+        return
     log.info("rppg client connected", extra={"session_id": session_id[:8]})
     try:
         from services.rppg_processor import RPPGProcessor
@@ -797,7 +808,7 @@ async def rppg_live_stream(websocket: WebSocket, session_id: str):
         log.error("rppg stream error", extra={"session_id": session_id[:8], "error": str(e)})
 
 
-@router.get("/rppg/result/{session_id}", tags=["rPPG"])
+@router.get("/rppg/result/{session_id}", tags=["rPPG"], dependencies=[Depends(current_user)])
 async def rppg_get_result(session_id: str):
     proc = RPPG_STORE.get(session_id)
     if proc is None:
@@ -813,6 +824,15 @@ async def rppg_get_result(session_id: str):
 @router.websocket("/metrics/live/{session_id}")
 async def websocket_live(websocket: WebSocket, session_id: str):
     await websocket.accept()
+    _token = websocket.query_params.get("token")
+    if not _token:
+        await websocket.close(code=4401, reason="missing token")
+        return
+    try:
+        _decode_access(_token)
+    except Exception:
+        await websocket.close(code=4403, reason="invalid token")
+        return
     WS_CONNECTIONS[session_id].append(websocket)
     log.info("metrics ws connected", extra={"session_id": session_id[:8]})
     try:
@@ -836,6 +856,15 @@ async def websocket_live(websocket: WebSocket, session_id: str):
 @router.websocket("/session/{session_id}/live-stream")
 async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
     await websocket.accept()
+    _token = websocket.query_params.get("token")
+    if not _token:
+        await websocket.close(code=4401, reason="missing token")
+        return
+    try:
+        _decode_access(_token)
+    except Exception:
+        await websocket.close(code=4403, reason="invalid token")
+        return
     log.info("native landmark stream connected", extra={"session_id": session_id[:8]})
     if session_id not in SESSION_DB:
         SESSION_DB[session_id] = {"athlete_id": "test", "sport": "vertical_jump", "status": "active"}
@@ -883,7 +912,7 @@ async def websocket_metadata_stream(websocket: WebSocket, session_id: str):
 # ─── Dataset ────────────────────────────────────────────────────────────────
 
 
-@router.get("/dataset/export", tags=["Dataset"])
+@router.get("/dataset/export", tags=["Dataset"], dependencies=[Depends(require_role("admin"))])
 async def export_dataset(format: str = Query(default="csv")):
     csv_path = DATASET_PATH / "training_data.csv"
     if not csv_path.exists():
@@ -898,7 +927,7 @@ async def export_dataset(format: str = Query(default="csv")):
     return FileResponse(csv_path, media_type="text/csv", filename="personal_health_dataset.csv")
 
 
-@router.get("/dataset/stats", tags=["Dataset"])
+@router.get("/dataset/stats", tags=["Dataset"], dependencies=[Depends(require_role("admin"))])
 async def dataset_stats():
     stats_path = DATASET_PATH / "sample_stats.json"
     if not stats_path.exists():
@@ -908,7 +937,7 @@ async def dataset_stats():
 
 
 # PF-08: Model prediction stats endpoint
-@router.get("/model/stats", tags=["Model"])
+@router.get("/model/stats", tags=["Model"], dependencies=[Depends(require_role("admin"))])
 async def model_stats():
     """Read prediction log and return aggregate stats for drift detection."""
     from database import DB_PATH
@@ -958,7 +987,7 @@ async def model_stats():
 # ─── Fitness Test ───────────────────────────────────────────────────────────
 
 
-@router.post("/fitness-test", tags=["Fitness Test"])
+@router.post("/fitness-test", tags=["Fitness Test"], dependencies=[Depends(current_user)])
 async def save_fitness_test(req: FitnessTestRequest):
     athlete = ATHLETE_DB.get(req.athlete_id)
     if not athlete:
@@ -981,7 +1010,9 @@ async def save_fitness_test(req: FitnessTestRequest):
     return {"athlete_id": req.athlete_id, "score": req.score, "level": req.level, "timestamp": record["timestamp"]}
 
 
-@router.get("/fitness-test/history/{athlete_id}", tags=["Fitness Test"])
+@router.get(
+    "/fitness-test/history/{athlete_id}", tags=["Fitness Test"], dependencies=[Depends(require_athlete_owner())]
+)
 async def get_fitness_test_history(athlete_id: str):
     athlete = ATHLETE_DB.get(athlete_id)
     if not athlete:
@@ -1003,6 +1034,15 @@ async def get_fitness_test_history(athlete_id: str):
 @router.websocket("/ws/session/{session_id}/frames-jpeg")
 async def websocket_jpeg_frames(websocket: WebSocket, session_id: str):
     await websocket.accept()
+    _token = websocket.query_params.get("token")
+    if not _token:
+        await websocket.close(code=4401, reason="missing token")
+        return
+    try:
+        _decode_access(_token)
+    except Exception:
+        await websocket.close(code=4403, reason="invalid token")
+        return
     if session_id not in SESSION_DB:
         await websocket.send_json({"type": "error", "code": "session_not_found"})
         await websocket.close(code=4404)

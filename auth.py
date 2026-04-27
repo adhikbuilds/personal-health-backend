@@ -287,5 +287,3 @@ def require_athlete_owner(athlete_id_param: str = "athlete_id"):
         return user
 
     return _dep
-
-    return _dep

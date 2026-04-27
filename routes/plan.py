@@ -19,8 +19,9 @@ import asyncio
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from auth import require_athlete_owner
 from cache import progress_cache
 from database import ATHLETE_DB, _load_json, _save_json
 from logging_setup import get_logger
@@ -139,7 +140,7 @@ async def _build_fresh_plan(athlete_id: str, week_start: date) -> PlanWeek:
 # ─── Routes ─────────────────────────────────────────────────────────────────
 
 
-@router.get("/{athlete_id}/weekly")
+@router.get("/{athlete_id}/weekly", dependencies=[Depends(require_athlete_owner())])
 async def get_weekly_plan(
     athlete_id: str,
     week_start: str | None = Query(
@@ -200,7 +201,7 @@ async def get_weekly_plan(
         return payload
 
 
-@router.post("/{athlete_id}/regenerate")
+@router.post("/{athlete_id}/regenerate", dependencies=[Depends(require_athlete_owner())])
 async def regenerate_plan(
     athlete_id: str,
     week_start: str | None = Query(default=None),
@@ -226,7 +227,7 @@ async def regenerate_plan(
         return payload
 
 
-@router.post("/{athlete_id}/day/{day_date}/complete")
+@router.post("/{athlete_id}/day/{day_date}/complete", dependencies=[Depends(require_athlete_owner())])
 async def complete_day(athlete_id: str, day_date: str) -> dict[str, Any]:
     _ensure_athlete(athlete_id)
 
@@ -259,7 +260,7 @@ async def complete_day(athlete_id: str, day_date: str) -> dict[str, Any]:
         }
 
 
-@router.get("/{athlete_id}/history")
+@router.get("/{athlete_id}/history", dependencies=[Depends(require_athlete_owner())])
 async def plan_history(athlete_id: str, limit: int = Query(default=4, ge=1, le=12)) -> dict[str, Any]:
     _ensure_athlete(athlete_id)
     all_plans = _load_all_plans()

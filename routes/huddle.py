@@ -10,9 +10,11 @@ import json
 from collections import defaultdict
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
+from auth import _decode as _decode_access
+from auth import current_user
 from database import ATHLETE_DB
 from logging_setup import get_logger
 from services.huddle import (
@@ -51,7 +53,7 @@ class JoinHuddleRequest(BaseModel):
 # ─── Endpoints ─────────────────────────────────────────────────────────────
 
 
-@router.post("/create")
+@router.post("/create", dependencies=[Depends(current_user)])
 async def api_create_huddle(req: CreateHuddleRequest):
     """Create a new huddle group training session."""
     if req.coach_id and req.coach_id not in ATHLETE_DB:
@@ -67,7 +69,7 @@ async def api_create_huddle(req: CreateHuddleRequest):
     return {"ok": True, "huddle": huddle.__dict__}
 
 
-@router.post("/{huddle_id}/join")
+@router.post("/{huddle_id}/join", dependencies=[Depends(current_user)])
 async def api_join_huddle(huddle_id: str, req: JoinHuddleRequest):
     """Join an existing huddle."""
     if req.athlete_id not in ATHLETE_DB:
@@ -82,7 +84,7 @@ async def api_join_huddle(huddle_id: str, req: JoinHuddleRequest):
     return {"ok": True, **result}
 
 
-@router.post("/{huddle_id}/leave")
+@router.post("/{huddle_id}/leave", dependencies=[Depends(current_user)])
 async def api_leave_huddle(huddle_id: str, req: JoinHuddleRequest):
     """Leave a huddle."""
     try:
@@ -95,7 +97,7 @@ async def api_leave_huddle(huddle_id: str, req: JoinHuddleRequest):
     return {"ok": True, **result}
 
 
-@router.post("/{huddle_id}/start")
+@router.post("/{huddle_id}/start", dependencies=[Depends(current_user)])
 async def api_start_huddle(huddle_id: str):
     """Start a huddle — transitions from waiting to active."""
     try:
@@ -108,7 +110,7 @@ async def api_start_huddle(huddle_id: str):
     return {"ok": True, "huddle": huddle.__dict__}
 
 
-@router.post("/{huddle_id}/end")
+@router.post("/{huddle_id}/end", dependencies=[Depends(current_user)])
 async def api_end_huddle(huddle_id: str):
     """End a huddle and compute final leaderboard."""
     try:
@@ -121,7 +123,7 @@ async def api_end_huddle(huddle_id: str):
     return {"ok": True, "huddle": huddle.__dict__}
 
 
-@router.get("/{huddle_id}")
+@router.get("/{huddle_id}", dependencies=[Depends(current_user)])
 async def api_get_huddle(huddle_id: str):
     """Get full huddle state."""
     try:
@@ -131,7 +133,7 @@ async def api_get_huddle(huddle_id: str):
     return huddle.__dict__
 
 
-@router.get("/{huddle_id}/live")
+@router.get("/{huddle_id}/live", dependencies=[Depends(current_user)])
 async def api_get_huddle_live(huddle_id: str):
     """Get live leaderboard and per-athlete stats."""
     try:
@@ -146,7 +148,7 @@ async def api_get_huddle_live(huddle_id: str):
 _list_router = APIRouter(tags=["Huddle"])
 
 
-@_list_router.get("/huddles")
+@_list_router.get("/huddles", dependencies=[Depends(current_user)])
 async def api_list_huddles(status: Optional[str] = Query(None)):
     """List all huddles, optionally filtered by status."""
     huddles = _load_huddles()
@@ -190,6 +192,17 @@ async def api_watch_huddle(websocket: WebSocket, huddle_id: str):
         await websocket.close(code=4404)
         return
     await websocket.accept()
+    _token = websocket.query_params.get("token")
+    if not _token:
+        await websocket.close(code=4401, reason="missing token")
+        return
+    try:
+        _payload = _decode_access(_token)
+        if _payload.get("type") != "access":
+            raise ValueError("not access token")
+    except Exception:
+        await websocket.close(code=4403, reason="invalid token")
+        return
     _HUDDLE_WATCHERS[huddle_id].append(websocket)
     logger.info("huddle watcher connected", extra={"huddle_id": huddle_id})
     try:

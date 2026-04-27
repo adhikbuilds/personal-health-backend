@@ -12,9 +12,10 @@ that the generative layer (ai_coach) can consume.
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ai_coach import generate_coach_note
+from auth import require_athlete_owner
 from cache import progress_cache
 from database import ATHLETE_DB
 from logging_setup import get_logger
@@ -143,7 +144,7 @@ def build_weekly_summary(athlete_id: str, days: int = 7) -> dict:
     }
 
 
-@router.get("/athlete/{athlete_id}/weekly-summary")
+@router.get("/athlete/{athlete_id}/weekly-summary", dependencies=[Depends(require_athlete_owner())])
 async def get_weekly_summary(
     athlete_id: str,
     days: int = Query(default=7, ge=1, le=30),

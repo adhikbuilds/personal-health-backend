@@ -77,7 +77,7 @@ def _coach_roster(coach_id: str) -> list[dict]:
     return [ATHLETE_DB[aid] for aid in follower_ids if aid in ATHLETE_DB]
 
 
-@router.get("/{athlete_id}/weekly-note")
+@router.get("/{athlete_id}/weekly-note", dependencies=[Depends(current_user)])
 async def weekly_note(athlete_id: str, days: int = Query(default=7, ge=1, le=30), refresh: bool = False):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "athlete not found")
@@ -117,7 +117,7 @@ async def weekly_note(athlete_id: str, days: int = Query(default=7, ge=1, le=30)
 # ─── Roster + broadcast endpoints ─────────────────────────────────────────
 
 
-@router.get("/{coach_id}/athletes")
+@router.get("/{coach_id}/athletes", dependencies=[Depends(current_user)])
 async def list_roster(coach_id: str):
     roster = _coach_roster(coach_id)
     items = [
@@ -179,14 +179,14 @@ async def send_broadcast(coach_id: str, body: BroadcastIn, user: dict = Depends(
     return bcast
 
 
-@router.get("/{coach_id}/inbox")
+@router.get("/{coach_id}/inbox", dependencies=[Depends(current_user)])
 async def coach_inbox(coach_id: str, limit: int = Query(default=10, ge=1, le=100)):
     items = list_broadcasts_by_coach(coach_id, limit)
     total = count_broadcasts_by_coach(coach_id)
     return {"coach_id": coach_id, "broadcasts": items, "items": items, "total": total}
 
 
-@router.get("/inbox/athlete/{athlete_id}")
+@router.get("/inbox/athlete/{athlete_id}", dependencies=[Depends(current_user)])
 async def athlete_inbox(athlete_id: str, limit: int = Query(default=20, ge=1, le=100)):
     """Broadcasts addressed to this athlete across all coaches. Used by the
     Android app to surface coach messages on Home/ScoreCard."""
@@ -200,7 +200,7 @@ async def athlete_inbox(athlete_id: str, limit: int = Query(default=20, ge=1, le
 billing_router = APIRouter(tags=["Billing"])
 
 
-@billing_router.get("/billing/coach/{coach_id}")
+@billing_router.get("/billing/coach/{coach_id}", dependencies=[Depends(current_user)])
 async def coach_billing(coach_id: str):
     from routes.progress import _athlete_sessions
 
@@ -251,13 +251,13 @@ async def coach_billing(coach_id: str):
     }
 
 
-@billing_router.post("/billing/override/{athlete_id}")
+@billing_router.post("/billing/override/{athlete_id}", dependencies=[Depends(current_user)])
 async def billing_override(athlete_id: str, coach_id: str = Query("")):
     # TODO: actual payment system needed — this is a placeholder
     return {"ok": True, "athlete_id": athlete_id, "action": "override", "note": "No billing system yet"}
 
 
-@router.post("/{coach_id}/invite-link")
+@router.post("/{coach_id}/invite-link", dependencies=[Depends(current_user)])
 async def generate_invite_link(coach_id: str):
     token = uuid4().hex[:12]
     url = f"https://activebharat.in/join/{coach_id}/{token}"
@@ -279,7 +279,7 @@ MAX_VOICE_BYTES = 10 * 1024 * 1024
 voice_router = APIRouter(tags=["Voice"])
 
 
-@voice_router.post("/voice-note/upload")
+@voice_router.post("/voice-note/upload", dependencies=[Depends(current_user)])
 async def upload_voice_note(file: UploadFile = File(...)):
     content_type = (file.content_type or "").lower()
     if content_type and content_type not in ALLOWED_AUDIO:

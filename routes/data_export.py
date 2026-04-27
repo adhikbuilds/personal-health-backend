@@ -193,7 +193,7 @@ async def export_athlete_data(
     )
 
 
-@router.get("/admin/export/stats")
+@router.get("/admin/export/stats", dependencies=[Depends(require_role("admin"))])
 async def export_stats():
     """Dataset summary — no PII, useful for monitoring data flywheel growth."""
     sessions = _completed_sessions()

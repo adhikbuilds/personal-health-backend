@@ -9,8 +9,9 @@ VISION.md GTM Step 2: shareable session score card.
   GET /session/{session_id}/scorecard.png  → rendered 1080x1080 PNG image
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from auth import current_user
 from database import ATHLETE_DB, SESSION_DB
 from logging_setup import get_logger
 from services.scorecard import generate_scorecard_response
@@ -30,7 +31,7 @@ def _session_and_athlete(session_id: str) -> tuple[dict, dict]:
     return session, athlete
 
 
-@router.get("/session/{session_id}/scorecard")
+@router.get("/session/{session_id}/scorecard", dependencies=[Depends(current_user)])
 async def get_scorecard_data(session_id: str):
     """JSON score card data — for the Android app to render natively."""
     session, athlete = _session_and_athlete(session_id)
@@ -55,7 +56,7 @@ async def get_scorecard_data(session_id: str):
     }
 
 
-@router.get("/session/{session_id}/scorecard.png")
+@router.get("/session/{session_id}/scorecard.png", dependencies=[Depends(current_user)])
 async def get_scorecard_image(session_id: str):
     """Rendered 1080x1080 PNG score card for sharing."""
     session, athlete = _session_and_athlete(session_id)

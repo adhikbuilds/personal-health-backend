@@ -67,7 +67,7 @@ async def mint_api_key(label: str = Query(min_length=1, max_length=80)):
 # ─── Model Registry + Retrain ──────────────────────────────────────────────
 
 
-@router.get("/admin/model")
+@router.get("/admin/model", dependencies=[Depends(require_role("admin"))])
 async def model_status():
     """Current model version, accuracy, and registry history."""
     from services.model_registry import get_registry, predict_quality
@@ -87,7 +87,7 @@ async def model_status():
     }
 
 
-@router.get("/admin/retrain-status")
+@router.get("/admin/retrain-status", dependencies=[Depends(require_role("admin"))])
 async def retrain_status():
     """Check whether a retrain is warranted based on available data."""
     from services.model_registry import get_registry
@@ -122,7 +122,7 @@ async def retrain_status():
     }
 
 
-@router.post("/admin/model/reload")
+@router.post("/admin/model/reload", dependencies=[Depends(require_role("admin"))])
 async def reload_model():
     """Hot-reload the model from disk (after manual retrain)."""
     from services.model_registry import reload_model as _reload
