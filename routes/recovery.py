@@ -10,7 +10,7 @@ GET /athlete/{athlete_id}/recovery/recommendation
   Returns the training recommendation with human-readable detail.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 
 from auth import require_athlete_owner
 from cache import progress_cache

@@ -41,9 +41,11 @@ class Settings:
 
     # ── paths ──────────────────────────────────────────────────────────────
     db_path: Path = field(
-        default_factory=lambda: Path(os.environ["DB_PATH"])
-        if os.environ.get("DB_PATH")
-        else Path(os.path.dirname(os.path.abspath(__file__))) / "db"
+        default_factory=lambda: (
+            Path(os.environ["DB_PATH"])
+            if os.environ.get("DB_PATH")
+            else Path(os.path.dirname(os.path.abspath(__file__))) / "db"
+        )
     )
 
     @property
