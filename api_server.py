@@ -41,6 +41,7 @@ if FASTAPI_AVAILABLE:
     from routes.auth import router as auth_router
     from routes.coach import billing_router, voice_router
     from routes.coach import router as coach_router
+    from routes.compare import router as compare_router
     from routes.data_export import router as export_router
     from routes.drills import router as drills_router
     from routes.fitness import analysis_worker, session_cleanup_worker
@@ -51,6 +52,7 @@ if FASTAPI_AVAILABLE:
     from routes.huddle import router as huddle_router
     from routes.load import router as load_router
     from routes.nutrition_ai import router as nutrition_ai_router
+    from routes.personal_bests import router as personal_bests_router
     from routes.plan import router as plan_router
     from routes.progress import router as progress_router
     from routes.realtime import router as realtime_router
@@ -180,6 +182,8 @@ if FASTAPI_AVAILABLE:
     app.include_router(nutrition_ai_router)
     app.include_router(recovery_router)
     app.include_router(goals_router)
+    app.include_router(compare_router)
+    app.include_router(personal_bests_router)
     app.include_router(realtime_router)
     app.include_router(voice_router)
     app.include_router(billing_router)
