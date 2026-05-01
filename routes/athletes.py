@@ -286,3 +286,17 @@ async def daily_tracker_history(athlete_id: str, days: int = 30):
         "items": rows,
         "total": len(rows),
     }
+
+
+@router.get(
+    "/athlete/{athlete_id}/body-composition",
+    tags=["Athletes"],
+    dependencies=[Depends(require_athlete_owner())],
+)
+async def body_composition(athlete_id: str, days: int = 90):
+    """Weight trend, BMI, and estimated lean/fat mass from wellness check-in data."""
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(404, "athlete not found")
+    from services.body_composition import compute_body_composition
+
+    return compute_body_composition(ATHLETE_DB[athlete_id], days=days)
