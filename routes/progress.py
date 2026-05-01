@@ -17,6 +17,7 @@ from auth import require_athlete_owner
 from cache import progress_cache
 from database import ATHLETE_DB, SESSION_DB
 from logging_setup import get_logger
+from services.intelligence import StreakTracker
 
 router = APIRouter(tags=["Progress"])
 log = get_logger("routes.progress")
@@ -298,3 +299,19 @@ async def get_weak_joints(athlete_id: str, days: int = Query(default=30, ge=1, l
     payload = {"athlete_id": athlete_id, "window_days": days, "weak_joints": weak[:5]}
     progress_cache.set(key, payload)
     return payload
+
+
+@router.get("/streak/{athlete_id}", dependencies=[Depends(require_athlete_owner())])
+async def get_streak(athlete_id: str):
+    """Training streak — consecutive active days and longest streak ever."""
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(404, "athlete not found")
+    key = f"streak:{athlete_id}"
+    cached = progress_cache.get(key)
+    if cached:
+        return cached
+    all_sessions = [s for s in SESSION_DB.values() if s.get("athlete_id") == athlete_id]
+    result = StreakTracker().compute(all_sessions)
+    result["athlete_id"] = athlete_id
+    progress_cache.set(key, result, ttl=300.0)
+    return result
