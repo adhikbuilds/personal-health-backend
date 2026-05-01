@@ -6,6 +6,7 @@ Components:
   AnomalyDetector    — flags sudden drops (fatigue / injury signals)
   CoachRecommender   — generates 3 targeted drill suggestions per sport
   ProgressPredictor  — estimates weeks to next athlete tier
+  StreakTracker      — counts consecutive active training days per athlete
 
 Phase 1 (NOW):   rule-based on session summaries from SESSION_DB
 Phase 2 (NEXT):  replace rules with ML model trained on real session data
@@ -14,6 +15,8 @@ Phase 3 (LATER): personalized model per athlete
 """
 
 from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
 
 # ─── Sport-specific coaching rules ───────────────────────────────────────────
 
@@ -42,6 +45,21 @@ SPORT_DRILLS: dict[str, list[dict[str, str]]] = {
         {"drill": "Shadow Cover Drive", "focus": "Footwork", "cue": "Front foot to pitch of ball"},
         {"drill": "Tee Batting (front foot)", "focus": "Head position", "cue": "Head level, watch the tee"},
         {"drill": "Throw-Down Off-Spin", "focus": "Reading spin", "cue": "Read from the hand"},
+    ],
+    "squat": [
+        {"drill": "Goblet Squat (light KB)", "focus": "Depth & upright torso", "cue": "Elbows push knees out"},
+        {"drill": "Pause Squat (3s hold)", "focus": "Bottom position stability", "cue": "Brace core, stay tall"},
+        {"drill": "Box Squat (parallel box)", "focus": "Hip hinge pattern", "cue": "Sit back, not down"},
+    ],
+    "push_up": [
+        {"drill": "Scapular Push-Ups", "focus": "Scap protraction", "cue": "Round upper back at top"},
+        {"drill": "Tempo Push-Ups (3-1-1)", "focus": "Chest stretch depth", "cue": "Lower slow, push fast"},
+        {"drill": "Archer Push-Ups", "focus": "Unilateral load", "cue": "Keep hips square throughout"},
+    ],
+    "pull_up": [
+        {"drill": "Dead Hang (30–60 s)", "focus": "Grip & shoulder mobility", "cue": "Depress scapula, breathe"},
+        {"drill": "Scapular Pull-Ups", "focus": "Lat activation", "cue": "Pull shoulder blades down first"},
+        {"drill": "Negatives (5 s descent)", "focus": "Eccentric strength", "cue": "Resist gravity the whole way"},
     ],
 }
 
@@ -242,6 +260,71 @@ class ProgressPredictor:
                 f"📈 {bpi_gap:,} BPI to reach {next_tier} tier → "
                 f"~{sessions_needed} sessions (~{weeks_to_next} weeks at 3×/week)"
             ),
+        }
+
+
+# ─── StreakTracker ────────────────────────────────────────────────────────────
+
+
+class StreakTracker:
+    """Counts consecutive active training days for an athlete."""
+
+    def _parse_dt(self, value: str | None) -> datetime | None:
+        if not value:
+            return None
+        try:
+            dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            if dt.tzinfo is not None:
+                dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+            return dt
+        except Exception:
+            return None
+
+    def compute(self, sessions: list[dict]) -> dict:
+        """
+        Returns:
+          { current_streak, longest_streak, last_active_date, active_today }
+        """
+        completed = [s for s in sessions if s.get("status") == "completed"]
+        active_days: set[str] = set()
+        for s in completed:
+            ts = self._parse_dt(s.get("started_at"))
+            if ts:
+                active_days.add(ts.date().isoformat())
+
+        if not active_days:
+            return {"current_streak": 0, "longest_streak": 0, "last_active_date": None, "active_today": False}
+
+        today = datetime.now(timezone.utc).replace(tzinfo=None).date()
+        today_str = today.isoformat()
+        active_today = today_str in active_days
+
+        # Walk backwards from today (or yesterday) to find current streak
+        current_streak = 0
+        check = today if active_today else today - timedelta(days=1)
+        while check.isoformat() in active_days:
+            current_streak += 1
+            check -= timedelta(days=1)
+
+        # Compute longest streak
+        sorted_days = sorted(active_days)
+        longest = 1
+        run = 1
+        for i in range(1, len(sorted_days)):
+            prev = datetime.fromisoformat(sorted_days[i - 1]).date()
+            curr = datetime.fromisoformat(sorted_days[i]).date()
+            if (curr - prev).days == 1:
+                run += 1
+                longest = max(longest, run)
+            else:
+                run = 1
+
+        last_active = sorted_days[-1]
+        return {
+            "current_streak": current_streak,
+            "longest_streak": longest,
+            "last_active_date": last_active,
+            "active_today": active_today,
         }
 
 
