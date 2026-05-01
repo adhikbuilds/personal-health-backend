@@ -79,6 +79,15 @@ if FASTAPI_AVAILABLE:
         # Startup
         init_db()
         _load_db()
+        if len(database.ATHLETE_DB) < 10:
+            import pathlib, subprocess, sys
+            seed_dir = pathlib.Path(__file__).parent
+            for script in ("seed_athletes.py", "seed_sessions.py"):
+                p = seed_dir / script
+                if p.exists():
+                    subprocess.run([sys.executable, str(p)], cwd=str(seed_dir), capture_output=True)
+            _load_db()
+            log.info("auto-seeded db", extra={"athletes": len(database.ATHLETE_DB)})
         database.ANALYSIS_QUEUE = asyncio.Queue(maxsize=200)
         task = asyncio.create_task(_guarded(analysis_worker, "analysis"))
         cleanup_task = asyncio.create_task(_guarded(session_cleanup_worker, "cleanup"))
