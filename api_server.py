@@ -45,6 +45,7 @@ if FASTAPI_AVAILABLE:
     from routes.drills import router as drills_router
     from routes.fitness import analysis_worker, session_cleanup_worker
     from routes.fitness import router as fitness_router
+    from routes.goals import router as goals_router
     from routes.health import router as health_router
     from routes.huddle import list_router as huddle_list_router
     from routes.huddle import router as huddle_router
@@ -81,7 +82,10 @@ if FASTAPI_AVAILABLE:
         init_db()
         _load_db()
         if len(database.ATHLETE_DB) < 10:
-            import pathlib, subprocess, sys
+            import pathlib
+            import subprocess
+            import sys
+
             seed_dir = pathlib.Path(__file__).parent
             for script in ("seed_athletes.py", "seed_sessions.py"):
                 p = seed_dir / script
@@ -175,6 +179,7 @@ if FASTAPI_AVAILABLE:
     app.include_router(export_router)
     app.include_router(nutrition_ai_router)
     app.include_router(recovery_router)
+    app.include_router(goals_router)
     app.include_router(realtime_router)
     app.include_router(voice_router)
     app.include_router(billing_router)
