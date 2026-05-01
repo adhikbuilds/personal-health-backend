@@ -255,19 +255,51 @@ def _aggregate_feed(viewer_id: str, tab: str, limit: int) -> list[dict]:
 
 
 @router.get("/leaderboard", tags=["Leaderboard"])
-async def get_leaderboard(sport: Optional[str] = None, limit: int = Query(default=20, le=50)):
+async def get_leaderboard(
+    sport: Optional[str] = None,
+    tier: Optional[str] = None,
+    viewer_id: Optional[str] = None,
+    limit: int = Query(default=20, le=50),
+):
     athletes = list(ATHLETE_DB.values())
     if sport:
         athletes = [a for a in athletes if a.get("sport") == sport]
+    if tier:
+        athletes = [a for a in athletes if (a.get("tier") or "Block").lower() == tier.lower()]
+
     athletes.sort(key=lambda x: x.get("bpi", 0), reverse=True)
-    ranked = [{"rank": i + 1, **{k: v for k, v in a.items() if k != "rank"}} for i, a in enumerate(athletes[:limit])]
-    # Both `leaderboard` (legacy) and `items` (canonical) are populated so
-    # newer clients can read a consistent envelope across all list endpoints.
+    total = len(athletes)
+
+    safe_keys = {"id", "name", "sport", "tier", "bpi", "avatar_color", "school", "district", "state"}
+    ranked = []
+    for i, a in enumerate(athletes[:limit]):
+        percentile = round((1 - i / total) * 100, 1) if total > 1 else 100.0
+        entry = {k: v for k, v in a.items() if k in safe_keys}
+        entry["rank"] = i + 1
+        entry["percentile"] = percentile
+        entry["is_viewer"] = a.get("id") == viewer_id
+        ranked.append(entry)
+
+    # Viewer's own rank (may be outside top-limit)
+    viewer_rank = None
+    if viewer_id:
+        for i, a in enumerate(athletes):
+            if a.get("id") == viewer_id:
+                viewer_rank = {
+                    "rank": i + 1,
+                    "percentile": round((1 - i / total) * 100, 1) if total > 1 else 100.0,
+                    "bpi": a.get("bpi", 0),
+                    "tier": a.get("tier", "Block"),
+                }
+                break
+
     return {
         "leaderboard": ranked,
         "items": ranked,
         "sport": sport or "all",
-        "total": len(athletes),
+        "tier": tier or "all",
+        "total": total,
+        "viewer_rank": viewer_rank,
     }
 
 
