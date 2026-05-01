@@ -53,6 +53,7 @@ if FASTAPI_AVAILABLE:
     from routes.plan import router as plan_router
     from routes.progress import router as progress_router
     from routes.realtime import router as realtime_router
+    from routes.recovery import router as recovery_router
     from routes.scorecard import router as scorecard_router
     from routes.session_media import router as session_media_router
     from routes.social import router as social_router
@@ -173,6 +174,7 @@ if FASTAPI_AVAILABLE:
     app.include_router(huddle_list_router)
     app.include_router(export_router)
     app.include_router(nutrition_ai_router)
+    app.include_router(recovery_router)
     app.include_router(realtime_router)
     app.include_router(voice_router)
     app.include_router(billing_router)
