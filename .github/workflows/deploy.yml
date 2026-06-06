@@ -9,7 +9,6 @@ name: Deploy to Azure Container Apps
 #     az ad sp create-for-rbac --name personal-health-deploy --role contributor \
 #       --scopes /subscriptions/<SUB_ID>/resourceGroups/<RG_NAME> --json-auth
 #   JWT_SECRET          — your app's JWT signing secret
-#   ANTHROPIC_API_KEY   — Anthropic API key for AI coach
 #
 # One-time: make the GHCR package public (Packages → settings) so Container Apps
 # can pull without registry credentials, OR add registry creds to the app.
@@ -88,6 +87,5 @@ jobs:
                 "PORT=$PORT" \
                 "ENV=production" \
                 "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
-                "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" \
                 "CORS_ORIGINS=*" \
               --query properties.configuration.ingress.fqdn
