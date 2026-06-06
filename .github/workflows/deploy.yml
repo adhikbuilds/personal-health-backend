@@ -1,0 +1,93 @@
+name: Deploy to Azure Container Apps
+
+# Builds the FastAPI image, pushes it to GitHub Container Registry (free —
+# uses the built-in GITHUB_TOKEN, which has package-write inside Actions),
+# then deploys it to Azure Container Apps (free monthly grant, scale-to-zero).
+#
+# Required repo secrets:
+#   AZURE_CREDENTIALS   — output of:
+#     az ad sp create-for-rbac --name personal-health-deploy --role contributor \
+#       --scopes /subscriptions/<SUB_ID>/resourceGroups/<RG_NAME> --json-auth
+#   JWT_SECRET          — your app's JWT signing secret
+#   ANTHROPIC_API_KEY   — Anthropic API key for AI coach
+#
+# One-time: make the GHCR package public (Packages → settings) so Container Apps
+# can pull without registry credentials, OR add registry creds to the app.
+# One-time Azure setup (run once from your machine):
+#   az group create --name personal-health-rg --location centralindia
+#   az containerapp env create --name personal-health-env \
+#     --resource-group personal-health-rg --location centralindia
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "tests/**"
+      - "seeds/**"
+      - "dataset/**"
+  workflow_dispatch:
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+  RESOURCE_GROUP: personal-health-rg
+  LOCATION: centralindia
+  APP_NAME: personal-health-backend
+  CONTAINER_ENV: personal-health-env
+  PORT: "8082"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Container Apps
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az extension add --name containerapp --upgrade --only-show-errors
+            az containerapp up \
+              --name "$APP_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --location "$LOCATION" \
+              --environment "$CONTAINER_ENV" \
+              --image "$IMAGE:${{ github.sha }}" \
+              --target-port "$PORT" \
+              --ingress external
+            az containerapp update \
+              --name "$APP_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --min-replicas 0 \
+              --set-env-vars \
+                "PORT=$PORT" \
+                "ENV=production" \
+                "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
+                "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" \
+                "CORS_ORIGINS=*" \
+              --query properties.configuration.ingress.fqdn

@@ -24,4 +24,4 @@ RUN mkdir -p db models dataset
 # Expose FastAPI port
 EXPOSE 8082
 
-CMD ["python", "-m", "uvicorn", "api_server:app", "--host", "0.0.0.0", "--port", "8082", "--reload"]
+CMD ["gunicorn", "api_server:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "2", "--bind", "0.0.0.0:8082", "--timeout", "120", "--graceful-timeout", "30"]
