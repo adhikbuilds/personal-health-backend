@@ -199,11 +199,14 @@ def _draw_quality_bar(
     label = "Quality Split"
     _draw_centered_text(draw, label, y + h - 38, font_lbl, fill=WHITE_DIM, x_center=x + w // 2)
 
+    # The tile is only box_h (90px) tall and has to stack bar → legend → label.
+    # Keep the bar shallow and high so the legend clears the label, which sits
+    # at y + h - 38 to line up with the sibling stat tiles.
     total = sum(dist.values()) or 1
     bar_x = x + 24
-    bar_y = y + 20
+    bar_y = y + 14
     bar_w = w - 48
-    bar_h = 22
+    bar_h = 18
     colors = {"elite": GREEN, "good": CYAN, "average": ORANGE, "poor": RED}
     labels = {"elite": "E", "good": "G", "average": "A", "poor": "P"}
 
@@ -225,7 +228,7 @@ def _draw_quality_bar(
         cx += seg_w
 
     # Legend line beneath bar
-    legend_y = bar_y + bar_h + 8
+    legend_y = bar_y + bar_h + 2
     legend_parts: list[str] = []
     for key in ("elite", "good", "average", "poor"):
         count = dist.get(key, 0)
