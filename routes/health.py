@@ -29,7 +29,7 @@ async def root():
             "end_session": "POST /session/{id}/end",
             "athletes": "/athletes",
             "leaderboard": "/leaderboard",
-            "live_stream": "ws://HOST:8082/metrics/live/{session_id}",
+            "live_stream": "WS /metrics/live/{session_id}",
             "dataset": "/dataset/export",
             "docs": "/docs",
         },

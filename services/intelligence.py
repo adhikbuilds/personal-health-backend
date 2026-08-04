@@ -1,5 +1,5 @@
 """
-ActiveBharat — Intelligence Layer
+Personal Health — Intelligence Layer
 ──────────────────────────────────────────────────────────────────────────────
 Components:
   TrendAnalyzer      — detects improving/declining form over sessions

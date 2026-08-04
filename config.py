@@ -39,6 +39,14 @@ class Settings:
     anthropic_api_key: str = field(default_factory=lambda: os.environ.get("ANTHROPIC_API_KEY", ""))
     anthropic_model: str = field(default_factory=lambda: os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"))
 
+    # ── branding / public URLs ─────────────────────────────────────────────
+    # Used for invite links and scorecard watermarks. PUBLIC_BASE_URL must be
+    # set to the real origin in any non-local deployment.
+    brand_name: str = field(default_factory=lambda: os.environ.get("BRAND_NAME", "Personal Health"))
+    public_base_url: str = field(
+        default_factory=lambda: os.environ.get("PUBLIC_BASE_URL", "http://localhost:8083").rstrip("/")
+    )
+
     # ── paths ──────────────────────────────────────────────────────────────
     db_path: Path = field(
         default_factory=lambda: (

@@ -1,4 +1,4 @@
-# ActiveBharat — Biomechanical Training Dataset Schema
+# Personal Health — Biomechanical Training Dataset Schema
 
 ## Overview
 Labeled dataset for training a sport-specific pose quality classifier.

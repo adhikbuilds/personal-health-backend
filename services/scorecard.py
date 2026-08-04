@@ -1,5 +1,5 @@
 """
-ActiveBharat — Session Scorecard Image Generator
+Personal Health — Session Scorecard Image Generator
 ──────────────────────────────────────────────────────────────────────────────
 Generates a 1080x1080 shareable PNG scorecard summarising an athlete's
 training session.  Uses only PIL/Pillow — no external fonts or assets.
@@ -18,6 +18,8 @@ from datetime import datetime, timezone
 from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
+
+from config import settings
 
 # ─── Theme constants ────────────────────────────────────────────────────────
 
@@ -153,6 +155,14 @@ def _draw_stat_box(
     _draw_centered_text(draw, label, y + h - 38, font_lbl, fill=WHITE_DIM, x_center=x + w // 2)
 
 
+def _watermark_domain() -> str:
+    """Bare host for the scorecard footer, derived from PUBLIC_BASE_URL."""
+    from urllib.parse import urlparse
+
+    host = urlparse(settings.public_base_url).netloc or settings.public_base_url
+    return host.removeprefix("www.")
+
+
 def _format_duration(seconds: float) -> str:
     m, s = divmod(int(seconds), 60)
     if m >= 60:
@@ -270,7 +280,7 @@ def _build_scorecard(summary: dict, athlete: dict) -> bytes:
 
     # ── Top section — branding ──────────────────────────────────────────
     y = 48
-    _draw_centered_text(draw, "ActiveBharat", y, font_title, fill=ACCENT)
+    _draw_centered_text(draw, settings.brand_name, y, font_title, fill=ACCENT)
     y += 56
     _draw_centered_text(draw, sport_label, y, font_sport, fill=WHITE_DIM)
     y += 44
@@ -337,7 +347,7 @@ def _build_scorecard(summary: dict, athlete: dict) -> bytes:
     _draw_centered_text(draw, meta_line, footer_y, font_lbl, fill=WHITE_DIM)
     footer_y += 36
 
-    _draw_centered_text(draw, "activebharat.in", footer_y, font_footer, fill=ACCENT)
+    _draw_centered_text(draw, _watermark_domain(), footer_y, font_footer, fill=ACCENT)
 
     # ── Encode ──────────────────────────────────────────────────────────
     buf = io.BytesIO()
@@ -350,7 +360,7 @@ def _build_error_card() -> bytes:
     img = Image.new("RGB", (W, H), BG)
     draw = ImageDraw.Draw(img)
     font = _load_font(28)
-    _draw_centered_text(draw, "ActiveBharat", H // 2 - 40, font, fill=ACCENT)
+    _draw_centered_text(draw, settings.brand_name, H // 2 - 40, font, fill=ACCENT)
     _draw_centered_text(draw, "Scorecard unavailable", H // 2 + 10, font, fill=WHITE_DIM)
     buf = io.BytesIO()
     img.save(buf, format="PNG")

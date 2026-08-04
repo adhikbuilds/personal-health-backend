@@ -1,6 +1,6 @@
 """
 =============================================================================
-ActiveBharat — Biomechanical Pose Analyzer
+Personal Health — Biomechanical Pose Analyzer
 =============================================================================
 Uses MediaPipe BlazePose (33 keypoints) to extract real-time biomechanical
 metrics from camera feed. Computes joint angles, CoM position, symmetry

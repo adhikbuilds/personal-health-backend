@@ -1,6 +1,6 @@
 """
 =============================================================================
-ActiveBharat — Real-Time Pose Analysis (Webcam / USB Camera)
+Personal Health — Real-Time Pose Analysis (Webcam / USB Camera)
 =============================================================================
 Runs a live camera feed through MediaPipe BlazePose and overlays:
   - 33-keypoint skeleton
@@ -328,7 +328,7 @@ def run_analyzer(sport: str = "vertical_jump", camera_id: int = 0, athlete_id: s
         session_manager.add_frame(bio, analyzer.sport, session_id, frame_num)
         frame_num += 1
 
-        cv2.imshow("ActiveBharat — Vision Engine", frame_img)
+        cv2.imshow("Personal Health — Vision Engine", frame_img)
 
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
@@ -357,7 +357,7 @@ def run_analyzer(sport: str = "vertical_jump", camera_id: int = 0, athlete_id: s
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="ActiveBharat Real-Time Pose Analyzer")
+    parser = argparse.ArgumentParser(description="Personal Health Real-Time Pose Analyzer")
     parser.add_argument(
         "--sport", default="vertical_jump", choices=["vertical_jump", "snatch", "sprint", "javelin", "cricket_bat"]
     )
