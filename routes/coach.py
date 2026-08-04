@@ -17,7 +17,6 @@ from pydantic import BaseModel
 from ai_coach import generate_coach_note
 from auth import current_user, verify_athlete_owner
 from cache import coach_cache
-from config import settings
 from database import _FOLLOWS, ATHLETE_DB, _load_json
 from logging_setup import get_logger
 from routes.progress import _compute_injury_risk, _compute_progress, _compute_weak_joints
@@ -258,17 +257,6 @@ async def billing_override(athlete_id: str, coach_id: str = Query("")):
     return {"ok": True, "athlete_id": athlete_id, "action": "override", "note": "No billing system yet"}
 
 
-@router.post("/{coach_id}/invite-link", dependencies=[Depends(current_user)])
-async def generate_invite_link(coach_id: str):
-    token = uuid4().hex[:12]
-    url = f"{settings.public_base_url}/join/{coach_id}/{token}"
-    return {
-        "invite_url": url,
-        "coach_id": coach_id,
-        "token": token,
-        "expires_in": "7d",
-        "whatsapp_share_text": f"Join my training roster on {settings.brand_name}: {url}",
-    }
 
 
 VOICE_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent / "db" / "voice_notes"
