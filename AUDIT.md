@@ -610,6 +610,7 @@ from pathlib import Path
 
 DB_PATH = Path(__file__).parent / "db"
 
+
 def export(quality_label: str, output_path: str, min_frames: int = 30):
     with open(DB_PATH / "sessions.json") as f:
         sessions = json.load(f)
@@ -627,32 +628,32 @@ def export(quality_label: str, output_path: str, min_frames: int = 30):
                 continue
 
             row = {
-                "session_id":             sid,
-                "athlete_id":             session["athlete_id"],
-                "frame_num":              frame.get("frame_num", 0),
-                "sport":                  session["sport"],
-                "hip_angle_l":            frame.get("hip_angle_l", 0),
-                "hip_angle_r":            frame.get("hip_angle_r", 0),
-                "knee_angle_l":           frame.get("knee_angle_l", 0),
-                "knee_angle_r":           frame.get("knee_angle_r", 0),
-                "shoulder_angle_l":       frame.get("shoulder_angle_l", 0),
-                "shoulder_angle_r":       frame.get("shoulder_angle_r", 0),
-                "elbow_angle_l":          frame.get("elbow_angle_l", 0),
-                "elbow_angle_r":          frame.get("elbow_angle_r", 0),
-                "ankle_dorsiflexion_l":   frame.get("ankle_dorsiflexion_l", 0),
-                "ankle_dorsiflexion_r":   frame.get("ankle_dorsiflexion_r", 0),
-                "trunk_lean":             frame.get("trunk_lean", 0),
-                "spine_deviation":        frame.get("spine_deviation", 0),
-                "shoulder_hip_sep":       frame.get("shoulder_hip_sep", 0),
-                "head_forward_pos":       frame.get("head_forward_pos", 0),
-                "com_height_norm":        frame.get("com_height_norm", 0.5),
-                "estimated_jump_height":  frame.get("estimated_jump_height", 0),
-                "limb_symmetry_idx":      frame.get("limb_symmetry_idx", 1.0),
-                "form_score":             frame.get("form_score", 0),
-                "phase_label":            frame.get("phase", "setup"),
-                "quality_label":          quality_label,  # session-level label
-                "feedback_tag":           frame.get("primary_feedback", ""),
-                "source":                 "real",         # distinguish from synthetic
+                "session_id": sid,
+                "athlete_id": session["athlete_id"],
+                "frame_num": frame.get("frame_num", 0),
+                "sport": session["sport"],
+                "hip_angle_l": frame.get("hip_angle_l", 0),
+                "hip_angle_r": frame.get("hip_angle_r", 0),
+                "knee_angle_l": frame.get("knee_angle_l", 0),
+                "knee_angle_r": frame.get("knee_angle_r", 0),
+                "shoulder_angle_l": frame.get("shoulder_angle_l", 0),
+                "shoulder_angle_r": frame.get("shoulder_angle_r", 0),
+                "elbow_angle_l": frame.get("elbow_angle_l", 0),
+                "elbow_angle_r": frame.get("elbow_angle_r", 0),
+                "ankle_dorsiflexion_l": frame.get("ankle_dorsiflexion_l", 0),
+                "ankle_dorsiflexion_r": frame.get("ankle_dorsiflexion_r", 0),
+                "trunk_lean": frame.get("trunk_lean", 0),
+                "spine_deviation": frame.get("spine_deviation", 0),
+                "shoulder_hip_sep": frame.get("shoulder_hip_sep", 0),
+                "head_forward_pos": frame.get("head_forward_pos", 0),
+                "com_height_norm": frame.get("com_height_norm", 0.5),
+                "estimated_jump_height": frame.get("estimated_jump_height", 0),
+                "limb_symmetry_idx": frame.get("limb_symmetry_idx", 1.0),
+                "form_score": frame.get("form_score", 0),
+                "phase_label": frame.get("phase", "setup"),
+                "quality_label": quality_label,  # session-level label
+                "feedback_tag": frame.get("primary_feedback", ""),
+                "source": "real",  # distinguish from synthetic
             }
             rows.append(row)
 
@@ -673,7 +674,7 @@ def export(quality_label: str, output_path: str, min_frames: int = 30):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--quality", required=True, choices=["elite","good","average","poor"])
+    parser.add_argument("--quality", required=True, choices=["elite", "good", "average", "poor"])
     parser.add_argument("--output", default="dataset/real_export.csv")
     parser.add_argument("--min-frames", type=int, default=30)
     args = parser.parse_args()
