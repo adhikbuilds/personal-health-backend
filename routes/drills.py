@@ -9,7 +9,6 @@ Endpoints:
 """
 
 import json
-import os
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -17,25 +16,23 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from auth import current_user
-from database import _load_json
+from database import _load_json, _save_json
 
 router = APIRouter(tags=["Drills"])
 
-_ASSIGNMENTS_FILE = "db/drill_assignments.json"
+_ASSIGNMENTS_FILE = "drill_assignments.json"
 
 
 def _load_assignments() -> dict:
     try:
-        with open(_ASSIGNMENTS_FILE) as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
+        data = _load_json(_ASSIGNMENTS_FILE)
+    except json.JSONDecodeError:
         return {"assignments": []}
+    return data or {"assignments": []}
 
 
 def _save_assignments(data: dict) -> None:
-    os.makedirs("db", exist_ok=True)
-    with open(_ASSIGNMENTS_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    _save_json(_ASSIGNMENTS_FILE, data)
 
 
 @router.get("/drills/catalog")
