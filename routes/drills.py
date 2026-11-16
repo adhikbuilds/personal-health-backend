@@ -80,10 +80,7 @@ async def assign_drill(coach_id: str, body: DrillAssignmentIn):
 @router.get("/athlete/{athlete_id}/drill-assignments", dependencies=[Depends(current_user)])
 async def get_drill_assignments(athlete_id: str):
     data = _load_assignments()
-    assignments = [
-        a for a in data.get("assignments", [])
-        if a["athlete_id"] == athlete_id
-    ]
+    assignments = [a for a in data.get("assignments", []) if a["athlete_id"] == athlete_id]
     assignments.sort(key=lambda a: a.get("assigned_at", ""), reverse=True)
     return {"athlete_id": athlete_id, "assignments": assignments[:20]}
 
