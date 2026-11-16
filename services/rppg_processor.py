@@ -94,9 +94,9 @@ class RPPGProcessor:
         result = proc.compute()  # call any time
     """
 
-    WINDOW_SEC = 10.0  # sliding window length (seconds)
-    MIN_FRAMES = 20  # 20 frames sufficient for FFT
-    TARGET_FPS = 30.0  # WebSockets unlock 30fps
+    WINDOW_SEC = 8.0  # sliding window length (seconds)
+    MIN_FRAMES = 12  # lowered — phone captures at ~5fps, so 12 frames = ~2.5s warmup
+    TARGET_FPS = 30.0
     BPM_LOW = 40
     BPM_HIGH = 180
 
@@ -157,7 +157,7 @@ class RPPGProcessor:
         ts_arr = np.array(self._ts)
         elapsed = ts_arr[-1] - ts_arr[0]
         fs = (n - 1) / (elapsed + 1e-9)
-        fs = float(np.clip(fs, 5.0, 60.0))
+        fs = float(np.clip(fs, 1.5, 60.0))
 
         r = np.array(self._r)
         g = np.array(self._g)
@@ -181,10 +181,12 @@ class RPPGProcessor:
         # Bandpass
         bvp_f = _bandpass(bvp, fs, 0.67, 3.0)
 
-        # FFT
+        # FFT with Hann window to reduce spectral leakage
         n_fft = len(bvp_f)
+        window = np.hanning(n_fft)
+        bvp_windowed = bvp_f * window
         freqs = np.fft.rfftfreq(n_fft, d=1.0 / fs)
-        power = np.abs(np.fft.rfft(bvp_f)) ** 2
+        power = np.abs(np.fft.rfft(bvp_windowed)) ** 2
 
         # Restrict to BPM range
         mask = (freqs >= self.BPM_LOW / 60.0) & (freqs <= self.BPM_HIGH / 60.0)
@@ -210,19 +212,22 @@ class RPPGProcessor:
                     "status": "invalid",
                 }
 
-        # PF-09: Artifact detection — hold previous BPM if change > 40 BPM between readings
+        # PF-09: Artifact detection — reject wild jumps
         artifact_flag = False
-        if self.last_bpm > 0 and abs(bpm_raw - self.last_bpm) > 40:
-            bpm_raw = self.last_bpm  # Hold previous reading
+        if self.last_bpm > 0 and abs(bpm_raw - self.last_bpm) > 25:
+            bpm_raw = self.last_bpm  # Hold previous — don't trust wild jumps
             artifact_flag = True
 
-        # 3. Temporal Smoothing (Exponential Moving Average)
+        # Clamp to physiological range
+        bpm_raw = max(self.BPM_LOW, min(self.BPM_HIGH, bpm_raw))
+
+        # Heavy temporal smoothing — rPPG from phone camera is noisy
+        # 0.85/0.15 means it takes ~5 readings to converge to a new value
         if self.last_bpm > 0:
-            # Reject massive artifact spikes (>20 bpm change in a fraction of a sec)
-            if abs(bpm_raw - self.last_bpm) > 20:
-                bpm = self.last_bpm * 0.90 + bpm_raw * 0.10
+            if abs(bpm_raw - self.last_bpm) > 12:
+                bpm = self.last_bpm * 0.85 + bpm_raw * 0.15
             else:
-                bpm = self.last_bpm * 0.70 + bpm_raw * 0.30  # Smooth transition
+                bpm = self.last_bpm * 0.70 + bpm_raw * 0.30
         else:
             bpm = bpm_raw
 
@@ -246,7 +251,7 @@ class RPPGProcessor:
 
         # Smooth HRV
         if self.last_hrv > 0 and hrv_ms_raw > 0:
-            hrv_ms = self.last_hrv * 0.80 + hrv_ms_raw * 0.20
+            hrv_ms = self.last_hrv * 0.65 + hrv_ms_raw * 0.35
         else:
             hrv_ms = hrv_ms_raw
 

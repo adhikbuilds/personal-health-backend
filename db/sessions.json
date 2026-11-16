@@ -9032,5 +9032,864 @@
         "poor": 0
       }
     }
+  },
+  "b6aad410-21a8-4fee-9357-36203bfdccf0": {
+    "session_id": "b6aad410-21a8-4fee-9357-36203bfdccf0",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T21:06:27.352377+00:00",
+    "ended_at": "2026-04-18T23:51:27.204184+00:00",
+    "frame_count": 0,
+    "summary": null,
+    "auto_ended": true
+  },
+  "b4ba8c44-e68f-486d-9882-a02860dcaec9": {
+    "session_id": "b4ba8c44-e68f-486d-9882-a02860dcaec9",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T21:13:11.191531+00:00",
+    "ended_at": "2026-04-18T21:13:11.208076+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "b4ba8c44-e68f-486d-9882-a02860dcaec9",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 20837
+  },
+  "145e948f-1684-474e-992e-1247de55837c": {
+    "session_id": "145e948f-1684-474e-992e-1247de55837c",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T21:15:05.901137+00:00",
+    "ended_at": "2026-04-18T21:15:05.906622+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "145e948f-1684-474e-992e-1247de55837c",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 20887
+  },
+  "e59afd65-a446-4e42-a93e-cd801d3d6f8f": {
+    "session_id": "e59afd65-a446-4e42-a93e-cd801d3d6f8f",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T21:25:25.495230+00:00",
+    "ended_at": "2026-04-18T21:25:25.500847+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "e59afd65-a446-4e42-a93e-cd801d3d6f8f",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 20937
+  },
+  "9914920f-d16d-473c-a934-0db0ba9f2f1d": {
+    "session_id": "9914920f-d16d-473c-a934-0db0ba9f2f1d",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:00:27.048446+00:00",
+    "ended_at": "2026-04-18T23:00:27.053885+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "9914920f-d16d-473c-a934-0db0ba9f2f1d",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 20987
+  },
+  "f8ece693-54f5-4015-aad7-a7e22d7cc6f1": {
+    "session_id": "f8ece693-54f5-4015-aad7-a7e22d7cc6f1",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:02:25.569488+00:00",
+    "ended_at": "2026-04-18T23:02:25.575648+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "f8ece693-54f5-4015-aad7-a7e22d7cc6f1",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21037
+  },
+  "9d85be59-31df-4c30-b592-f031806d1479": {
+    "session_id": "9d85be59-31df-4c30-b592-f031806d1479",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:02:56.561390+00:00",
+    "ended_at": "2026-04-18T23:02:56.570632+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "9d85be59-31df-4c30-b592-f031806d1479",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21087
+  },
+  "c4b2af15-b4c8-4591-88e3-1c93524eb737": {
+    "session_id": "c4b2af15-b4c8-4591-88e3-1c93524eb737",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:04:07.230104+00:00",
+    "ended_at": "2026-04-18T23:04:07.235764+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "c4b2af15-b4c8-4591-88e3-1c93524eb737",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21137
+  },
+  "7f1b6da2-cd17-440a-9e1e-b941ce06ed33": {
+    "session_id": "7f1b6da2-cd17-440a-9e1e-b941ce06ed33",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:05:20.612445+00:00",
+    "ended_at": "2026-04-18T23:05:20.618067+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "7f1b6da2-cd17-440a-9e1e-b941ce06ed33",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21187
+  },
+  "b4ad2f9e-2171-4006-8d51-66289a0bafa8": {
+    "session_id": "b4ad2f9e-2171-4006-8d51-66289a0bafa8",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:05:45.088132+00:00",
+    "ended_at": "2026-04-18T23:05:45.094361+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "b4ad2f9e-2171-4006-8d51-66289a0bafa8",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21237
+  },
+  "c028bf18-a7cc-41e4-8ff7-905a390fe11e": {
+    "session_id": "c028bf18-a7cc-41e4-8ff7-905a390fe11e",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:06:17.416201+00:00",
+    "ended_at": "2026-04-18T23:06:17.421921+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "c028bf18-a7cc-41e4-8ff7-905a390fe11e",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21287
+  },
+  "ac35abb3-64d4-4b7a-aa2b-321885f829f0": {
+    "session_id": "ac35abb3-64d4-4b7a-aa2b-321885f829f0",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:08:53.870688+00:00",
+    "ended_at": "2026-04-18T23:08:53.876770+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "ac35abb3-64d4-4b7a-aa2b-321885f829f0",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21337
+  },
+  "21967112-77f1-4314-9d12-5622f67fa22b": {
+    "session_id": "21967112-77f1-4314-9d12-5622f67fa22b",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:09:20.265238+00:00",
+    "ended_at": "2026-04-18T23:09:20.275523+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "21967112-77f1-4314-9d12-5622f67fa22b",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21387
+  },
+  "668a1764-7282-4543-95fe-03ed246dbf68": {
+    "session_id": "668a1764-7282-4543-95fe-03ed246dbf68",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:14:36.786379+00:00",
+    "ended_at": "2026-04-18T23:14:36.791957+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "668a1764-7282-4543-95fe-03ed246dbf68",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21437
+  },
+  "30040f98-2fbe-416a-896b-3c6763e9955b": {
+    "session_id": "30040f98-2fbe-416a-896b-3c6763e9955b",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:15:28.904254+00:00",
+    "ended_at": "2026-04-18T23:15:28.912366+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "30040f98-2fbe-416a-896b-3c6763e9955b",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21487
+  },
+  "d0eb29f5-1ac4-4bc2-bb68-081ffbed174c": {
+    "session_id": "d0eb29f5-1ac4-4bc2-bb68-081ffbed174c",
+    "athlete_id": "athlete_30",
+    "sport": "vertical_jump",
+    "status": "completed",
+    "started_at": "2026-04-18T23:17:38.857557+00:00",
+    "ended_at": "2026-04-18T23:17:38.866311+00:00",
+    "frame_count": 0,
+    "summary": {
+      "session_id": "d0eb29f5-1ac4-4bc2-bb68-081ffbed174c",
+      "athlete_id": "athlete_30",
+      "sport": "vertical_jump",
+      "total_frames": 0,
+      "valid_frames": 0,
+      "avg_form_score": 0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0,
+      "avg_symmetry": 0,
+      "xp_earned": 50,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "frames": [],
+    "bpi_after": 21537
+  },
+  "fbb8b455-34cb-46d8-8c40-b3e56fd2000e": {
+    "session_id": "fbb8b455-34cb-46d8-8c40-b3e56fd2000e",
+    "athlete_id": "test_athlete",
+    "sport": "running",
+    "status": "completed",
+    "started_at": "2026-04-26T10:55:50.915133+00:00",
+    "ended_at": "2026-04-26T12:59:34.978426+00:00",
+    "frame_count": 0,
+    "summary": null,
+    "huddle_id": null,
+    "auto_ended": true
+  },
+  "f4701e0f-f233-42c1-9a34-f7e4b9907241": {
+    "session_id": "f4701e0f-f233-42c1-9a34-f7e4b9907241",
+    "athlete_id": "athlete_01",
+    "sport": "squat",
+    "status": "completed",
+    "started_at": "2026-04-29T15:43:56.362776+00:00",
+    "ended_at": "2026-04-29T17:48:59.177236+00:00",
+    "frame_count": 5,
+    "summary": null,
+    "huddle_id": null,
+    "auto_ended": true
+  },
+  "940b0d18-2310-4dbd-9b95-3ca2e313f3d1": {
+    "session_id": "940b0d18-2310-4dbd-9b95-3ca2e313f3d1",
+    "athlete_id": "athlete_01",
+    "sport": "squat",
+    "status": "completed",
+    "started_at": "2026-04-29T18:46:28.923438+00:00",
+    "ended_at": "2026-04-29T19:10:20.982574+00:00",
+    "frame_count": 7,
+    "summary": {
+      "session_id": "940b0d18-2310-4dbd-9b95-3ca2e313f3d1",
+      "athlete_id": "athlete_01",
+      "sport": "squat",
+      "total_frames": 7,
+      "valid_frames": 0,
+      "duration_seconds": 356.6,
+      "avg_form_score": 0.0,
+      "peak_form_score": 0,
+      "peak_jump_height_cm": 0,
+      "avg_jump_height_cm": 0.0,
+      "avg_symmetry": 0.0,
+      "quality_distribution": {
+        "elite": 0,
+        "good": 0,
+        "average": 0,
+        "poor": 0
+      },
+      "xp_earned": 50,
+      "coaching": {
+        "patterns": [],
+        "summary": "No frame data to analyze."
+      },
+      "data_quality": {
+        "total_frames": 0,
+        "train_ready": 0,
+        "avg_quality": 0.0,
+        "contributed_to_flywheel": false
+      }
+    },
+    "huddle_id": null,
+    "frames": [
+      {
+        "hip_angle_l": 170.0,
+        "hip_angle_r": 168.0,
+        "knee_angle_l": 160.0,
+        "knee_angle_r": 162.0,
+        "shoulder_angle_l": 15.0,
+        "shoulder_angle_r": 14.0,
+        "elbow_angle_l": 160.0,
+        "elbow_angle_r": 158.0,
+        "ankle_dorsiflexion_l": 28.0,
+        "ankle_dorsiflexion_r": 27.0,
+        "trunk_lean": 5.0,
+        "spine_deviation": 2.0,
+        "shoulder_hip_sep": 0.08,
+        "head_forward_pos": 0.04,
+        "com_height_norm": 0.9,
+        "estimated_jump_height": 0.0,
+        "limb_symmetry_idx": 0.98,
+        "form_score": 0.0,
+        "form_quality": "unknown",
+        "primary_feedback": "",
+        "phase": "setup",
+        "frame_num": 0,
+        "timestamp": 1777488852.947453,
+        "pose_detected": null
+      },
+      {
+        "hip_angle_l": 140.0,
+        "hip_angle_r": 138.0,
+        "knee_angle_l": 130.0,
+        "knee_angle_r": 128.0,
+        "shoulder_angle_l": 15.0,
+        "shoulder_angle_r": 14.0,
+        "elbow_angle_l": 160.0,
+        "elbow_angle_r": 158.0,
+        "ankle_dorsiflexion_l": 28.0,
+        "ankle_dorsiflexion_r": 27.0,
+        "trunk_lean": 10.0,
+        "spine_deviation": 2.0,
+        "shoulder_hip_sep": 0.08,
+        "head_forward_pos": 0.04,
+        "com_height_norm": 0.72,
+        "estimated_jump_height": 0.0,
+        "limb_symmetry_idx": 0.98,
+        "form_score": 0.0,
+        "form_quality": "unknown",
+        "primary_feedback": "",
+        "phase": "descent",
+        "frame_num": 1,
+        "timestamp": 1777488875.7547572,
+        "pose_detected": null
+      },
+      {
+        "hip_angle_l": 170.0,
+        "hip_angle_r": 168.0,
+        "knee_angle_l": 160.0,
+        "knee_angle_r": 162.0,
+        "shoulder_angle_l": 15.0,
+        "shoulder_angle_r": 14.0,
+        "elbow_angle_l": 160.0,
+        "elbow_angle_r": 158.0,
+        "ankle_dorsiflexion_l": 28.0,
+        "ankle_dorsiflexion_r": 27.0,
+        "trunk_lean": 5.0,
+        "spine_deviation": 2.0,
+        "shoulder_hip_sep": 0.08,
+        "head_forward_pos": 0.04,
+        "com_height_norm": 0.9,
+        "estimated_jump_height": 0.0,
+        "limb_symmetry_idx": 0.98,
+        "form_score": 0.0,
+        "form_quality": "unknown",
+        "primary_feedback": "",
+        "phase": "setup",
+        "frame_num": 2,
+        "timestamp": 1777489208.838611,
+        "pose_detected": null
+      },
+      {
+        "hip_angle_l": 140.0,
+        "hip_angle_r": 138.0,
+        "knee_angle_l": 130.0,
+        "knee_angle_r": 128.0,
+        "shoulder_angle_l": 15.0,
+        "shoulder_angle_r": 14.0,
+        "elbow_angle_l": 160.0,
+        "elbow_angle_r": 158.0,
+        "ankle_dorsiflexion_l": 28.0,
+        "ankle_dorsiflexion_r": 27.0,
+        "trunk_lean": 10.0,
+        "spine_deviation": 2.0,
+        "shoulder_hip_sep": 0.08,
+        "head_forward_pos": 0.04,
+        "com_height_norm": 0.72,
+        "estimated_jump_height": 0.0,
+        "limb_symmetry_idx": 0.98,
+        "form_score": 0.0,
+        "form_quality": "unknown",
+        "primary_feedback": "",
+        "phase": "descent",
+        "frame_num": 3,
+        "timestamp": 1777489209.009593,
+        "pose_detected": null
+      },
+      {
+        "hip_angle_l": 92.0,
+        "hip_angle_r": 91.0,
+        "knee_angle_l": 88.0,
+        "knee_angle_r": 90.0,
+        "shoulder_angle_l": 15.0,
+        "shoulder_angle_r": 14.0,
+        "elbow_angle_l": 160.0,
+        "elbow_angle_r": 158.0,
+        "ankle_dorsiflexion_l": 28.0,
+        "ankle_dorsiflexion_r": 27.0,
+        "trunk_lean": 12.0,
+        "spine_deviation": 2.0,
+        "shoulder_hip_sep": 0.08,
+        "head_forward_pos": 0.04,
+        "com_height_norm": 0.42,
+        "estimated_jump_height": 0.0,
+        "limb_symmetry_idx": 0.98,
+        "form_score": 0.0,
+        "form_quality": "unknown",
+        "primary_feedback": "",
+        "phase": "bottom",
+        "frame_num": 4,
+        "timestamp": 1777489209.18266,
+        "pose_detected": null
+      },
+      {
+        "hip_angle_l": 135.0,
+        "hip_angle_r": 133.0,
+        "knee_angle_l": 125.0,
+        "knee_angle_r": 127.0,
+        "shoulder_angle_l": 15.0,
+        "shoulder_angle_r": 14.0,
+        "elbow_angle_l": 160.0,
+        "elbow_angle_r": 158.0,
+        "ankle_dorsiflexion_l": 28.0,
+        "ankle_dorsiflexion_r": 27.0,
+        "trunk_lean": 9.0,
+        "spine_deviation": 2.0,
+        "shoulder_hip_sep": 0.08,
+        "head_forward_pos": 0.04,
+        "com_height_norm": 0.68,
+        "estimated_jump_height": 0.0,
+        "limb_symmetry_idx": 0.98,
+        "form_score": 0.0,
+        "form_quality": "unknown",
+        "primary_feedback": "",
+        "phase": "ascent",
+        "frame_num": 5,
+        "timestamp": 1777489209.353346,
+        "pose_detected": null
+      },
+      {
+        "hip_angle_l": 172.0,
+        "hip_angle_r": 170.0,
+        "knee_angle_l": 165.0,
+        "knee_angle_r": 163.0,
+        "shoulder_angle_l": 15.0,
+        "shoulder_angle_r": 14.0,
+        "elbow_angle_l": 160.0,
+        "elbow_angle_r": 158.0,
+        "ankle_dorsiflexion_l": 28.0,
+        "ankle_dorsiflexion_r": 27.0,
+        "trunk_lean": 4.0,
+        "spine_deviation": 2.0,
+        "shoulder_hip_sep": 0.08,
+        "head_forward_pos": 0.04,
+        "com_height_norm": 0.92,
+        "estimated_jump_height": 0.0,
+        "limb_symmetry_idx": 0.98,
+        "form_score": 0.0,
+        "form_quality": "unknown",
+        "primary_feedback": "",
+        "phase": "top",
+        "frame_num": 6,
+        "timestamp": 1777489209.5303109,
+        "pose_detected": null
+      }
+    ]
   }
 }

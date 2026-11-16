@@ -1,35 +1,35 @@
 {
   "hip_angle_l": {
-    "min": 31.67,
+    "min": 36.01,
     "max": 175,
-    "mean": 108.5
+    "mean": 108.79
   },
   "knee_angle_l": {
-    "min": 57.86,
+    "min": 76.14,
     "max": 178,
-    "mean": 131.21
+    "mean": 131.35
   },
   "trunk_lean": {
-    "min": 0,
+    "min": 0.79,
     "max": 80,
-    "mean": 32.85
+    "mean": 32.32
   },
   "form_score": {
-    "min": 20,
+    "min": 26.3,
     "max": 100,
-    "mean": 69.6
+    "mean": 69.55
   },
   "limb_symmetry_idx": {
-    "min": 0.5,
-    "max": 0.95,
-    "mean": 0.73
+    "min": 0.52,
+    "max": 0.96,
+    "mean": 0.75
   },
   "estimated_jump_height": {
     "min": 0,
-    "max": 75.8,
-    "mean": 7.74
+    "max": 77.0,
+    "mean": 8.1
   },
-  "total_samples": 2000,
+  "total_samples": 2400,
   "sports": [
     "vertical_jump",
     "snatch",
@@ -38,17 +38,17 @@
     "cricket_bat"
   ],
   "quality_distribution": {
-    "elite": 500,
-    "good": 500,
-    "average": 500,
-    "poor": 500
+    "elite": 600,
+    "good": 600,
+    "average": 600,
+    "poor": 600
   },
   "phase_distribution": {
-    "setup": 869,
-    "descent": 895,
-    "takeoff": 105,
-    "flight": 79,
-    "landing": 52
+    "setup": 608,
+    "descent": 576,
+    "takeoff": 608,
+    "flight": 416,
+    "landing": 192
   },
   "reference_datasets": [
     "SportsPose (CVPR 2023) \u2014 176K 3D poses, 24 subjects, 5 sports",

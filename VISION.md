@@ -47,12 +47,12 @@ React Native, Expo SDK 54. Runs in Expo Go — no build required.
 FastAPI, Python, MediaPipe, TensorFlow.
 
 - **`api_server.py`**: The main API. Handles athlete registration, session start/end, frame ingestion (async queue so it never blocks the phone), leaderboard, active sessions, WebSocket for real-time dashboard push.
-- **`pose_analyzer.py`**: Wraps MediaPipe Pose. Takes a base64 JPEG, runs landmark detection, computes all joint angles (knee L/R, hip L/R, elbow L/R, ankle dorsiflexion, trunk lean, spine deviation, shoulder–hip separation), runs the form quality classifier, returns phase label + feedback.
-- **`rppg_processor.py`**: Takes a stream of RGB values from the face, applies bandpass filtering and peak detection to estimate heart rate and HRV.
-- **`generate_dataset.py`**: Synthetic training data generator. 2,000 labelled frames across 5 sports (vertical jump, snatch, sprint, javelin, cricket batting). Each row has 23 biomechanical features and a quality label (elite / good / average / poor). Based on sport-science literature distributions.
-- **`model_trainer.py`**: Trains a 3-layer MLP (23 → 64 → 32 → 4 classes). Exports `.h5` and `.tflite`. The `.tflite` is designed to eventually run on-device.
-- **`seed_athletes.py`**: Generates 30 athletes across 5 tiers (Block, District, State, National, Elite) with realistic BPI scores and session histories.
-- **`seed_sessions.py`**: Generates historical session data per athlete showing progressive improvement over 90 days.
+- **`services/pose_analyzer.py`**: Wraps MediaPipe Pose. Takes a base64 JPEG, runs landmark detection, computes all joint angles (knee L/R, hip L/R, elbow L/R, ankle dorsiflexion, trunk lean, spine deviation, shoulder–hip separation), runs the form quality classifier, returns phase label + feedback.
+- **`services/rppg_processor.py`**: Takes a stream of RGB values from the face, applies bandpass filtering and peak detection to estimate heart rate and HRV.
+- **`pipeline/generate_dataset.py`**: Synthetic training data generator. 2,000 labelled frames across 5 sports (vertical jump, snatch, sprint, javelin, cricket batting). Each row has 23 biomechanical features and a quality label (elite / good / average / poor). Based on sport-science literature distributions.
+- **`pipeline/model_trainer.py`**: Trains a 3-layer MLP (23 → 64 → 32 → 4 classes). Exports `.h5` and `.tflite`. The `.tflite` is designed to eventually run on-device.
+- **`seeds/seed_athletes.py`**: Generates 30 athletes across 5 tiers (Block, District, State, National, Elite) with realistic BPI scores and session histories.
+- **`seeds/seed_sessions.py`**: Generates historical session data per athlete showing progressive improvement over 90 days.
 
 ### Frontend (`personal-health-frontend`)
 Node.js, Express, EJS. Runs on port 8083 and proxies API calls to the FastAPI backend.
@@ -272,8 +272,8 @@ If you just cloned this repo and want to get the full stack running:
 # 1. Start the backend
 cd personal-health-backend
 pip install -r requirements.txt
-python seed_athletes.py        # populate 30 athletes
-python seed_sessions.py        # populate 90 days of history
+python seeds/seed_athletes.py        # populate 30 athletes
+python seeds/seed_sessions.py        # populate 90 days of history
 python api_server.py           # starts on :8082
 
 # 2. Start the frontend
@@ -294,8 +294,8 @@ For training data generation and model training (run this on a server with GPU):
 
 ```bash
 cd personal-health-backend
-python generate_dataset.py     # generates dataset/training_data.csv
-python model_trainer.py        # trains model, exports .h5 and .tflite
+python pipeline/generate_dataset.py     # generates dataset/training_data.csv
+python pipeline/model_trainer.py        # trains model, exports .h5 and .tflite
 ```
 
 ---

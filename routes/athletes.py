@@ -5,12 +5,13 @@ Athletes domain — CRUD, Progress, Insights, Daily Tracker
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from auth import current_user, require_athlete_owner
 from database import ATHLETE_DB, FRAME_BUFFER, SESSION_DB, _save_db
 
 router = APIRouter()
@@ -37,14 +38,14 @@ class DailyTrackerUpdate(BaseModel):
 # ─── CRUD ───────────────────────────────────────────────────────────────────
 
 
-@router.get("/athletes", tags=["Athletes"])
+@router.get("/athletes", tags=["Athletes"], dependencies=[Depends(current_user)])
 async def list_athletes():
     athletes = list(ATHLETE_DB.values())
     athletes.sort(key=lambda x: x.get("bpi", 0), reverse=True)
-    return {"athletes": athletes, "total": len(athletes)}
+    return {"athletes": athletes, "items": athletes, "total": len(athletes)}
 
 
-@router.post("/athlete", tags=["Athletes"])
+@router.post("/athlete", tags=["Athletes"], dependencies=[Depends(current_user)])
 async def create_athlete(req: NewAthleteRequest):
     athlete_id = f"athlete_{uuid.uuid4().hex[:8]}"
     initials = "".join(w[0].upper() for w in req.name.strip().split()[:2])
@@ -57,14 +58,14 @@ async def create_athlete(req: NewAthleteRequest):
         "sessions": 0,
         "avatar": initials,
         "height_cm": req.height_cm or 170,
-        "created_at": datetime.utcnow().isoformat() + "Z",
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }
     ATHLETE_DB[athlete_id] = athlete
     _save_db()
     return athlete
 
 
-@router.get("/athlete/{athlete_id}", tags=["Athletes"])
+@router.get("/athlete/{athlete_id}", tags=["Athletes"], dependencies=[Depends(current_user)])
 async def get_athlete(athlete_id: str):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "Athlete not found")
@@ -77,10 +78,34 @@ async def get_athlete(athlete_id: str):
     return athlete
 
 
+class AthleteUpdate(BaseModel):
+    name: Optional[str] = None
+    sport: Optional[str] = None
+    height_cm: Optional[float] = None
+
+
+@router.patch("/athlete/{athlete_id}", tags=["Athletes"], dependencies=[Depends(require_athlete_owner())])
+async def update_athlete(athlete_id: str, body: AthleteUpdate):
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(404, "Athlete not found")
+    athlete = ATHLETE_DB[athlete_id]
+    if body.name is not None:
+        athlete["name"] = body.name.strip()
+        initials = "".join(w[0].upper() for w in body.name.strip().split()[:2])
+        athlete["avatar"] = initials
+    if body.sport is not None:
+        athlete["sport"] = body.sport
+    if body.height_cm is not None:
+        athlete["height_cm"] = body.height_cm
+    athlete["updated_at"] = datetime.now(timezone.utc).isoformat()
+    _save_db()
+    return athlete
+
+
 # ─── Intelligence ───────────────────────────────────────────────────────────
 
 
-@router.get("/athlete/{athlete_id}/insights", tags=["Intelligence"])
+@router.get("/athlete/{athlete_id}/insights", tags=["Intelligence"], dependencies=[Depends(require_athlete_owner())])
 async def athlete_insights(athlete_id: str):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(404, "Athlete not found")
@@ -96,7 +121,7 @@ async def athlete_insights(athlete_id: str):
     return generate_insights(athlete, sessions)
 
 
-@router.get("/session/{session_id}/coaching", tags=["Intelligence"])
+@router.get("/session/{session_id}/coaching", tags=["Intelligence"], dependencies=[Depends(current_user)])
 async def session_coaching(session_id: str):
     if session_id not in SESSION_DB:
         raise HTTPException(404, "Session not found")
@@ -124,7 +149,7 @@ async def session_coaching(session_id: str):
 # ─── Progress ───────────────────────────────────────────────────────────────
 
 
-@router.get("/athlete/{athlete_id}/progress", tags=["Athletes"])
+@router.get("/athlete/{athlete_id}/progress", tags=["Athletes"], dependencies=[Depends(require_athlete_owner())])
 async def get_athlete_progress(athlete_id: str):
     if athlete_id not in ATHLETE_DB:
         raise HTTPException(status_code=404, detail="Athlete not found")
@@ -148,7 +173,7 @@ async def get_athlete_progress(athlete_id: str):
         second = sum(t["avg_form_score"] for t in form_trend[half:]) / (len(form_trend) - half)
         if first > 0:
             improvement_pct = round((second - first) / first * 100, 1)
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     sessions_this_week = sessions_last_week = 0
     for s in athlete_sessions:
         started_str = s.get("started_at", "")
@@ -186,22 +211,30 @@ async def get_athlete_progress(athlete_id: str):
 # ─── Daily Tracker ──────────────────────────────────────────────────────────
 
 
-@router.get("/athlete/{athlete_id}/daily-tracker", tags=["Daily Tracker"])
+@router.get(
+    "/athlete/{athlete_id}/daily-tracker",
+    tags=["Daily Tracker"],
+    dependencies=[Depends(require_athlete_owner())],
+)
 async def get_daily_tracker(athlete_id: str):
     athlete = ATHLETE_DB.get(athlete_id, {})
-    today = datetime.utcnow().date().isoformat()
+    today = datetime.now(timezone.utc).date().isoformat()
     tracker = athlete.get("daily_tracker", {}).get(today, {})
     return {"athlete_id": athlete_id, "date": today, "tracker": tracker}
 
 
-@router.post("/athlete/{athlete_id}/daily-tracker", tags=["Daily Tracker"])
+@router.post(
+    "/athlete/{athlete_id}/daily-tracker",
+    tags=["Daily Tracker"],
+    dependencies=[Depends(require_athlete_owner())],
+)
 async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
     if athlete_id not in ATHLETE_DB:
         ATHLETE_DB[athlete_id] = {"id": athlete_id, "daily_tracker": {}}
     athlete = ATHLETE_DB[athlete_id]
     if "daily_tracker" not in athlete:
         athlete["daily_tracker"] = {}
-    date_key = data.date or datetime.utcnow().date().isoformat()
+    date_key = data.date or datetime.now(timezone.utc).date().isoformat()
     athlete["daily_tracker"][date_key] = {
         "steps": data.steps,
         "active_minutes": data.active_minutes,
@@ -210,7 +243,60 @@ async def update_daily_tracker(athlete_id: str, data: DailyTrackerUpdate):
         "calorie_intake": data.calorie_intake,
         "water_glasses": data.water_glasses,
         "sleep_hours": data.sleep_hours,
-        "updated_at": datetime.utcnow().isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     _save_db()
+    # Mirror to SQLite v2 store so the /history endpoint has data even after restart
+    try:
+        from sqlite_store import upsert_daily_tracker
+
+        upsert_daily_tracker(athlete_id, date_key, athlete["daily_tracker"][date_key])
+    except Exception:
+        pass
     return {"athlete_id": athlete_id, "date": date_key, "ok": True}
+
+
+@router.get(
+    "/athlete/{athlete_id}/daily-tracker/history",
+    tags=["Daily Tracker"],
+    dependencies=[Depends(require_athlete_owner())],
+)
+async def daily_tracker_history(athlete_id: str, days: int = 30):
+    """Returns up to `days` most recent daily-tracker entries, newest first.
+
+    Reads from SQLite v2 store first; falls back to the legacy JSON dict
+    on the athlete record so existing seeded data is still visible.
+    """
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(404, "athlete not found")
+    rows: list[dict] = []
+    try:
+        from sqlite_store import daily_tracker_history as _hist
+
+        rows = _hist(athlete_id, days)
+    except Exception:
+        rows = []
+    if not rows:
+        legacy = ATHLETE_DB[athlete_id].get("daily_tracker", {}) or {}
+        rows = [{"date": k, **v} for k, v in sorted(legacy.items(), reverse=True)[:days]]
+    return {
+        "athlete_id": athlete_id,
+        "days": days,
+        "history": rows,
+        "items": rows,
+        "total": len(rows),
+    }
+
+
+@router.get(
+    "/athlete/{athlete_id}/body-composition",
+    tags=["Athletes"],
+    dependencies=[Depends(require_athlete_owner())],
+)
+async def body_composition(athlete_id: str, days: int = 90):
+    """Weight trend, BMI, and estimated lean/fat mass from wellness check-in data."""
+    if athlete_id not in ATHLETE_DB:
+        raise HTTPException(404, "athlete not found")
+    from services.body_composition import compute_body_composition
+
+    return compute_body_composition(ATHLETE_DB[athlete_id], days=days)

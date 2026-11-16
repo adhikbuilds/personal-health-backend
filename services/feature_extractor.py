@@ -1,9 +1,14 @@
 """
 =============================================================================
-ActiveBharat — Feature Extractor
+Personal Health — Feature Extractor
 =============================================================================
 Converts BiomechanicalFrame dataclasses into flat feature vectors suitable
 for training ML classifiers (TFLite model) and for dataset export.
+
+NOTE: `form_score` is intentionally EXCLUDED from FEATURE_NAMES. It is the
+label the model predicts — including it as an input feature would cause
+data leakage (the model would learn to predict the answer from the answer).
+It is still emitted in CSV exports via get_csv_headers() as a LABEL column.
 
 Feature Vector (23 dimensions):
  [0]  hip_angle_l
@@ -107,7 +112,7 @@ class FeatureExtractor:
         self.normalize = normalize
 
     def extract(self, frame: BiomechanicalFrame, sport: str = "vertical_jump") -> np.ndarray:
-        """Extract 23-dimensional feature vector from a single frame."""
+        """Extract 23-dimensional feature vector from a single frame (form_score excluded — it is the label)."""
         hip_avg = (frame.hip_angle_l + frame.hip_angle_r) / 2
         knee_avg = (frame.knee_angle_l + frame.knee_angle_r) / 2
 
