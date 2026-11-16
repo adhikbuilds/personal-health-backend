@@ -17,14 +17,12 @@ name: Deploy to Azure Container Apps
 #   az containerapp env create --name personal-health-env \
 #     --resource-group personal-health-rg --location centralindia
 
+# Manual only until the secrets above exist. To deploy on every push to main
+# again, add back:
+#   push:
+#     branches: [main]
+#     paths-ignore: ["**/*.md", "tests/**", "seeds/**", "dataset/**"]
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - "**/*.md"
-      - "tests/**"
-      - "seeds/**"
-      - "dataset/**"
   workflow_dispatch:
 
 env:
