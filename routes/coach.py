@@ -257,8 +257,6 @@ async def billing_override(athlete_id: str, coach_id: str = Query("")):
     return {"ok": True, "athlete_id": athlete_id, "action": "override", "note": "No billing system yet"}
 
 
-
-
 VOICE_DIR = Path(os.path.dirname(os.path.abspath(__file__))).parent / "db" / "voice_notes"
 VOICE_DIR.mkdir(parents=True, exist_ok=True)
 
